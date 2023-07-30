@@ -27,9 +27,9 @@
  */
 
 #include <Arduino.h>
-#include "Flprog FlprogEthernet.h"
-#include "FlprogDns.h"
-#include "utility/FlprogW5100.h"
+#include "flprogEthernet.h"
+#include "flprogDns.h"
+#include "utility/flprogW5100.h"
 
 /* Start EthernetUDP socket, listening at local port PORT */
 uint8_t  FlprogEthernetUDP::begin(uint16_t port)

@@ -19,13 +19,14 @@
  */
 
 #include <Arduino.h>
-#include "flprogFlprogEthernet.h"
-#include "FlprogDns.h"
+#include "flprogEthernet.h"
+#include "flprogDns.h"
 #include "utility/flprogW5100.h"
+
 
 int FlprogEthernetClient::connect(const char * host, uint16_t port)
 {
-	DNSClient dns; // Look up the host first
+	FlprogDNSClient dns; // Look up the host first
 	IPAddress remote_addr;
 
 	if (sockindex < MAX_SOCK_NUM) {
@@ -125,7 +126,7 @@ void FlprogEthernetClient::flush()
 	while (sockindex < MAX_SOCK_NUM) {
 		uint8_t stat = FlprogEthernet.socketStatus(sockindex);
 		if (stat != FlprogSnSR::ESTABLISHED && stat != FlprogSnSR::CLOSE_WAIT) return;
-		if (FlprogEthernet.socketSendAvailable(sockindex) >= W5100.SSIZE) return;
+		if (FlprogEthernet.socketSendAvailable(sockindex) >= FlprogW5100.SSIZE) return;
 	}
 }
 
@@ -168,7 +169,7 @@ uint8_t FlprogEthernetClient::status()
 
 // the next function allows us to use the client returned by
 // EthernetServer::available() as the condition in an if-statement.
-bool FlprogEthernetClient::operator==(const EthernetClient& rhs)
+bool FlprogEthernetClient::operator==(const FlprogEthernetClient& rhs)
 {
 	if (sockindex != rhs.sockindex) return false;
 	if (sockindex >= MAX_SOCK_NUM) return false;
@@ -183,7 +184,7 @@ uint16_t FlprogEthernetClient::localPort()
 	if (sockindex >= MAX_SOCK_NUM) return 0;
 	uint16_t port;
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	port = W5100.readSnPORT(sockindex);
+	port = FlprogW5100.readSnPORT(sockindex);
 	SPI.endTransaction();
 	return port;
 }
@@ -195,7 +196,7 @@ IPAddress FlprogEthernetClient::remoteIP()
 	if (sockindex >= MAX_SOCK_NUM) return IPAddress((uint32_t)0);
 	uint8_t remoteIParray[4];
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	W5100.readSnDIPR(sockindex, remoteIParray);
+	FlprogW5100.readSnDIPR(sockindex, remoteIParray);
 	SPI.endTransaction();
 	return IPAddress(remoteIParray);
 }
@@ -207,7 +208,7 @@ uint16_t FlprogEthernetClient::remotePort()
 	if (sockindex >= MAX_SOCK_NUM) return 0;
 	uint16_t port;
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	port = W5100.readSnDPORT(sockindex);
+	port = FlprogW5100.readSnDPORT(sockindex);
 	SPI.endTransaction();
 	return port;
 }

@@ -19,8 +19,8 @@
  */
 
 #include <Arduino.h>
-#include "FlprogEthernet.h"
-#include "utility/Flprog FlprogW5100.h"
+#include "flprogEthernet.h"
+#include "utility/flprogW5100.h"
 
 #if ARDUINO >= 156 && !defined(ARDUINO_ARCH_PIC32)
 extern void yield(void);
@@ -62,7 +62,7 @@ uint8_t FlprogEthernetClass::socketBegin(uint8_t protocol, uint16_t port)
 	uint8_t s, status[MAX_SOCK_NUM], chip, maxindex = MAX_SOCK_NUM;
 
 	// first check hardware compatibility
-	chip = Flprog FlprogW5100.getChip();
+	chip = FlprogW5100.getChip();
 	if (!chip)
 		return MAX_SOCK_NUM; // immediate error if no hardware detected
 #if MAX_SOCK_NUM > 4
@@ -105,25 +105,25 @@ uint8_t FlprogEthernetClass::socketBegin(uint8_t protocol, uint16_t port)
 	return MAX_SOCK_NUM; // all sockets are in use
 closemakesocket:
 	// Serial.printf("W5000socket close\n");
-	Flprog FlprogW5100.execCmdSn(s, Sock_CLOSE);
+	FlprogW5100.execCmdSn(s, Sock_CLOSE);
 makesocket:
 	// Serial.printf("W5000socket %d\n", s);
 	FlprogEthernetServer::server_port[s] = 0;
 	delayMicroseconds(250); // TODO: is this needed??
-	Flprog FlprogW5100.writeSnMR(s, protocol);
-	Flprog FlprogW5100.writeSnIR(s, 0xFF);
+	FlprogW5100.writeSnMR(s, protocol);
+	FlprogW5100.writeSnIR(s, 0xFF);
 	if (port > 0)
 	{
-		Flprog FlprogW5100.writeSnPORT(s, port);
+		FlprogW5100.writeSnPORT(s, port);
 	}
 	else
 	{
 		// if don't set the source port, set local_port number.
 		if (++local_port < 49152)
 			local_port = 49152;
-		Flprog FlprogW5100.writeSnPORT(s, local_port);
+		FlprogW5100.writeSnPORT(s, local_port);
 	}
-	Flprog FlprogW5100.execCmdSn(s, Sock_OPEN);
+	FlprogW5100.execCmdSn(s, Sock_OPEN);
 	state[s].RX_RSR = 0;
 	state[s].RX_RD = FlprogW5100.readSnRX_RD(s); // always zero?
 	state[s].RX_inc = 0;
@@ -205,7 +205,7 @@ makesocket:
 	mac[3] = ip[1] & 0x7F;
 	mac[4] = ip[2];
 	mac[5] = ip[3];
-	FlprogW5100.writeSnDIPR(s, ip.raw_address()); // 239.255.0.1
+	FlprogW5100.writeSnDIPR(s, flprogConvertIp(ip)); // 239.255.0.1
 	FlprogW5100.writeSnDPORT(s, port);
 	FlprogW5100.writeSnDHAR(s, mac);
 	FlprogW5100.execCmdSn(s, Sock_OPEN);

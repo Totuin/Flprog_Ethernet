@@ -19,7 +19,7 @@
  */
 
 #include <Arduino.h>
-#include "FlprogEthernet.h"
+#include "flprogEthernet.h"
 #include "utility/flprogW5100.h"
 
 uint16_t FlprogEthernetServer::server_port[MAX_SOCK_NUM];
@@ -32,7 +32,7 @@ void FlprogEthernetServer::begin()
 		if (FlprogEthernet.socketListen(sockindex)) {
 			server_port[sockindex] = _port;
 		} else {
-			Ethernet.socketDisconnect(sockindex);
+			FlprogEthernet.socketDisconnect(sockindex);
 		}
 	}
 }
@@ -44,7 +44,7 @@ void FlprogEthernetServer::begin()
 	uint8_t chip, maxindex=MAX_SOCK_NUM;
 
 	chip = FlprogW5100.getChip();
-	if (!chip) return Flprog FlprogEthernetClient(MAX_SOCK_NUM);
+	if (!chip) return  FlprogEthernetClient(MAX_SOCK_NUM);
 #if MAX_SOCK_NUM > 4
 	if (chip == 51) maxindex = 4; // W5100 chip never supports more than 4 sockets
 #endif
@@ -69,7 +69,7 @@ void FlprogEthernetServer::begin()
 		}
 	}
 	if (!listening) begin();
-	return Flprog FlprogEthernetClient(sockindex);
+	return  FlprogEthernetClient(sockindex);
 }
 
  FlprogEthernetClient FlprogEthernetServer::accept()
@@ -79,7 +79,7 @@ void FlprogEthernetServer::begin()
 	uint8_t chip, maxindex=MAX_SOCK_NUM;
 
 	chip = FlprogW5100.getChip();
-	if (!chip) return Flprog FlprogEthernetClient(MAX_SOCK_NUM);
+	if (!chip) return  FlprogEthernetClient(MAX_SOCK_NUM);
 #if MAX_SOCK_NUM > 4
 	if (chip == 51) maxindex = 4; // W5100 chip never supports more than 4 sockets
 #endif
@@ -112,7 +112,7 @@ FlprogEthernetServer::operator bool()
 #endif
 	for (uint8_t i=0; i < maxindex; i++) {
 		if (server_port[i] == _port) {
-			if (Ethernet.socketStatus(i) ==  FlprogSnSR::LISTEN) {
+			if (FlprogEthernet.socketStatus(i) ==  FlprogSnSR::LISTEN) {
 				return true; // server is listening for incoming clients
 			}
 		}

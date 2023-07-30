@@ -16,6 +16,7 @@
 
 #include <Arduino.h>
 #include <SPI.h>
+#include <IPAddress.h>
 
 // Safe for all chips
 #define SPI_ETHERNET_SETTINGS SPISettings(14000000, MSBFIRST, SPI_MODE0)
@@ -29,7 +30,7 @@
 
 // Require Ethernet.h, because we need MAX_SOCK_NUM
 #ifndef flporg_ethernet_h_
-#error "FlprogEthernet.h must be included before w5100.h"
+#error "flprogEthernet.h must be included before w5100.h"
 #endif
 
 // Arduino 101's SPI can not run faster than 8 MHz.
@@ -48,7 +49,7 @@
 
 typedef uint8_t SOCKET;
 
-class FlrogSnMR
+class FlprogSnMR
 {
 public:
   static const uint8_t CLOSE = 0x00;
@@ -126,46 +127,50 @@ enum FlprogW5100Linkstatus
   LINK_OFF
 };
 
+#define FLPROG_SN_RX_SIZE 0x001E     // RX Memory Size (W5200 only)
+#define FLPROG_SN_TX_SIZE 0x001F     // RX Memory Size (W5200 only)
+#define FLPROG_GAR 0x0001            // Gateway IP address
+#define FLPROG_SUBR 0x0005           // Subnet mask address
+#define FLPROG_SHAR 0x0009           // Source MAC address
+#define FLPROG_SIPR 0x000F           // Source IP address
+#define FLPROG_RTR 0x0017            // Timeout address
+#define FLPROG_SHAR 0x0009           // Source MAC address
+#define FLPROG_RCR 0x0019            // Retry count
+#define FLPROG_RMSR 0x001A           // Receive memory size (W5100 only)
+#define FLPROG_TMSR 0x001B           // Transmit memory size (W5100 only)
+#define FLPROG_MR 0x0000             // Mode
+#define FLPROG_VERSIONR_W5200 0x001F // Chip Version Register (W5200 only)
+#define FLPROG_VERSIONR_W5500 0x0039 // Chip Version Register (W5500 only)
+#define FLPROG_PSTATUS_W5200 0x0035  // PHY Status
+#define FLPROG_PHYCFGR_W5500 0x002E  // PHY Configuration register, default: 10111xxx
+#define FLPROG_SN_CR 0x0001       // Command
+
 class FlprogW5100Class
 {
 
 public:
   static uint8_t init(void);
-
-  inline void setGatewayIp(const uint8_t *addr) { writeGAR(addr); }
-  inline void getGatewayIp(uint8_t *addr) { readGAR(addr); }
-
-  inline void setSubnetMask(const uint8_t *addr) { writeSUBR(addr); }
-  inline void getSubnetMask(uint8_t *addr) { readSUBR(addr); }
-
-  inline void setMACAddress(const uint8_t *addr) { writeSHAR(addr); }
-  inline void getMACAddress(uint8_t *addr) { readSHAR(addr); }
-
-  inline void setIPAddress(const uint8_t *addr) { writeSIPR(addr); }
-  inline void getIPAddress(uint8_t *addr) { readSIPR(addr); }
-
-  inline void setRetransmissionTime(uint16_t timeout) { writeRTR(timeout); }
-  inline void setRetransmissionCount(uint8_t retry) { writeRCR(retry); }
-
-  static void execCmdSn(SOCKET s, SockCMD _cmd);
+  void setGatewayIp(IPAddress addr);
+  IPAddress getGatewayIp();
+  void setSubnetMask(IPAddress addr);
+  IPAddress getSubnetMask();
+  void setMACAddress(const uint8_t *addr) { write(FLPROG_SHAR, addr, 6); };
+  void getMACAddress(uint8_t *addr) { read(FLPROG_SHAR, addr, 6); };
+  void setIPAddress(IPAddress addr);
+  IPAddress getIPAddress();
+  void setRetransmissionTime(uint16_t timeout);
+  void setRetransmissionCount(uint8_t retry) { write(FLPROG_RCR, retry); };
+  static void execCmdSn(SOCKET s, FlprogSockCMD _cmd);
 
   // W5100 Registers
   // ---------------
   // private:
 public:
   static uint16_t write(uint16_t addr, const uint8_t *buf, uint16_t len);
-  static uint8_t write(uint16_t addr, uint8_t data)
-  {
-    return write(addr, &data, 1);
-  }
+  static uint8_t write(uint16_t addr, uint8_t data) { return write(addr, &data, 1); };
   static uint16_t read(uint16_t addr, uint8_t *buf, uint16_t len);
-  static uint8_t read(uint16_t addr)
-  {
-    uint8_t data;
-    read(addr, &data, 1);
-    return data;
-  }
-
+  static uint8_t read(uint16_t addr);
+/*
 #define __GP_REGISTER8(name, address)           \
   static inline void write##name(uint8_t _data) \
   {                                             \
@@ -225,7 +230,7 @@ public:
 #undef __GP_REGISTER8
 #undef __GP_REGISTER16
 #undef __GP_REGISTER_N
-
+*/
   // W5100 Socket registers
   // ----------------------
 private:
@@ -279,6 +284,7 @@ private:
     readSn(_s, address, buf, 2);                     \
     return (buf[0] << 8) | buf[1];                   \
   }
+  /*
 #define __SOCKET_REGISTER_N(name, address, size)         \
   static uint16_t write##name(SOCKET _s, uint8_t *_buff) \
   {                                                      \
@@ -314,7 +320,7 @@ public:
 #undef __SOCKET_REGISTER8
 #undef __SOCKET_REGISTER16
 #undef __SOCKET_REGISTER_N
-
+*/
 private:
   static uint8_t chip;
   static uint8_t ss_pin;
@@ -503,16 +509,16 @@ extern FlprogW5100Class FlprogW5100;
 
 #endif
 
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef FLPROG_W5100_UTIL_H
+#define FLPROG_W5100_UTIL_H
 
-#define htons(x) ((((x) << 8) & 0xFF00) | (((x) >> 8) & 0xFF))
-#define ntohs(x) htons(x)
+#define flprogW5100Htons(x) ((((x) << 8) & 0xFF00) | (((x) >> 8) & 0xFF))
+#define flprogW5100Ntohs(x) flprogW5100Htons(x)
 
-#define htonl(x) (((x) << 24 & 0xFF000000UL) | \
-                  ((x) << 8 & 0x00FF0000UL) |  \
-                  ((x) >> 8 & 0x0000FF00UL) |  \
-                  ((x) >> 24 & 0x000000FFUL))
-#define ntohl(x) htonl(x)
+#define flprogW5100Htonl(x) (((x) << 24 & 0xFF000000UL) | \
+                             ((x) << 8 & 0x00FF0000UL) |  \
+                             ((x) >> 8 & 0x0000FF00UL) |  \
+                             ((x) >> 24 & 0x000000FFUL))
+#define flporgW5100Ntohl(x) flprogW5100Htonl(x)
 
 #endif
