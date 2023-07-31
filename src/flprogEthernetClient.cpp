@@ -1,38 +1,17 @@
-/* Copyright 2018 Paul Stoffregen
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of this
- * software and associated documentation files (the "Software"), to deal in the Software
- * without restriction, including without limitation the rights to use, copy, modify,
- * merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to the following
- * conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
- * INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
- * PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT
- * HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
- * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- */
+#include "flprogEthernetClient.h"
 
-#include <Arduino.h>
-#include "flprogEthernet.h"
-#include "flprogDns.h"
-#include "utility/flprogW5100.h"
-
-FlprogEthernetClient::FlprogEthernetClient(FlprogEthernetClass *sourse)
+FlprogEthernetClient::FlprogEthernetClient(FlprogW5100Class *hardware, FlprogDNSClient *dns)
 {
-	ethernet = sourse;
+	_hardware = hardware;
+	_dns = dns;
 	sockindex = MAX_SOCK_NUM;
 	_timeout = 1000;
 }
 
-FlprogEthernetClient::FlprogEthernetClient(FlprogEthernetClass *sourse, uint8_t s)
+FlprogEthernetClient::FlprogEthernetClient(FlprogW5100Class *hardware, FlprogDNSClient *dns, uint8_t s)
 {
-	ethernet = sourse;
+	_hardware = hardware;
+	_dns = dns;
 	sockindex = s;
 	_timeout = 1000;
 }
@@ -42,13 +21,13 @@ int FlprogEthernetClient::connect(const char *host, uint16_t port)
 	IPAddress remote_addr;
 	if (sockindex < MAX_SOCK_NUM)
 	{
-		if (ethernet->socketStatus(sockindex) != FLPROG_SN_SR_CLOSED)
+		if (_hardware->socketStatus(sockindex) != FLPROG_SN_SR_CLOSED)
 		{
-			ethernet->socketDisconnect(sockindex); // TODO: should we call stop()?
+			_hardware->socketDisconnect(sockindex); // TODO: should we call stop()?
 		}
 		sockindex = MAX_SOCK_NUM;
 	}
-	if (!ethernet->dnsClient()->getHostByName(host, remote_addr))
+	if (!_dns->getHostByName(host, remote_addr))
 		return 0; // TODO: use _timeout
 	return connect(remote_addr, port);
 }
@@ -57,9 +36,9 @@ int FlprogEthernetClient::connect(IPAddress ip, uint16_t port)
 {
 	if (sockindex < MAX_SOCK_NUM)
 	{
-		if (ethernet->socketStatus(sockindex) != FLPROG_SN_SR_CLOSED)
+		if (_hardware->socketStatus(sockindex) != FLPROG_SN_SR_CLOSED)
 		{
-			ethernet->socketDisconnect(sockindex); // TODO: should we call stop()?
+			_hardware->socketDisconnect(sockindex); // TODO: should we call stop()?
 		}
 		sockindex = MAX_SOCK_NUM;
 	}
@@ -70,14 +49,14 @@ int FlprogEthernetClient::connect(IPAddress ip, uint16_t port)
 	if (ip == IPAddress(0ul) || ip == IPAddress(0xFFFFFFFFul))
 		return 0;
 #endif
-	sockindex = ethernet->socketBegin(FLPROG_SN_MR_TCP, 0);
+	sockindex = _hardware->socketBegin(FLPROG_SN_MR_TCP, 0);
 	if (sockindex >= MAX_SOCK_NUM)
 		return 0;
-	ethernet->socketConnect(sockindex, rawIPAddress(ip), port);
+	_hardware->socketConnect(sockindex, rawIPAddress(ip), port);
 	uint32_t start = millis();
 	while (1)
 	{
-		uint8_t stat = ethernet->socketStatus(sockindex);
+		uint8_t stat = _hardware->socketStatus(sockindex);
 		if (stat == FLPROG_SN_SR_ESTABLISHED)
 			return 1;
 		if (stat == FLPROG_SN_SR_CLOSE_WAIT)
@@ -88,7 +67,7 @@ int FlprogEthernetClient::connect(IPAddress ip, uint16_t port)
 			break;
 		delay(1);
 	}
-	ethernet->socketClose(sockindex);
+	_hardware->socketClose(sockindex);
 	sockindex = MAX_SOCK_NUM;
 	return 0;
 }
@@ -97,7 +76,7 @@ int FlprogEthernetClient::availableForWrite(void)
 {
 	if (sockindex >= MAX_SOCK_NUM)
 		return 0;
-	return ethernet->socketSendAvailable(sockindex);
+	return _hardware->socketSendAvailable(sockindex);
 }
 
 size_t FlprogEthernetClient::write(uint8_t b)
@@ -109,7 +88,7 @@ size_t FlprogEthernetClient::write(const uint8_t *buf, size_t size)
 {
 	if (sockindex >= MAX_SOCK_NUM)
 		return 0;
-	if (ethernet->socketSend(sockindex, buf, size))
+	if (_hardware->socketSend(sockindex, buf, size))
 		return size;
 	setWriteError();
 	return 0;
@@ -119,7 +98,7 @@ int FlprogEthernetClient::available()
 {
 	if (sockindex >= MAX_SOCK_NUM)
 		return 0;
-	return ethernet->socketRecvAvailable(sockindex);
+	return _hardware->socketRecvAvailable(sockindex);
 	// TODO: do the Wiznet chips automatically retransmit TCP ACK
 	// packets if they are lost by the network?  Someday this should
 	// be checked by a man-in-the-middle test which discards certain
@@ -132,7 +111,7 @@ int FlprogEthernetClient::read(uint8_t *buf, size_t size)
 {
 	if (sockindex >= MAX_SOCK_NUM)
 		return 0;
-	return ethernet->socketRecv(sockindex, buf, size);
+	return _hardware->socketRecv(sockindex, buf, size);
 }
 
 int FlprogEthernetClient::peek()
@@ -141,13 +120,13 @@ int FlprogEthernetClient::peek()
 		return -1;
 	if (!available())
 		return -1;
-	return ethernet->socketPeek(sockindex);
+	return _hardware->socketPeek(sockindex);
 }
 
 int FlprogEthernetClient::read()
 {
 	uint8_t b;
-	if (ethernet->socketRecv(sockindex, &b, 1) > 0)
+	if (_hardware->socketRecv(sockindex, &b, 1) > 0)
 		return b;
 	return -1;
 }
@@ -156,10 +135,10 @@ void FlprogEthernetClient::flush()
 {
 	while (sockindex < MAX_SOCK_NUM)
 	{
-		uint8_t stat = ethernet->socketStatus(sockindex);
+		uint8_t stat = _hardware->socketStatus(sockindex);
 		if ((stat != FLPROG_SN_SR_ESTABLISHED) && (stat != FLPROG_SN_SR_CLOSE_WAIT))
 			return;
-		if (ethernet->socketSendAvailable(sockindex) >= ethernet->hardware()->SSIZE)
+		if (_hardware->socketSendAvailable(sockindex) >= _hardware->SSIZE)
 			return;
 	}
 }
@@ -170,13 +149,13 @@ void FlprogEthernetClient::stop()
 		return;
 
 	// attempt to close the connection gracefully (send a FIN to other side)
-	ethernet->socketDisconnect(sockindex);
+	_hardware->socketDisconnect(sockindex);
 	unsigned long start = millis();
 
 	// wait up to a second for the connection to close
 	do
 	{
-		if (ethernet->socketStatus(sockindex) == FLPROG_SN_SR_CLOSED)
+		if (_hardware->socketStatus(sockindex) == FLPROG_SN_SR_CLOSED)
 		{
 			sockindex = MAX_SOCK_NUM;
 			return; // exit the loop
@@ -185,7 +164,7 @@ void FlprogEthernetClient::stop()
 	} while (millis() - start < _timeout);
 
 	// if it hasn't closed, close it forcefully
-	ethernet->socketClose(sockindex);
+	_hardware->socketClose(sockindex);
 	sockindex = MAX_SOCK_NUM;
 }
 
@@ -193,7 +172,7 @@ uint8_t FlprogEthernetClient::connected()
 {
 	if (sockindex >= MAX_SOCK_NUM)
 		return 0;
-	uint8_t s = ethernet->socketStatus(sockindex);
+	uint8_t s = _hardware->socketStatus(sockindex);
 	return !((s == FLPROG_SN_SR_LISTEN) || (s == FLPROG_SN_SR_CLOSED) || (s == FLPROG_SN_SR_FIN_WAIT) ||
 			 ((s == FLPROG_SN_SR_CLOSE_WAIT) && !available()));
 }
@@ -202,7 +181,7 @@ uint8_t FlprogEthernetClient::status()
 {
 	if (sockindex >= MAX_SOCK_NUM)
 		return FLPROG_SN_SR_CLOSED;
-	return ethernet->socketStatus(sockindex);
+	return _hardware->socketStatus(sockindex);
 }
 
 // the next function allows us to use the client returned by
@@ -226,7 +205,7 @@ uint16_t FlprogEthernetClient::localPort()
 		return 0;
 	uint16_t port;
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	port = ethernet->hardware()->readSn16(sockindex, FLPROG_SN_PORT);
+	port = _hardware->readSn16(sockindex, FLPROG_SN_PORT);
 	SPI.endTransaction();
 	return port;
 }
@@ -239,7 +218,7 @@ IPAddress FlprogEthernetClient::remoteIP()
 		return IPAddress((uint32_t)0);
 	uint8_t remoteIParray[4];
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	ethernet->hardware()->readSn(sockindex, FLPROG_SN_DIPR, remoteIParray, 4);
+	_hardware->readSn(sockindex, FLPROG_SN_DIPR, remoteIParray, 4);
 	SPI.endTransaction();
 	return IPAddress(remoteIParray);
 }
@@ -252,7 +231,7 @@ uint16_t FlprogEthernetClient::remotePort()
 		return 0;
 	uint16_t port;
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	port = ethernet->hardware()->readSn16(sockindex, FLPROG_SN_DPORT);
+	port = _hardware->readSn16(sockindex, FLPROG_SN_DPORT);
 	SPI.endTransaction();
 	return port;
 }

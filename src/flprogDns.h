@@ -1,17 +1,13 @@
-// Arduino DNS client for WizNet5100-based Ethernet shield
-// (c) Copyright 2009-2010 MCQN Ltd.
-// Released under Apache License, version 2.0
 
-#ifndef FlprogDNSClient_h
-#define FlprogDNSClient_h
+#pragma once
+#include <Arduino.h>
+#include "flprogEthernetUdp.h"
 
-#include "flprogEthernet.h"
-class FlprogEthernetClass;
 
 class FlprogDNSClient
 {
 public:
-	FlprogDNSClient(FlprogEthernetClass *sourse);
+	void setUDP(FlprogEthernetUDP *udp);
 	void begin(const IPAddress &aDNSServer);
 
 	/** Convert a numeric IP address string into a four-byte IP address.
@@ -33,10 +29,9 @@ public:
 protected:
 	uint16_t BuildRequest(const char *aName);
 	uint16_t ProcessResponse(uint16_t aTimeout, IPAddress &aAddress);
-	FlprogEthernetClass *ethernet;
+	FlprogEthernetUDP *_udp;
 
 	IPAddress iDNSServer;
 	uint16_t iRequestId;
 };
 
-#endif

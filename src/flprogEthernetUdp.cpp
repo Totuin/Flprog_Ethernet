@@ -1,49 +1,20 @@
-/*
- *  Udp.cpp: Library to send/receive UDP packets with the Arduino ethernet shield.
- *  This version only offers minimal wrapping of socket.cpp
- *  Drop Udp.h/.cpp into the Ethernet library directory at hardware/libraries/Ethernet/
- *
- * MIT License:
- * Copyright (c) 2008 Bjoern Hartmann
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- * THE SOFTWARE.
- *
- * bjoern@cs.stanford.edu 12/30/2008
- */
 
-#include <Arduino.h>
-#include "flprogEthernet.h"
-#include "flprogDns.h"
-#include "utility/flprogW5100.h"
+#include "flprogEthernetUdp.h"
+#include "flprogW5100.h"
 
 /* Start EthernetUDP socket, listening at local port PORT */
 
-FlprogEthernetUDP::FlprogEthernetUDP(FlprogEthernetClass *sourse)
+void FlprogEthernetUDP::setHatdware(FlprogW5100Class *hardware)
 {
 	sockindex = MAX_SOCK_NUM;
-	ethernet = sourse;
+	_hardware = hardware;
 }
 
 uint8_t FlprogEthernetUDP::begin(uint16_t port)
 {
 	if (sockindex < MAX_SOCK_NUM)
-		ethernet->socketClose(sockindex);
-	sockindex = ethernet->socketBegin(FLPROG_SN_MR_UDP, port);
+		_hardware->socketClose(sockindex);
+	sockindex = _hardware->socketBegin(FLPROG_SN_MR_UDP, port);
 	if (sockindex >= MAX_SOCK_NUM)
 		return 0;
 	_port = port;
@@ -63,32 +34,37 @@ void FlprogEthernetUDP::stop()
 {
 	if (sockindex < MAX_SOCK_NUM)
 	{
-		ethernet->socketClose(sockindex);
+		_hardware->socketClose(sockindex);
 		sockindex = MAX_SOCK_NUM;
 	}
 }
 
 int FlprogEthernetUDP::beginPacket(const char *host, uint16_t port)
 {
-	// Look up the host first
+	// Внимание!!!! Исправить.
+
+	/*
+	Look up the host first
 	int ret = 0;
 	IPAddress remote_addr;
-	ret = ethernet->dnsClient()->getHostByName(host, remote_addr);
+	ret = _hardware->dnsClient()->getHostByName(host, remote_addr);
 	if (ret != 1)
 		return ret;
 	return beginPacket(remote_addr, port);
+	*/
+	return 0;
 }
 
 int FlprogEthernetUDP::beginPacket(IPAddress ip, uint16_t port)
 {
 	_offset = 0;
 	// Serial.printf("UDP beginPacket\n");
-	return ethernet->socketStartUDP(sockindex, rawIPAddress(ip), port);
+	return _hardware->socketStartUDP(sockindex, rawIPAddress(ip), port);
 }
 
 int FlprogEthernetUDP::endPacket()
 {
-	return ethernet->socketSendUDP(sockindex);
+	return _hardware->socketSendUDP(sockindex);
 }
 
 size_t FlprogEthernetUDP::write(uint8_t byte)
@@ -99,7 +75,7 @@ size_t FlprogEthernetUDP::write(uint8_t byte)
 size_t FlprogEthernetUDP::write(const uint8_t *buffer, size_t size)
 {
 	// Serial.printf("UDP write %d\n", size);
-	uint16_t bytes_written = ethernet->socketBufferData(sockindex, _offset, buffer, size);
+	uint16_t bytes_written = _hardware->socketBufferData(sockindex, _offset, buffer, size);
 	_offset += bytes_written;
 	return bytes_written;
 }
@@ -115,13 +91,13 @@ int FlprogEthernetUDP::parsePacket()
 		read((uint8_t *)NULL, _remaining);
 	}
 
-	if (ethernet->socketRecvAvailable(sockindex) > 0)
+	if (_hardware->socketRecvAvailable(sockindex) > 0)
 	{
 		// HACK - hand-parse the UDP packet using TCP recv method
 		uint8_t tmpBuf[8];
 		int ret = 0;
 		// read 8 header bytes and get IP and port from it
-		ret = ethernet->socketRecv(sockindex, tmpBuf, 8);
+		ret = _hardware->socketRecv(sockindex, tmpBuf, 8);
 		if (ret > 0)
 		{
 			_remoteIP = tmpBuf;
@@ -143,7 +119,7 @@ int FlprogEthernetUDP::read()
 {
 	uint8_t byte;
 
-	if ((_remaining > 0) && (ethernet->socketRecv(sockindex, &byte, 1) > 0))
+	if ((_remaining > 0) && (_hardware->socketRecv(sockindex, &byte, 1) > 0))
 	{
 		// We read things without any problems
 		_remaining--;
@@ -162,13 +138,13 @@ int FlprogEthernetUDP::read(unsigned char *buffer, size_t len)
 		if (_remaining <= len)
 		{
 			// data should fit in the buffer
-			got = ethernet->socketRecv(sockindex, buffer, _remaining);
+			got = _hardware->socketRecv(sockindex, buffer, _remaining);
 		}
 		else
 		{
 			// too much data for the buffer,
 			// grab as much as will fit
-			got = ethernet->socketRecv(sockindex, buffer, len);
+			got = _hardware->socketRecv(sockindex, buffer, len);
 		}
 		if (got > 0)
 		{
@@ -188,7 +164,7 @@ int FlprogEthernetUDP::peek()
 	// may get the UDP header
 	if (sockindex >= MAX_SOCK_NUM || _remaining == 0)
 		return -1;
-	return ethernet->socketPeek(sockindex);
+	return _hardware->socketPeek(sockindex);
 }
 
 void FlprogEthernetUDP::flush()
@@ -200,8 +176,8 @@ void FlprogEthernetUDP::flush()
 uint8_t FlprogEthernetUDP::beginMulticast(IPAddress ip, uint16_t port)
 {
 	if (sockindex < MAX_SOCK_NUM)
-		ethernet->socketClose(sockindex);
-	sockindex = ethernet->socketBeginMulticast((FLPROG_SN_MR_UDP | FLPROG_SN_MR_MULTI), ip, port);
+		_hardware->socketClose(sockindex);
+	sockindex = _hardware->socketBeginMulticast((FLPROG_SN_MR_UDP | FLPROG_SN_MR_MULTI), ip, port);
 	if (sockindex >= MAX_SOCK_NUM)
 		return 0;
 	_port = port;

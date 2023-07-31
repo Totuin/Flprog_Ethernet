@@ -1,10 +1,15 @@
 
-#ifndef FLPROG_W5100_H_INCLUDED
-#define FLPROG_W5100_H_INCLUDED
+#pragma once
 
 #include <Arduino.h>
 #include <SPI.h>
 #include <IPAddress.h>
+
+#if ARDUINO >= 156 && !defined(ARDUINO_ARCH_PIC32)
+extern void yield(void);
+#else
+#define yield()
+#endif
 
 // Safe for all chips
 #define SPI_ETHERNET_SETTINGS SPISettings(14000000, MSBFIRST, SPI_MODE0)
@@ -15,11 +20,6 @@
 //  or with very low packet latency.  With ordinary internet latency,
 //  the TCP window size & packet loss determine your overall speed.
 // #define SPI_ETHERNET_SETTINGS SPISettings(30000000, MSBFIRST, SPI_MODE0)
-
-// Require Ethernet.h, because we need MAX_SOCK_NUM
-#ifndef flporg_ethernet_h_
-#error "flprogEthernet.h must be included before w5100.h"
-#endif
 
 // Arduino 101's SPI can not run faster than 8 MHz.
 #if defined(ARDUINO_ARCH_ARC32)
@@ -33,6 +33,14 @@
 #if defined(__SAMD21G18A__)
 #undef SPI_ETHERNET_SETTINGS
 #define SPI_ETHERNET_SETTINGS SPISettings(8000000, MSBFIRST, SPI_MODE0)
+#endif
+
+#ifndef MAX_SOCK_NUM
+#if defined(RAMEND) && defined(RAMSTART) && ((RAMEND - RAMSTART) <= 2048)
+#define MAX_SOCK_NUM 4
+#else
+#define MAX_SOCK_NUM 8
+#endif
 #endif
 
 typedef uint8_t SOCKET;
@@ -93,39 +101,20 @@ typedef uint8_t SOCKET;
 #define FLPROG_SN_DIPR 0x000C    // Destination IP Addr
 #define FLPROG_SN_DPORT 0x0010   // Destination Port
 #define FLPROG_SN_DHAR 0x0006    // Destination Hardw Addr
-/*
-#if defined(PIN_SPI_SS_ETHERNET_LIB)
-#define SS_PIN_DEFAULT PIN_SPI_SS_ETHERNET_LIB
 
-// MKR boards default to pin 5 for MKR ETH
-// Pins 8-10 are MOSI/SCK/MISO on MRK, so don't use pin 10
-#elif defined(USE_ARDUINO_MKR_PIN_LAYOUT) || defined(ARDUINO_SAMD_MKRZERO) || defined(ARDUINO_SAMD_MKR1000) || defined(ARDUINO_SAMD_MKRFox1200) || defined(ARDUINO_SAMD_MKRGSM1400) || defined(ARDUINO_SAMD_MKRWAN1300)
-#define SS_PIN_DEFAULT 5
-
-// For boards using AVR, assume shields with SS on pin 10
-// will be used.  This allows for Arduino Mega (where
-// SS is pin 53) and Arduino Leonardo (where SS is pin 17)
-// to work by default with Arduino Ethernet Shield R2 & R3.
-#elif defined(__AVR__)
 #define SS_PIN_DEFAULT 10
 
-// If variant.h or other headers define these names
-// use them if none of the other cases match
-#elif defined(PIN_SPI_SS)
-#define SS_PIN_DEFAULT PIN_SPI_SS
-#elif defined(CORE_SS0_PIN)
-#define SS_PIN_DEFAULT CORE_SS0_PIN
-
-// As a final fallback, use pin 10
-#else
-*/
-#define SS_PIN_DEFAULT 10
-// #endif
+typedef struct
+{
+  uint16_t RX_RSR; // Number of bytes received
+  uint16_t RX_RD;  // Address to read
+  uint16_t TX_FSR; // Free space ready for transmit
+  uint8_t RX_inc;  // how much have we advanced RX_RD
+} socketstate_t;
 
 class FlprogW5100Class
 {
 public:
-  FlprogW5100Class(FlprogEthernetClass *sourse){ethernet=sourse;};
   uint8_t init(void);
   uint8_t getLinkStatus();
   void setGatewayIp(IPAddress addr);
@@ -137,7 +126,7 @@ public:
   void setIPAddress(IPAddress addr);
   IPAddress getIPAddress();
   void setRetransmissionTime(uint16_t timeout);
-  void setRetransmissionCount(uint8_t retry) { write(FLPROG_RCR, retry); };
+  void setRetransmissionCount(uint8_t retry);
   void execCmdSn(SOCKET s, uint8_t _cmd);
   uint8_t getChip(void) { return chip; }
 
@@ -172,10 +161,47 @@ public:
   bool hasOffsetAddressMapping(void);
   void setSS(uint8_t pin) { _pinSS = pin; };
 
+  // утилиты
+  void setNetSettings(uint8_t *mac, IPAddress ip);
+  void setNetSettings(IPAddress ip, IPAddress gateway, IPAddress subnet);
+  void setNetSettings(uint8_t *mac, IPAddress ip, IPAddress gateway, IPAddress subnet);
+  void setOnlyMACAddress(const uint8_t *mac_address);
+  void setOnlyLocalIP(const IPAddress local_ip);
+  void setOnlySubnetMask(const IPAddress subnet);
+  void setOnlyGatewayIP(const IPAddress gateway);
+
+  IPAddress localIP();
+  IPAddress subnetMask();
+  IPAddress gatewayIP();
+  void MACAddress(uint8_t *mac_address);
+
+  // Сокет
+  void socketPortRand(uint16_t n);
+  uint8_t socketBegin(uint8_t protocol, uint16_t port);
+  uint8_t socketBeginMulticast(uint8_t protocol, IPAddress ip, uint16_t port);
+  uint8_t socketStatus(uint8_t s);
+  void socketClose(uint8_t s);
+  uint8_t socketListen(uint8_t s);
+  void socketConnect(uint8_t s, uint8_t *addr, uint16_t port);
+  void socketDisconnect(uint8_t s);
+  uint16_t getSnRX_RSR(uint8_t s);
+  void read_data(uint8_t s, uint16_t src, uint8_t *dst, uint16_t len);
+  int socketRecv(uint8_t s, uint8_t *buf, int16_t len);
+  uint16_t socketRecvAvailable(uint8_t s);
+  uint8_t socketPeek(uint8_t s);
+  uint16_t getSnTX_FSR(uint8_t s);
+  void write_data(uint8_t s, uint16_t data_offset, const uint8_t *data, uint16_t len);
+  uint16_t socketSend(uint8_t s, const uint8_t *buf, uint16_t len);
+  uint16_t socketSendAvailable(uint8_t s);
+  uint16_t socketBufferData(uint8_t s, uint16_t offset, const uint8_t *buf, uint16_t len);
+  bool socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port);
+  bool socketSendUDP(uint8_t s);
+
 private:
   uint8_t chip = 0;
-  FlprogEthernetClass *ethernet;
+  uint16_t local_port = 49152; // 49152 to 65535 TODO: randomize this when not using DHCP, but how?
   bool initialized = false;
+  socketstate_t state[MAX_SOCK_NUM];
   uint8_t softReset(void);
   uint8_t isW5100(void);
   uint8_t isW5200(void);
@@ -183,94 +209,9 @@ private:
   void initSS() { pinMode(_pinSS, OUTPUT); };
   void setSS() { digitalWrite(_pinSS, LOW); };
   void resetSS() { digitalWrite(_pinSS, HIGH); };
-
-  /*
-  #if defined(__AVR__)
-    volatile uint8_t *ss_pin_reg;
-    uint8_t ss_pin_mask;
-    void initSS()
-    {
-      ss_pin_reg = portOutputRegister(digitalPinToPort(_pinSS));
-      ss_pin_mask = digitalPinToBitMask(_pinSS);
-      pinMode(_pinSS, OUTPUT);
-    }
-    void setSS() { *(ss_pin_reg) &= ~ss_pin_mask; };
-    void resetSS() { *(ss_pin_reg) |= ss_pin_mask; };
-  #elif defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK66FX1M0__) || defined(__MK64FX512__)
-    uint8_t *ss_pin_reg;
-    void initSS()
-    {
-      ss_pin_reg = portOutputRegister(_pinSS);
-      pinMode(_pinSS, OUTPUT);
-    }
-    void setSS() { *(ss_pin_reg + 256) = 1; };
-    void resetSS() { *(ss_pin_reg + 128) = 1; };
-  #elif defined(__MKL26Z64__)
-    uint8_t *ss_pin_reg;
-    uint8_t ss_pin_mask;
-    void initSS()
-    {
-      ss_pin_reg = portOutputRegister(digitalPinToPort(_pinSS));
-      ss_pin_mask = digitalPinToBitMask(_pinSS);
-      pinMode(_pinSS, OUTPUT);
-    }
-    void setSS() { *(ss_pin_reg + 8) = ss_pin_mask; };
-    void resetSS() { *(ss_pin_reg + 4) = ss_pin_mask; };
-  #elif defined(__SAM3X8E__) || defined(__SAM3A8C__) || defined(__SAM3A4C__)
-    uint32_t *ss_pin_reg;
-    uint32_t ss_pin_mask;
-    void initSS()
-    {
-      ss_pin_reg = &(digitalPinToPort(_pinSS)->PIO_PER);
-      ss_pin_mask = digitalPinToBitMask(_pinSS);
-      pinMode(_pinSS, OUTPUT);
-    }
-    void setSS() { *(ss_pin_reg + 13) = ss_pin_mask; };
-    void resetSS() { *(ss_pin_reg + 12) = ss_pin_mask; };
-  #elif defined(__PIC32MX__)
-    uint32_t *ss_pin_reg;
-    uint32_t ss_pin_mask;
-    void initSS()
-    {
-      ss_pin_reg = portModeRegister(digitalPinToPort(_pinSS));
-      ss_pin_mask = digitalPinToBitMask(_pinSS);
-      pinMode(_pinSS, OUTPUT);
-    }
-    void setSS() { *(ss_pin_reg + 8 + 1) = ss_pin_mask; };
-    void resetSS() { *(ss_pin_reg + 8 + 2) = ss_pin_mask; };
-
-  #elif defined(ARDUINO_ARCH_ESP8266)
-    uint32_t *ss_pin_reg;
-    uint32_t ss_pin_mask;
-    void initSS()
-    {
-      ss_pin_reg = (volatile uint32_t *)GPO;
-      ss_pin_mask = 1 << _pinSS;
-      pinMode(_pinSS, OUTPUT);
-    }
-    void setSS() { GPOC = ss_pin_mask; };
-    void resetSS() { GPOS = ss_pin_mask; };
-
-  #elif defined(__SAMD21G18A__)
-    uint32_t *ss_pin_reg;
-    uint32_t ss_pin_mask;
-    void initSS()
-    {
-      ss_pin_reg = portModeRegister(digitalPinToPort(_pinSS));
-      ss_pin_mask = digitalPinToBitMask(_pinSS);
-      pinMode(_pinSS, OUTPUT);
-    }
-    void setSS() { *(ss_pin_reg + 5) = ss_pin_mask; };
-    void resetSS() { *(ss_pin_reg + 6) = ss_pin_mask; };
-  #else
-  */
-
-  // #endif
+  void privateMaceSocet(uint8_t soc, uint8_t protocol, uint16_t port);
+  void privateMaceSocetMulticast(uint8_t soc, uint8_t protocol, IPAddress ip, uint16_t port);
 };
-
-// extern FlprogW5100Class FlprogW5100;
-
-#endif
 
 #ifndef FLPROG_W5100_UTIL_H
 #define FLPROG_W5100_UTIL_H
@@ -283,5 +224,4 @@ private:
                              ((x) >> 8 & 0x0000FF00UL) |  \
                              ((x) >> 24 & 0x000000FFUL))
 #define flporgW5100Ntohl(x) flprogW5100Htonl(x)
-
 #endif
