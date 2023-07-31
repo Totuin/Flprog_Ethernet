@@ -49,62 +49,46 @@
 #include <Arduino.h>
 #include "Client.h"
 #include "Server.h"
+#include "flprogDns.h"
 #include "Udp.h"
+#include "utility/flprogW5100.h"
 
-enum FlprogEthernetLinkStatus
-{
-	Unknown,
-	LinkON,
-	LinkOFF
-};
+#define FLPROG_ETHERNET_LINK_UNKNOWN 0
+#define FLPROG_ETHERNET_LINK_ON 1
+#define FLPROG_ETHERNET_LINK_OFF 2
 
-enum FlprogEthernetHardwareStatus
-{
-	EthernetNoHardware,
-	EthernetW5100,
-	EthernetW5200,
-	EthernetW5500
-};
-
-
+#define FLPROG_ETHERNET_NO_HARDWARE 0
+#define FLPROG_ETHERNET_W5100 1
+#define FLPROG_ETHERNET_W5200 2
+#define FLPROG_ETHERNET_W5500 3
 
 class FlprogEthernetUDP;
 class FlprogEthernetClient;
 class FlprogEthernetServer;
 class FlprogDhcpClass;
-
-
-
-uint8_t *flprogConvertIp(IPAddress adress);
-
+class FlprogDNSClient;
+class FlprogW5100Class;
 
 class FlprogEthernetClass
 {
-private:
-	static IPAddress _dnsServerAddress;
-	static FlprogDhcpClass *_dhcp;
-
 public:
-	// Initialise the Ethernet shield to use the provided MAC address and
-	// gain the rest of the configuration through DHCP.
-	// Returns 0 if the DHCP configuration failed, and 1 if it succeeded
-	static int begin(uint8_t *mac, unsigned long timeout = 60000, unsigned long responseTimeout = 4000);
-	static int maintain();
-	static FlprogEthernetLinkStatus linkStatus();
-	static FlprogEthernetHardwareStatus hardwareStatus();
+	uint8_t begin(uint8_t *mac, unsigned long timeout = 60000, unsigned long responseTimeout = 4000);
+	int maintain();
+	uint8_t linkStatus();
+	uint8_t hardwareStatus();
 
 	// Manaul configuration
-	static void begin(uint8_t *mac, IPAddress ip);
-	static void begin(uint8_t *mac, IPAddress ip, IPAddress dns);
-	static void begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway);
-	static void begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet);
-	static void init(uint8_t sspin = 10);
+	uint8_t begin(uint8_t *mac, IPAddress ip);
+	uint8_t begin(uint8_t *mac, IPAddress ip, IPAddress dns);
+	uint8_t begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway);
+	uint8_t begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet);
+	// void init(uint8_t sspin = 10);
 
-	static void MACAddress(uint8_t *mac_address);
-	static IPAddress localIP();
-	static IPAddress subnetMask();
-	static IPAddress gatewayIP();
-	static IPAddress dnsServerIP() { return _dnsServerAddress; }
+	void MACAddress(uint8_t *mac_address);
+	IPAddress localIP();
+	IPAddress subnetMask();
+	IPAddress gatewayIP();
+	IPAddress dnsServerIP() { return _dnsServerAddress; }
 
 	void setMACAddress(const uint8_t *mac_address);
 	void setLocalIP(const IPAddress local_ip);
@@ -113,48 +97,62 @@ public:
 	void setDnsServerIP(const IPAddress dns_server) { _dnsServerAddress = dns_server; }
 	void setRetransmissionTimeout(uint16_t milliseconds);
 	void setRetransmissionCount(uint8_t num);
+	FlprogDNSClient *dnsClient() { return &_dns; };
+	FlprogEthernetUDP *udpClient() { return &_udp; };
+	FlprogW5100Class *hardware() { return &_hardware; };
 
 	friend class FlprogEthernetClient;
 	friend class FlprogEthernetServer;
 	friend class FlprogEthernetUDP;
 
 private:
+	IPAddress _dnsServerAddress;
+	FlprogDhcpClass _dhcp;
+	FlprogDNSClient _dns;
+	FlprogEthernetUDP _udp;
+	FlprogW5100Class _hardware;
+
+	uint16_t getSnTX_FSR(uint8_t s);
+	uint16_t getSnRX_RSR(uint8_t s);
+	void write_data(uint8_t s, uint16_t offset, const uint8_t *data, uint16_t len);
+	void read_data(uint8_t s, uint16_t src, uint8_t *dst, uint16_t len);
+
 	// Opens a socket(TCP or UDP or IP_RAW mode)
-	static uint8_t socketBegin(uint8_t protocol, uint16_t port);
-	static uint8_t socketBeginMulticast(uint8_t protocol, IPAddress ip, uint16_t port);
-	static uint8_t socketStatus(uint8_t s);
+	uint8_t socketBegin(uint8_t protocol, uint16_t port);
+	uint8_t socketBeginMulticast(uint8_t protocol, IPAddress ip, uint16_t port);
+	uint8_t socketStatus(uint8_t s);
 	// Close socket
-	static void socketClose(uint8_t s);
+	void socketClose(uint8_t s);
 	// Establish TCP connection (Active connection)
-	static void socketConnect(uint8_t s, uint8_t *addr, uint16_t port);
+	void socketConnect(uint8_t s, uint8_t *addr, uint16_t port);
 	// disconnect the connection
-	static void socketDisconnect(uint8_t s);
+	void socketDisconnect(uint8_t s);
 	// Establish TCP connection (Passive connection)
-	static uint8_t socketListen(uint8_t s);
+	uint8_t socketListen(uint8_t s);
 	// Send data (TCP)
-	static uint16_t socketSend(uint8_t s, const uint8_t *buf, uint16_t len);
-	static uint16_t socketSendAvailable(uint8_t s);
+	uint16_t socketSend(uint8_t s, const uint8_t *buf, uint16_t len);
+	uint16_t socketSendAvailable(uint8_t s);
 	// Receive data (TCP)
-	static int socketRecv(uint8_t s, uint8_t *buf, int16_t len);
-	static uint16_t socketRecvAvailable(uint8_t s);
-	static uint8_t socketPeek(uint8_t s);
+	int socketRecv(uint8_t s, uint8_t *buf, int16_t len);
+	uint16_t socketRecvAvailable(uint8_t s);
+	uint8_t socketPeek(uint8_t s);
 	// sets up a UDP datagram, the data for which will be provided by one
 	// or more calls to bufferData and then finally sent with sendUDP.
 	// return true if the datagram was successfully set up, or false if there was an error
-	static bool socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port);
+	bool socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port);
 	// copy up to len bytes of data from buf into a UDP datagram to be
 	// sent later by sendUDP.  Allows datagrams to be built up from a series of bufferData calls.
 	// return Number of bytes successfully buffered
-	static uint16_t socketBufferData(uint8_t s, uint16_t offset, const uint8_t *buf, uint16_t len);
+	uint16_t socketBufferData(uint8_t s, uint16_t offset, const uint8_t *buf, uint16_t len);
 	// Send a UDP datagram built up from a sequence of startUDP followed by one or more
 	// calls to bufferData.
 	// return true if the datagram was successfully sent, or false if there was an error
-	static bool socketSendUDP(uint8_t s);
+	bool socketSendUDP(uint8_t s);
 	// Initialize the "random" source port number
-	static void socketPortRand(uint16_t n);
+	void socketPortRand(uint16_t n);
 };
 
-extern FlprogEthernetClass FlprogEthernet;
+// extern FlprogEthernetClass FlprogEthernet;
 
 #define FLPROG_UDP_TX_PACKET_MAX_SIZE 24
 
@@ -165,13 +163,14 @@ private:
 	IPAddress _remoteIP;  // remote IP address for the incoming packet whilst it's being processed
 	uint16_t _remotePort; // remote port for the incoming packet whilst it's being processed
 	uint16_t _offset;	  // offset into the packet being sent
+	FlprogEthernetClass *ethernet;
 
 protected:
 	uint8_t sockindex;
 	uint16_t _remaining; // remaining bytes of incoming packet yet to be processed
 
 public:
-	FlprogEthernetUDP() : sockindex(MAX_SOCK_NUM) {}	 // Constructor
+	FlprogEthernetUDP(FlprogEthernetClass *sourse);
 	virtual uint8_t begin(uint16_t);					 // initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use
 	virtual uint8_t beginMulticast(IPAddress, uint16_t); // initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use
 	virtual void stop();								 // Finish with the UDP socket
@@ -221,8 +220,10 @@ public:
 class FlprogEthernetClient : public Client
 {
 public:
-	FlprogEthernetClient() : sockindex(MAX_SOCK_NUM), _timeout(1000) {}
-	FlprogEthernetClient(uint8_t s) : sockindex(s), _timeout(1000) {}
+	FlprogEthernetClient(FlprogEthernetClass *sourse);
+	FlprogEthernetClient(FlprogEthernetClass *sourse, uint8_t s);
+
+	FlprogEthernetClass *ethernet;
 
 	uint8_t status();
 	virtual int connect(IPAddress ip, uint16_t port);
@@ -261,9 +262,10 @@ class FlprogEthernetServer : public Server
 {
 private:
 	uint16_t _port;
+	FlprogEthernetClass *ethernet;
 
 public:
-	FlprogEthernetServer(uint16_t port) : _port(port) {}
+	FlprogEthernetServer(FlprogEthernetClass *sourse, uint16_t port);
 	FlprogEthernetClient available();
 	FlprogEthernetClient accept();
 	virtual void begin();
@@ -283,6 +285,7 @@ private:
 	uint32_t _dhcpInitialTransactionId;
 	uint32_t _dhcpTransactionId;
 	uint8_t _dhcpMacAddr[6];
+	FlprogEthernetClass *ethernet;
 #ifdef __arm__
 	uint8_t _dhcpLocalIp[4] __attribute__((aligned(4)));
 	uint8_t _dhcpSubnetMask[4] __attribute__((aligned(4)));
@@ -315,6 +318,7 @@ private:
 	uint8_t parseDHCPResponse(unsigned long responseTimeout, uint32_t &transactionId);
 
 public:
+	FlprogDhcpClass(FlprogEthernetClass *sourse);
 	IPAddress getLocalIp();
 	IPAddress getSubnetMask();
 	IPAddress getGatewayIp();

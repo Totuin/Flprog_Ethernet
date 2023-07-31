@@ -1,24 +1,29 @@
 /*
   Web Server
 
- A simple web server that shows the value of the analog input pins.
- using an Arduino Wiznet Ethernet shield.
+  A simple web server that shows the value of the analog input pins.
+  using an Arduino Wiznet Ethernet shield.
 
- Circuit:
- * Ethernet shield attached to pins 10, 11, 12, 13
- * Analog inputs attached to pins A0 through A5 (optional)
+  Circuit:
+   Ethernet shield attached to pins 10, 11, 12, 13
+   Analog inputs attached to pins A0 through A5 (optional)
 
- created 18 Dec 2009
- by David A. Mellis
- modified 9 Apr 2012
- by Tom Igoe
- modified 02 Sept 2015
- by Arturo Guadalupi
- 
- */
+  created 18 Dec 2009
+  by David A. Mellis
+  modified 9 Apr 2012
+  by Tom Igoe
+  modified 02 Sept 2015
+  by Arturo Guadalupi
+
+*/
+
 
 #include <SPI.h>
 #include <flprogEthernet.h>
+
+
+FlprogEthernetClass ethernet;
+
 
 // Enter a MAC address and IP address for your controller below.
 // The IP address will be dependent on your local network:
@@ -30,7 +35,7 @@ IPAddress ip(192, 168, 199, 177);
 // Initialize the Ethernet server library
 // with the IP address and port you want to use
 // (port 80 is default for HTTP):
-FlprogEthernetServer server(80);
+FlprogEthernetServer server(&ethernet, 80);
 
 void setup() {
   // You can use Ethernet.init(pin) to configure the CS pin
@@ -49,23 +54,36 @@ void setup() {
   Serial.println("Ethernet WebServer Example");
 
   // start the Ethernet connection and the server:
-  FlprogEthernet.begin(mac, ip);
+
+  if ( ethernet.begin(mac, ip)) {
+    Serial.println("Correct Start Hardware");
+  } ;
 
   // Check for Ethernet hardware present
-  if (FlprogEthernet.hardwareStatus() == EthernetNoHardware) {
+  uint8_t hardware = ethernet.hardwareStatus();
+  if (hardware == FLPROG_ETHERNET_NO_HARDWARE) {
     Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
     while (true) {
       delay(1); // do nothing, no point running without Ethernet hardware
     }
+  } else {
+    Serial.print("Hardware - ");
+    Serial.println(hardware);
   }
-  if (FlprogEthernet.linkStatus() == LinkOFF) {
+
+  uint8_t netLinkStatus = ethernet.linkStatus();
+
+  if ( netLinkStatus == FLPROG_ETHERNET_LINK_OFF) {
     Serial.println("Ethernet cable is not connected.");
+  } else {
+    Serial.print("LinkStatus - ");
+    Serial.println(netLinkStatus);
   }
 
   // start the server
   server.begin();
   Serial.print("server is at ");
-  Serial.println(FlprogEthernet.localIP());
+  Serial.println(ethernet.localIP());
 }
 
 
@@ -116,8 +134,8 @@ void loop() {
     // give the web browser time to receive the data
     delay(1);
     // close the connection:
-   // client.stop();
+    // client.stop();
     Serial.println("client disconnected");
   }
+  delay(500);
 }
-

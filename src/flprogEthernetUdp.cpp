@@ -32,11 +32,20 @@
 #include "utility/flprogW5100.h"
 
 /* Start EthernetUDP socket, listening at local port PORT */
-uint8_t  FlprogEthernetUDP::begin(uint16_t port)
+
+FlprogEthernetUDP::FlprogEthernetUDP(FlprogEthernetClass *sourse)
 {
-	if (sockindex < MAX_SOCK_NUM)  FlprogEthernet.socketClose(sockindex);
-	sockindex =  FlprogEthernet.socketBegin( FlprogSnMR::UDP, port);
-	if (sockindex >= MAX_SOCK_NUM) return 0;
+	sockindex = MAX_SOCK_NUM;
+	ethernet = sourse;
+}
+
+uint8_t FlprogEthernetUDP::begin(uint16_t port)
+{
+	if (sockindex < MAX_SOCK_NUM)
+		ethernet->socketClose(sockindex);
+	sockindex = ethernet->socketBegin(FLPROG_SN_MR_UDP, port);
+	if (sockindex >= MAX_SOCK_NUM)
+		return 0;
 	_port = port;
 	_remaining = 0;
 	return 1;
@@ -44,75 +53,77 @@ uint8_t  FlprogEthernetUDP::begin(uint16_t port)
 
 /* return number of bytes available in the current packet,
    will return zero if parsePacket hasn't been called yet */
-int  FlprogEthernetUDP::available()
+int FlprogEthernetUDP::available()
 {
 	return _remaining;
 }
 
 /* Release any resources being used by this EthernetUDP instance */
-void  FlprogEthernetUDP::stop()
+void FlprogEthernetUDP::stop()
 {
-	if (sockindex < MAX_SOCK_NUM) {
-		 FlprogEthernet.socketClose(sockindex);
+	if (sockindex < MAX_SOCK_NUM)
+	{
+		ethernet->socketClose(sockindex);
 		sockindex = MAX_SOCK_NUM;
 	}
 }
 
-int  FlprogEthernetUDP::beginPacket(const char *host, uint16_t port)
+int FlprogEthernetUDP::beginPacket(const char *host, uint16_t port)
 {
 	// Look up the host first
 	int ret = 0;
-	FlprogDNSClient dns;
 	IPAddress remote_addr;
-
-	dns.begin( FlprogEthernet.dnsServerIP());
-	ret = dns.getHostByName(host, remote_addr);
-	if (ret != 1) return ret;
+	ret = ethernet->dnsClient()->getHostByName(host, remote_addr);
+	if (ret != 1)
+		return ret;
 	return beginPacket(remote_addr, port);
 }
 
-int  FlprogEthernetUDP::beginPacket(IPAddress ip, uint16_t port)
+int FlprogEthernetUDP::beginPacket(IPAddress ip, uint16_t port)
 {
 	_offset = 0;
-	//Serial.printf("UDP beginPacket\n");
-	return  FlprogEthernet.socketStartUDP(sockindex, rawIPAddress(ip), port);
+	// Serial.printf("UDP beginPacket\n");
+	return ethernet->socketStartUDP(sockindex, rawIPAddress(ip), port);
 }
 
-int  FlprogEthernetUDP::endPacket()
+int FlprogEthernetUDP::endPacket()
 {
-	return  FlprogEthernet.socketSendUDP(sockindex);
+	return ethernet->socketSendUDP(sockindex);
 }
 
-size_t  FlprogEthernetUDP::write(uint8_t byte)
+size_t FlprogEthernetUDP::write(uint8_t byte)
 {
 	return write(&byte, 1);
 }
 
-size_t  FlprogEthernetUDP::write(const uint8_t *buffer, size_t size)
+size_t FlprogEthernetUDP::write(const uint8_t *buffer, size_t size)
 {
-	//Serial.printf("UDP write %d\n", size);
-	uint16_t bytes_written =  FlprogEthernet.socketBufferData(sockindex, _offset, buffer, size);
+	// Serial.printf("UDP write %d\n", size);
+	uint16_t bytes_written = ethernet->socketBufferData(sockindex, _offset, buffer, size);
 	_offset += bytes_written;
 	return bytes_written;
 }
 
-int  FlprogEthernetUDP::parsePacket()
+int FlprogEthernetUDP::parsePacket()
 {
 	// discard any remaining bytes in the last packet
-	while (_remaining) {
+	while (_remaining)
+	{
 		// could this fail (loop endlessly) if _remaining > 0 and recv in read fails?
 		// should only occur if recv fails after telling us the data is there, lets
 		// hope the w5100 always behaves :)
 		read((uint8_t *)NULL, _remaining);
 	}
 
-	if ( FlprogEthernet.socketRecvAvailable(sockindex) > 0) {
-		//HACK - hand-parse the UDP packet using TCP recv method
+	if (ethernet->socketRecvAvailable(sockindex) > 0)
+	{
+		// HACK - hand-parse the UDP packet using TCP recv method
 		uint8_t tmpBuf[8];
-		int ret=0;
-		//read 8 header bytes and get IP and port from it
-		ret =  FlprogEthernet.socketRecv(sockindex, tmpBuf, 8);
-		if (ret > 0) {
+		int ret = 0;
+		// read 8 header bytes and get IP and port from it
+		ret = ethernet->socketRecv(sockindex, tmpBuf, 8);
+		if (ret > 0)
+		{
 			_remoteIP = tmpBuf;
 			_remotePort = tmpBuf[4];
 			_remotePort = (_remotePort << 8) + tmpBuf[5];
@@ -128,11 +139,12 @@ int  FlprogEthernetUDP::parsePacket()
 	return 0;
 }
 
-int  FlprogEthernetUDP::read()
+int FlprogEthernetUDP::read()
 {
 	uint8_t byte;
 
-	if ((_remaining > 0) && ( FlprogEthernet.socketRecv(sockindex, &byte, 1) > 0)) {
+	if ((_remaining > 0) && (ethernet->socketRecv(sockindex, &byte, 1) > 0))
+	{
 		// We read things without any problems
 		_remaining--;
 		return byte;
@@ -142,21 +154,26 @@ int  FlprogEthernetUDP::read()
 	return -1;
 }
 
-int  FlprogEthernetUDP::read(unsigned char *buffer, size_t len)
+int FlprogEthernetUDP::read(unsigned char *buffer, size_t len)
 {
-	if (_remaining > 0) {
+	if (_remaining > 0)
+	{
 		int got;
-		if (_remaining <= len) {
+		if (_remaining <= len)
+		{
 			// data should fit in the buffer
-			got =  FlprogEthernet.socketRecv(sockindex, buffer, _remaining);
-		} else {
+			got = ethernet->socketRecv(sockindex, buffer, _remaining);
+		}
+		else
+		{
 			// too much data for the buffer,
 			// grab as much as will fit
-			got =  FlprogEthernet.socketRecv(sockindex, buffer, len);
+			got = ethernet->socketRecv(sockindex, buffer, len);
 		}
-		if (got > 0) {
+		if (got > 0)
+		{
 			_remaining -= got;
-			//Serial.printf("UDP read %d\n", got);
+			// Serial.printf("UDP read %d\n", got);
 			return got;
 		}
 	}
@@ -164,28 +181,30 @@ int  FlprogEthernetUDP::read(unsigned char *buffer, size_t len)
 	return -1;
 }
 
-int  FlprogEthernetUDP::peek()
+int FlprogEthernetUDP::peek()
 {
 	// Unlike recv, peek doesn't check to see if there's any data available, so we must.
 	// If the user hasn't called parsePacket yet then return nothing otherwise they
 	// may get the UDP header
-	if (sockindex >= MAX_SOCK_NUM || _remaining == 0) return -1;
-	return  FlprogEthernet.socketPeek(sockindex);
+	if (sockindex >= MAX_SOCK_NUM || _remaining == 0)
+		return -1;
+	return ethernet->socketPeek(sockindex);
 }
 
-void  FlprogEthernetUDP::flush()
+void FlprogEthernetUDP::flush()
 {
 	// TODO: we should wait for TX buffer to be emptied
 }
 
 /* Start EthernetUDP socket, listening at local port PORT */
-uint8_t  FlprogEthernetUDP::beginMulticast(IPAddress ip, uint16_t port)
+uint8_t FlprogEthernetUDP::beginMulticast(IPAddress ip, uint16_t port)
 {
-	if (sockindex < MAX_SOCK_NUM)  FlprogEthernet.socketClose(sockindex);
-	sockindex =  FlprogEthernet.socketBeginMulticast( FlprogSnMR::UDP |  FlprogSnMR::MULTI, ip, port);
-	if (sockindex >= MAX_SOCK_NUM) return 0;
+	if (sockindex < MAX_SOCK_NUM)
+		ethernet->socketClose(sockindex);
+	sockindex = ethernet->socketBeginMulticast((FLPROG_SN_MR_UDP | FLPROG_SN_MR_MULTI), ip, port);
+	if (sockindex >= MAX_SOCK_NUM)
+		return 0;
 	_port = port;
 	_remaining = 0;
 	return 1;
 }
-

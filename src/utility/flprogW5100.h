@@ -1,15 +1,3 @@
-/*
- * Copyright 2018 Paul Stoffregen
- * Copyright (c) 2010 by Cristian Maglie <c.maglie@bug.st>
- *
- * This file is free software; you can redistribute it and/or modify
- * it under the terms of either the GNU General Public License version 2
- * or the GNU Lesser General Public License version 2.1, both as
- * published by the Free Software Foundation.
- */
-
-// w5100.h contains private W5x00 hardware "driver" level definitions
-// which are not meant to be exposed to other libraries or Arduino users
 
 #ifndef FLPROG_W5100_H_INCLUDED
 #define FLPROG_W5100_H_INCLUDED
@@ -49,86 +37,33 @@
 
 typedef uint8_t SOCKET;
 
-class FlprogSnMR
-{
-public:
-  static const uint8_t CLOSE = 0x00;
-  static const uint8_t TCP = 0x21;
-  static const uint8_t UDP = 0x02;
-  static const uint8_t IPRAW = 0x03;
-  static const uint8_t MACRAW = 0x04;
-  static const uint8_t PPPOE = 0x05;
-  static const uint8_t ND = 0x20;
-  static const uint8_t MULTI = 0x80;
-};
+#define FLPROG_SN_MR_CLOSE 0x00
+#define FLPROG_SN_MR_TCP 0x21
+#define FLPROG_SN_MR_UDP 0x02
+#define FLPROG_SN_MR_MULTI 0x80
 
-enum FlprogSockCMD
-{
-  Sock_OPEN = 0x01,
-  Sock_LISTEN = 0x02,
-  Sock_CONNECT = 0x04,
-  Sock_DISCON = 0x08,
-  Sock_CLOSE = 0x10,
-  Sock_SEND = 0x20,
-  Sock_SEND_MAC = 0x21,
-  Sock_SEND_KEEP = 0x22,
-  Sock_RECV = 0x40
-};
+#define FLPROG_SOCK_CMD_OPEN 0x01
+#define FLPROG_SOCK_CMD_CLOSE 0x10
+#define FLPROG_SOCK_CMD_LISTEN 0x02
+#define FLPROG_SOCK_CMD_CONNECT 0x04
+#define FLPROG_SOCK_CMD_DISCON 0x08
+#define FLPROG_SOCK_CMD_RECV 0x40
+#define FLPROG_SOCK_CMD_SEND 0x20
 
-class FlprogSnIR
-{
-public:
-  static const uint8_t SEND_OK = 0x10;
-  static const uint8_t TIMEOUT = 0x08;
-  static const uint8_t RECV = 0x04;
-  static const uint8_t DISCON = 0x02;
-  static const uint8_t CON = 0x01;
-};
+#define FLPROG_SN_IR_SEND_OK 0x10
+#define FLPROG_SN_IR_TIMEOUT 0x08
 
-class FlprogSnSR
-{
-public:
-  static const uint8_t CLOSED = 0x00;
-  static const uint8_t INIT = 0x13;
-  static const uint8_t LISTEN = 0x14;
-  static const uint8_t SYNSENT = 0x15;
-  static const uint8_t SYNRECV = 0x16;
-  static const uint8_t ESTABLISHED = 0x17;
-  static const uint8_t FIN_WAIT = 0x18;
-  static const uint8_t CLOSING = 0x1A;
-  static const uint8_t TIME_WAIT = 0x1B;
-  static const uint8_t CLOSE_WAIT = 0x1C;
-  static const uint8_t LAST_ACK = 0x1D;
-  static const uint8_t UDP = 0x22;
-  static const uint8_t IPRAW = 0x32;
-  static const uint8_t MACRAW = 0x42;
-  static const uint8_t PPPOE = 0x5F;
-};
+#define FLPROG_SN_SR_ESTABLISHED 0x17
+#define FLPROG_SN_SR_CLOSE_WAIT 0x1C
+#define FLPROG_SN_SR_LISTEN 0x14
+#define FLPROG_SN_SR_CLOSED 0x00
+#define FLPROG_SN_SR_FIN_WAIT 0x18
+#define FLPROG_SN_SR_LAST_ACK 0x1D
+#define FLPROG_SN_SR_TIME_WAIT 0x1B
+#define FLPROG_SN_SR_FIN_WAIT 0x18
+#define FLPROG_SN_SR_CLOSING 0x1A
+#define FLPROG_SN_SR_INIT 0x13
 
-class FlprogIPPROTO
-{
-public:
-  static const uint8_t IP = 0;
-  static const uint8_t ICMP = 1;
-  static const uint8_t IGMP = 2;
-  static const uint8_t GGP = 3;
-  static const uint8_t TCP = 6;
-  static const uint8_t PUP = 12;
-  static const uint8_t UDP = 17;
-  static const uint8_t IDP = 22;
-  static const uint8_t ND = 77;
-  static const uint8_t RAW = 255;
-};
-
-enum FlprogW5100Linkstatus
-{
-  UNKNOWN,
-  LINK_ON,
-  LINK_OFF
-};
-
-#define FLPROG_SN_RX_SIZE 0x001E     // RX Memory Size (W5200 only)
-#define FLPROG_SN_TX_SIZE 0x001F     // RX Memory Size (W5200 only)
 #define FLPROG_GAR 0x0001            // Gateway IP address
 #define FLPROG_SUBR 0x0005           // Subnet mask address
 #define FLPROG_SHAR 0x0009           // Source MAC address
@@ -143,13 +78,56 @@ enum FlprogW5100Linkstatus
 #define FLPROG_VERSIONR_W5500 0x0039 // Chip Version Register (W5500 only)
 #define FLPROG_PSTATUS_W5200 0x0035  // PHY Status
 #define FLPROG_PHYCFGR_W5500 0x002E  // PHY Configuration register, default: 10111xxx
-#define FLPROG_SN_CR 0x0001       // Command
+
+#define FLPROG_SN_CR 0x0001      // Command
+#define FLPROG_SN_SR 0x0003      // Status
+#define FLPROG_SN_MR 0x0000      // Mode
+#define FLPROG_SN_IR 0x0002      // Interrupt
+#define FLPROG_SN_PORT 0x0004    // Source Port
+#define FLPROG_SN_RX_RD 0x0028   // RX Read Pointer
+#define FLPROG_SN_RX_SIZE 0x001E // RX Memory Size (W5200 only)
+#define FLPROG_SN_RX_RSR 0x0026  // RX Free Size
+#define FLPROG_SN_TX_SIZE 0x001F // RX Memory Size (W5200 only)
+#define FLPROG_SN_TX_FSR 0x0020  // TX Free Size
+#define FLPROG_SN_TX_WR 0x0024   // TX Write Pointer
+#define FLPROG_SN_DIPR 0x000C    // Destination IP Addr
+#define FLPROG_SN_DPORT 0x0010   // Destination Port
+#define FLPROG_SN_DHAR 0x0006    // Destination Hardw Addr
+/*
+#if defined(PIN_SPI_SS_ETHERNET_LIB)
+#define SS_PIN_DEFAULT PIN_SPI_SS_ETHERNET_LIB
+
+// MKR boards default to pin 5 for MKR ETH
+// Pins 8-10 are MOSI/SCK/MISO on MRK, so don't use pin 10
+#elif defined(USE_ARDUINO_MKR_PIN_LAYOUT) || defined(ARDUINO_SAMD_MKRZERO) || defined(ARDUINO_SAMD_MKR1000) || defined(ARDUINO_SAMD_MKRFox1200) || defined(ARDUINO_SAMD_MKRGSM1400) || defined(ARDUINO_SAMD_MKRWAN1300)
+#define SS_PIN_DEFAULT 5
+
+// For boards using AVR, assume shields with SS on pin 10
+// will be used.  This allows for Arduino Mega (where
+// SS is pin 53) and Arduino Leonardo (where SS is pin 17)
+// to work by default with Arduino Ethernet Shield R2 & R3.
+#elif defined(__AVR__)
+#define SS_PIN_DEFAULT 10
+
+// If variant.h or other headers define these names
+// use them if none of the other cases match
+#elif defined(PIN_SPI_SS)
+#define SS_PIN_DEFAULT PIN_SPI_SS
+#elif defined(CORE_SS0_PIN)
+#define SS_PIN_DEFAULT CORE_SS0_PIN
+
+// As a final fallback, use pin 10
+#else
+*/
+#define SS_PIN_DEFAULT 10
+// #endif
 
 class FlprogW5100Class
 {
-
 public:
-  static uint8_t init(void);
+  FlprogW5100Class(FlprogEthernetClass *sourse){ethernet=sourse;};
+  uint8_t init(void);
+  uint8_t getLinkStatus();
   void setGatewayIp(IPAddress addr);
   IPAddress getGatewayIp();
   void setSubnetMask(IPAddress addr);
@@ -160,352 +138,137 @@ public:
   IPAddress getIPAddress();
   void setRetransmissionTime(uint16_t timeout);
   void setRetransmissionCount(uint8_t retry) { write(FLPROG_RCR, retry); };
-  static void execCmdSn(SOCKET s, FlprogSockCMD _cmd);
+  void execCmdSn(SOCKET s, uint8_t _cmd);
+  uint8_t getChip(void) { return chip; }
 
   // W5100 Registers
-  // ---------------
-  // private:
-public:
-  static uint16_t write(uint16_t addr, const uint8_t *buf, uint16_t len);
-  static uint8_t write(uint16_t addr, uint8_t data) { return write(addr, &data, 1); };
-  static uint16_t read(uint16_t addr, uint8_t *buf, uint16_t len);
-  static uint8_t read(uint16_t addr);
-/*
-#define __GP_REGISTER8(name, address)           \
-  static inline void write##name(uint8_t _data) \
-  {                                             \
-    write(address, _data);                      \
-  }                                             \
-  static inline uint8_t read##name()            \
-  {                                             \
-    return read(address);                       \
-  }
-#define __GP_REGISTER16(name, address)    \
-  static void write##name(uint16_t _data) \
-  {                                       \
-    uint8_t buf[2];                       \
-    buf[0] = _data >> 8;                  \
-    buf[1] = _data & 0xFF;                \
-    write(address, buf, 2);               \
-  }                                       \
-  static uint16_t read##name()            \
-  {                                       \
-    uint8_t buf[2];                       \
-    read(address, buf, 2);                \
-    return (buf[0] << 8) | buf[1];        \
-  }
-#define __GP_REGISTER_N(name, address, size)        \
-  static uint16_t write##name(const uint8_t *_buff) \
-  {                                                 \
-    return write(address, _buff, size);             \
-  }                                                 \
-  static uint16_t read##name(uint8_t *_buff)        \
-  {                                                 \
-    return read(address, _buff, size);              \
-  }
-  static FlprogW5100Linkstatus getLinkStatus();
+  uint16_t write(uint16_t addr, const uint8_t *buf, uint16_t len);
+  uint8_t write(uint16_t addr, uint8_t data) { return write(addr, &data, 1); };
+  void write16(uint16_t address, uint16_t _data);
+  uint16_t read(uint16_t addr, uint8_t *buf, uint16_t len);
+  uint8_t read(uint16_t addr);
+  uint16_t CH_BASE(void) { return CH_BASE_MSB << 8; };
+  uint8_t CH_BASE_MSB; // 1 redundant byte, saves ~80 bytes code on AVR
+  const uint16_t CH_SIZE = 0x0100;
 
-public:
-  __GP_REGISTER8(MR, 0x0000);             // Mode
-  __GP_REGISTER_N(GAR, 0x0001, 4);        // Gateway IP address
-  __GP_REGISTER_N(SUBR, 0x0005, 4);       // Subnet mask address
-  __GP_REGISTER_N(SHAR, 0x0009, 6);       // Source MAC address
-  __GP_REGISTER_N(SIPR, 0x000F, 4);       // Source IP address
-  __GP_REGISTER8(IR, 0x0015);             // Interrupt
-  __GP_REGISTER8(IMR, 0x0016);            // Interrupt Mask
-  __GP_REGISTER16(RTR, 0x0017);           // Timeout address
-  __GP_REGISTER8(RCR, 0x0019);            // Retry count
-  __GP_REGISTER8(RMSR, 0x001A);           // Receive memory size (W5100 only)
-  __GP_REGISTER8(TMSR, 0x001B);           // Transmit memory size (W5100 only)
-  __GP_REGISTER8(PATR, 0x001C);           // Authentication type address in PPPoE mode
-  __GP_REGISTER8(PTIMER, 0x0028);         // PPP LCP Request Timer
-  __GP_REGISTER8(PMAGIC, 0x0029);         // PPP LCP Magic Number
-  __GP_REGISTER_N(UIPR, 0x002A, 4);       // Unreachable IP address in UDP mode (W5100 only)
-  __GP_REGISTER16(UPORT, 0x002E);         // Unreachable Port address in UDP mode (W5100 only)
-  __GP_REGISTER8(VERSIONR_W5200, 0x001F); // Chip Version Register (W5200 only)
-  __GP_REGISTER8(VERSIONR_W5500, 0x0039); // Chip Version Register (W5500 only)
-  __GP_REGISTER8(PSTATUS_W5200, 0x0035);  // PHY Status
-  __GP_REGISTER8(PHYCFGR_W5500, 0x002E);  // PHY Configuration register, default: 10111xxx
-
-#undef __GP_REGISTER8
-#undef __GP_REGISTER16
-#undef __GP_REGISTER_N
-*/
   // W5100 Socket registers
-  // ----------------------
-private:
-  static uint16_t CH_BASE(void)
-  {
-    // if (chip == 55) return 0x1000;
-    // if (chip == 52) return 0x4000;
-    // return 0x0400;
-    return CH_BASE_MSB << 8;
-  }
-  static uint8_t CH_BASE_MSB; // 1 redundant byte, saves ~80 bytes code on AVR
-  static const uint16_t CH_SIZE = 0x0100;
+  uint8_t readSn(SOCKET s, uint16_t addr) { return read(CH_BASE() + s * CH_SIZE + addr); };
+  uint8_t writeSn(SOCKET s, uint16_t addr, uint8_t data) { return write(CH_BASE() + s * CH_SIZE + addr, data); };
+  uint16_t readSn(SOCKET s, uint16_t addr, uint8_t *buf, uint16_t len) { return read(CH_BASE() + s * CH_SIZE + addr, buf, len); };
+  uint16_t writeSn(SOCKET s, uint16_t addr, uint8_t *buf, uint16_t len) { return write(CH_BASE() + s * CH_SIZE + addr, buf, len); };
+  uint16_t readSn16(SOCKET _s, uint16_t address);
+  void writeSn16(SOCKET _s, uint16_t address, uint16_t _data);
+  uint8_t _pinSS;
 
-  static inline uint8_t readSn(SOCKET s, uint16_t addr)
-  {
-    return read(CH_BASE() + s * CH_SIZE + addr);
-  }
-  static inline uint8_t writeSn(SOCKET s, uint16_t addr, uint8_t data)
-  {
-    return write(CH_BASE() + s * CH_SIZE + addr, data);
-  }
-  static inline uint16_t readSn(SOCKET s, uint16_t addr, uint8_t *buf, uint16_t len)
-  {
-    return read(CH_BASE() + s * CH_SIZE + addr, buf, len);
-  }
-  static inline uint16_t writeSn(SOCKET s, uint16_t addr, uint8_t *buf, uint16_t len)
-  {
-    return write(CH_BASE() + s * CH_SIZE + addr, buf, len);
-  }
-
-#define __SOCKET_REGISTER8(name, address)                  \
-  static inline void write##name(SOCKET _s, uint8_t _data) \
-  {                                                        \
-    writeSn(_s, address, _data);                           \
-  }                                                        \
-  static inline uint8_t read##name(SOCKET _s)              \
-  {                                                        \
-    return readSn(_s, address);                            \
-  }
-#define __SOCKET_REGISTER16(name, address)           \
-  static void write##name(SOCKET _s, uint16_t _data) \
-  {                                                  \
-    uint8_t buf[2];                                  \
-    buf[0] = _data >> 8;                             \
-    buf[1] = _data & 0xFF;                           \
-    writeSn(_s, address, buf, 2);                    \
-  }                                                  \
-  static uint16_t read##name(SOCKET _s)              \
-  {                                                  \
-    uint8_t buf[2];                                  \
-    readSn(_s, address, buf, 2);                     \
-    return (buf[0] << 8) | buf[1];                   \
-  }
-  /*
-#define __SOCKET_REGISTER_N(name, address, size)         \
-  static uint16_t write##name(SOCKET _s, uint8_t *_buff) \
-  {                                                      \
-    return writeSn(_s, address, _buff, size);            \
-  }                                                      \
-  static uint16_t read##name(SOCKET _s, uint8_t *_buff)  \
-  {                                                      \
-    return readSn(_s, address, _buff, size);             \
-  }
-
-public:
-  __SOCKET_REGISTER8(SnMR, 0x0000)       // Mode
-  __SOCKET_REGISTER8(SnCR, 0x0001)       // Command
-  __SOCKET_REGISTER8(SnIR, 0x0002)       // Interrupt
-  __SOCKET_REGISTER8(SnSR, 0x0003)       // Status
-  __SOCKET_REGISTER16(SnPORT, 0x0004)    // Source Port
-  __SOCKET_REGISTER_N(SnDHAR, 0x0006, 6) // Destination Hardw Addr
-  __SOCKET_REGISTER_N(SnDIPR, 0x000C, 4) // Destination IP Addr
-  __SOCKET_REGISTER16(SnDPORT, 0x0010)   // Destination Port
-  __SOCKET_REGISTER16(SnMSSR, 0x0012)    // Max Segment Size
-  __SOCKET_REGISTER8(SnPROTO, 0x0014)    // Protocol in IP RAW Mode
-  __SOCKET_REGISTER8(SnTOS, 0x0015)      // IP TOS
-  __SOCKET_REGISTER8(SnTTL, 0x0016)      // IP TTL
-  __SOCKET_REGISTER8(SnRX_SIZE, 0x001E)  // RX Memory Size (W5200 only)
-  __SOCKET_REGISTER8(SnTX_SIZE, 0x001F)  // RX Memory Size (W5200 only)
-  __SOCKET_REGISTER16(SnTX_FSR, 0x0020)  // TX Free Size
-  __SOCKET_REGISTER16(SnTX_RD, 0x0022)   // TX Read Pointer
-  __SOCKET_REGISTER16(SnTX_WR, 0x0024)   // TX Write Pointer
-  __SOCKET_REGISTER16(SnRX_RSR, 0x0026)  // RX Free Size
-  __SOCKET_REGISTER16(SnRX_RD, 0x0028)   // RX Read Pointer
-  __SOCKET_REGISTER16(SnRX_WR, 0x002A)   // RX Write Pointer (supported?)
-
-#undef __SOCKET_REGISTER8
-#undef __SOCKET_REGISTER16
-#undef __SOCKET_REGISTER_N
-*/
-private:
-  static uint8_t chip;
-  static uint8_t ss_pin;
-  static uint8_t softReset(void);
-  static uint8_t isW5100(void);
-  static uint8_t isW5200(void);
-  static uint8_t isW5500(void);
-
-public:
-  static uint8_t getChip(void) { return chip; }
 #ifdef ETHERNET_LARGE_BUFFERS
-  static uint16_t SSIZE;
-  static uint16_t SMASK;
+  uint16_t SSIZE;
+  uint16_t SMASK;
 #else
-  static const uint16_t SSIZE = 2048;
-  static const uint16_t SMASK = 0x07FF;
+  const uint16_t SSIZE = 2048;
+  const uint16_t SMASK = 0x07FF;
 #endif
-  static uint16_t SBASE(uint8_t socknum)
-  {
-    if (chip == 51)
-    {
-      return socknum * SSIZE + 0x4000;
-    }
-    else
-    {
-      return socknum * SSIZE + 0x8000;
-    }
-  }
-  static uint16_t RBASE(uint8_t socknum)
-  {
-    if (chip == 51)
-    {
-      return socknum * SSIZE + 0x6000;
-    }
-    else
-    {
-      return socknum * SSIZE + 0xC000;
-    }
-  }
-
-  static bool hasOffsetAddressMapping(void)
-  {
-    if (chip == 55)
-      return true;
-    return false;
-  }
-  static void setSS(uint8_t pin) { ss_pin = pin; }
+  uint16_t SBASE(uint8_t socknum);
+  uint16_t RBASE(uint8_t socknum);
+  bool hasOffsetAddressMapping(void);
+  void setSS(uint8_t pin) { _pinSS = pin; };
 
 private:
-#if defined(__AVR__)
-  static volatile uint8_t *ss_pin_reg;
-  static uint8_t ss_pin_mask;
-  inline static void initSS()
-  {
-    ss_pin_reg = portOutputRegister(digitalPinToPort(ss_pin));
-    ss_pin_mask = digitalPinToBitMask(ss_pin);
-    pinMode(ss_pin, OUTPUT);
-  }
-  inline static void setSS()
-  {
-    *(ss_pin_reg) &= ~ss_pin_mask;
-  }
-  inline static void resetSS()
-  {
-    *(ss_pin_reg) |= ss_pin_mask;
-  }
-#elif defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK66FX1M0__) || defined(__MK64FX512__)
-  static volatile uint8_t *ss_pin_reg;
-  inline static void initSS()
-  {
-    ss_pin_reg = portOutputRegister(ss_pin);
-    pinMode(ss_pin, OUTPUT);
-  }
-  inline static void setSS()
-  {
-    *(ss_pin_reg + 256) = 1;
-  }
-  inline static void resetSS()
-  {
-    *(ss_pin_reg + 128) = 1;
-  }
-#elif defined(__MKL26Z64__)
-  static volatile uint8_t *ss_pin_reg;
-  static uint8_t ss_pin_mask;
-  inline static void initSS()
-  {
-    ss_pin_reg = portOutputRegister(digitalPinToPort(ss_pin));
-    ss_pin_mask = digitalPinToBitMask(ss_pin);
-    pinMode(ss_pin, OUTPUT);
-  }
-  inline static void setSS()
-  {
-    *(ss_pin_reg + 8) = ss_pin_mask;
-  }
-  inline static void resetSS()
-  {
-    *(ss_pin_reg + 4) = ss_pin_mask;
-  }
-#elif defined(__SAM3X8E__) || defined(__SAM3A8C__) || defined(__SAM3A4C__)
-  static volatile uint32_t *ss_pin_reg;
-  static uint32_t ss_pin_mask;
-  inline static void initSS()
-  {
-    ss_pin_reg = &(digitalPinToPort(ss_pin)->PIO_PER);
-    ss_pin_mask = digitalPinToBitMask(ss_pin);
-    pinMode(ss_pin, OUTPUT);
-  }
-  inline static void setSS()
-  {
-    *(ss_pin_reg + 13) = ss_pin_mask;
-  }
-  inline static void resetSS()
-  {
-    *(ss_pin_reg + 12) = ss_pin_mask;
-  }
-#elif defined(__PIC32MX__)
-  static volatile uint32_t *ss_pin_reg;
-  static uint32_t ss_pin_mask;
-  inline static void initSS()
-  {
-    ss_pin_reg = portModeRegister(digitalPinToPort(ss_pin));
-    ss_pin_mask = digitalPinToBitMask(ss_pin);
-    pinMode(ss_pin, OUTPUT);
-  }
-  inline static void setSS()
-  {
-    *(ss_pin_reg + 8 + 1) = ss_pin_mask;
-  }
-  inline static void resetSS()
-  {
-    *(ss_pin_reg + 8 + 2) = ss_pin_mask;
-  }
+  uint8_t chip = 0;
+  FlprogEthernetClass *ethernet;
+  bool initialized = false;
+  uint8_t softReset(void);
+  uint8_t isW5100(void);
+  uint8_t isW5200(void);
+  uint8_t isW5500(void);
+  void initSS() { pinMode(_pinSS, OUTPUT); };
+  void setSS() { digitalWrite(_pinSS, LOW); };
+  void resetSS() { digitalWrite(_pinSS, HIGH); };
 
-#elif defined(ARDUINO_ARCH_ESP8266)
-  static volatile uint32_t *ss_pin_reg;
-  static uint32_t ss_pin_mask;
-  inline static void initSS()
-  {
-    ss_pin_reg = (volatile uint32_t *)GPO;
-    ss_pin_mask = 1 << ss_pin;
-    pinMode(ss_pin, OUTPUT);
-  }
-  inline static void setSS()
-  {
-    GPOC = ss_pin_mask;
-  }
-  inline static void resetSS()
-  {
-    GPOS = ss_pin_mask;
-  }
+  /*
+  #if defined(__AVR__)
+    volatile uint8_t *ss_pin_reg;
+    uint8_t ss_pin_mask;
+    void initSS()
+    {
+      ss_pin_reg = portOutputRegister(digitalPinToPort(_pinSS));
+      ss_pin_mask = digitalPinToBitMask(_pinSS);
+      pinMode(_pinSS, OUTPUT);
+    }
+    void setSS() { *(ss_pin_reg) &= ~ss_pin_mask; };
+    void resetSS() { *(ss_pin_reg) |= ss_pin_mask; };
+  #elif defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK66FX1M0__) || defined(__MK64FX512__)
+    uint8_t *ss_pin_reg;
+    void initSS()
+    {
+      ss_pin_reg = portOutputRegister(_pinSS);
+      pinMode(_pinSS, OUTPUT);
+    }
+    void setSS() { *(ss_pin_reg + 256) = 1; };
+    void resetSS() { *(ss_pin_reg + 128) = 1; };
+  #elif defined(__MKL26Z64__)
+    uint8_t *ss_pin_reg;
+    uint8_t ss_pin_mask;
+    void initSS()
+    {
+      ss_pin_reg = portOutputRegister(digitalPinToPort(_pinSS));
+      ss_pin_mask = digitalPinToBitMask(_pinSS);
+      pinMode(_pinSS, OUTPUT);
+    }
+    void setSS() { *(ss_pin_reg + 8) = ss_pin_mask; };
+    void resetSS() { *(ss_pin_reg + 4) = ss_pin_mask; };
+  #elif defined(__SAM3X8E__) || defined(__SAM3A8C__) || defined(__SAM3A4C__)
+    uint32_t *ss_pin_reg;
+    uint32_t ss_pin_mask;
+    void initSS()
+    {
+      ss_pin_reg = &(digitalPinToPort(_pinSS)->PIO_PER);
+      ss_pin_mask = digitalPinToBitMask(_pinSS);
+      pinMode(_pinSS, OUTPUT);
+    }
+    void setSS() { *(ss_pin_reg + 13) = ss_pin_mask; };
+    void resetSS() { *(ss_pin_reg + 12) = ss_pin_mask; };
+  #elif defined(__PIC32MX__)
+    uint32_t *ss_pin_reg;
+    uint32_t ss_pin_mask;
+    void initSS()
+    {
+      ss_pin_reg = portModeRegister(digitalPinToPort(_pinSS));
+      ss_pin_mask = digitalPinToBitMask(_pinSS);
+      pinMode(_pinSS, OUTPUT);
+    }
+    void setSS() { *(ss_pin_reg + 8 + 1) = ss_pin_mask; };
+    void resetSS() { *(ss_pin_reg + 8 + 2) = ss_pin_mask; };
 
-#elif defined(__SAMD21G18A__)
-  static volatile uint32_t *ss_pin_reg;
-  static uint32_t ss_pin_mask;
-  inline static void initSS()
-  {
-    ss_pin_reg = portModeRegister(digitalPinToPort(ss_pin));
-    ss_pin_mask = digitalPinToBitMask(ss_pin);
-    pinMode(ss_pin, OUTPUT);
-  }
-  inline static void setSS()
-  {
-    *(ss_pin_reg + 5) = ss_pin_mask;
-  }
-  inline static void resetSS()
-  {
-    *(ss_pin_reg + 6) = ss_pin_mask;
-  }
-#else
-  inline static void initSS()
-  {
-    pinMode(ss_pin, OUTPUT);
-  }
-  inline static void setSS()
-  {
-    digitalWrite(ss_pin, LOW);
-  }
-  inline static void resetSS()
-  {
-    digitalWrite(ss_pin, HIGH);
-  }
-#endif
+  #elif defined(ARDUINO_ARCH_ESP8266)
+    uint32_t *ss_pin_reg;
+    uint32_t ss_pin_mask;
+    void initSS()
+    {
+      ss_pin_reg = (volatile uint32_t *)GPO;
+      ss_pin_mask = 1 << _pinSS;
+      pinMode(_pinSS, OUTPUT);
+    }
+    void setSS() { GPOC = ss_pin_mask; };
+    void resetSS() { GPOS = ss_pin_mask; };
+
+  #elif defined(__SAMD21G18A__)
+    uint32_t *ss_pin_reg;
+    uint32_t ss_pin_mask;
+    void initSS()
+    {
+      ss_pin_reg = portModeRegister(digitalPinToPort(_pinSS));
+      ss_pin_mask = digitalPinToBitMask(_pinSS);
+      pinMode(_pinSS, OUTPUT);
+    }
+    void setSS() { *(ss_pin_reg + 5) = ss_pin_mask; };
+    void resetSS() { *(ss_pin_reg + 6) = ss_pin_mask; };
+  #else
+  */
+
+  // #endif
 };
 
-extern FlprogW5100Class FlprogW5100;
+// extern FlprogW5100Class FlprogW5100;
 
 #endif
 

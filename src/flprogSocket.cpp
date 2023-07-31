@@ -41,11 +41,6 @@ typedef struct
 
 static socketstate_t state[MAX_SOCK_NUM];
 
-static uint16_t getSnTX_FSR(uint8_t s);
-static uint16_t getSnRX_RSR(uint8_t s);
-static void write_data(uint8_t s, uint16_t offset, const uint8_t *data, uint16_t len);
-static void read_data(uint8_t s, uint16_t src, uint8_t *dst, uint16_t len);
-
 /*****************************************/
 /*          Socket management            */
 /*****************************************/
@@ -62,7 +57,7 @@ uint8_t FlprogEthernetClass::socketBegin(uint8_t protocol, uint16_t port)
 	uint8_t s, status[MAX_SOCK_NUM], chip, maxindex = MAX_SOCK_NUM;
 
 	// first check hardware compatibility
-	chip = FlprogW5100.getChip();
+	chip = _hardware->getChip();
 	if (!chip)
 		return MAX_SOCK_NUM; // immediate error if no hardware detected
 #if MAX_SOCK_NUM > 4
@@ -74,8 +69,8 @@ uint8_t FlprogEthernetClass::socketBegin(uint8_t protocol, uint16_t port)
 	// look at all the hardware sockets, use any that are closed (unused)
 	for (s = 0; s < maxindex; s++)
 	{
-		status[s] = FlprogW5100.readSnSR(s);
-		if (status[s] == FlprogSnSR::CLOSED)
+		status[s] = _hardware->readSn(s, FLPROG_SN_SR);
+		if (status[s] == FLPROG_SN_SR_CLOSED)
 			goto makesocket;
 	}
 	// Serial.printf("W5000socket step2\n");
@@ -83,52 +78,43 @@ uint8_t FlprogEthernetClass::socketBegin(uint8_t protocol, uint16_t port)
 	for (s = 0; s < maxindex; s++)
 	{
 		uint8_t stat = status[s];
-		if (stat == FlprogSnSR::LAST_ACK)
+		if (stat == FLPROG_SN_SR_LAST_ACK)
 			goto closemakesocket;
-		if (stat == FlprogSnSR::TIME_WAIT)
+		if (stat == FLPROG_SN_SR_TIME_WAIT)
 			goto closemakesocket;
-		if (stat == FlprogSnSR::FIN_WAIT)
+		if (stat == FLPROG_SN_SR_FIN_WAIT)
 			goto closemakesocket;
-		if (stat == FlprogSnSR::CLOSING)
+		if (stat == FLPROG_SN_SR_CLOSING)
 			goto closemakesocket;
 	}
-#if 0
-	Serial.printf("W5000socket step3\n");
-	// next, use any that are effectively closed
-	for (s=0; s < MAX_SOCK_NUM; s++) {
-		uint8_t stat = status[s];
-		// TODO: this also needs to check if no more data
-		if (stat ==  FlprogSnSR::CLOSE_WAIT) goto closemakesocket;
-	}
-#endif
 	SPI.endTransaction();
 	return MAX_SOCK_NUM; // all sockets are in use
 closemakesocket:
 	// Serial.printf("W5000socket close\n");
-	FlprogW5100.execCmdSn(s, Sock_CLOSE);
+	_hardware->execCmdSn(s, FLPROG_SOCK_CMD_CLOSE);
 makesocket:
 	// Serial.printf("W5000socket %d\n", s);
 	FlprogEthernetServer::server_port[s] = 0;
 	delayMicroseconds(250); // TODO: is this needed??
-	FlprogW5100.writeSnMR(s, protocol);
-	FlprogW5100.writeSnIR(s, 0xFF);
+	_hardware->writeSn(s, FLPROG_SN_MR, protocol);
+	_hardware->writeSn(s, FLPROG_SN_IR, 0xFF);
 	if (port > 0)
 	{
-		FlprogW5100.writeSnPORT(s, port);
+		_hardware->writeSn16(s, FLPROG_SN_PORT, port);
 	}
 	else
 	{
 		// if don't set the source port, set local_port number.
 		if (++local_port < 49152)
 			local_port = 49152;
-		FlprogW5100.writeSnPORT(s, local_port);
+		_hardware->writeSn16(s, FLPROG_SN_PORT, local_port);
 	}
-	FlprogW5100.execCmdSn(s, Sock_OPEN);
+	_hardware->execCmdSn(s, FLPROG_SOCK_CMD_OPEN);
 	state[s].RX_RSR = 0;
-	state[s].RX_RD = FlprogW5100.readSnRX_RD(s); // always zero?
+	state[s].RX_RD = _hardware->readSn16(s, FLPROG_SN_RX_RD); // always zero?
 	state[s].RX_inc = 0;
 	state[s].TX_FSR = 0;
-	// Serial.printf("W5000socket prot=%d, RX_RD=%d\n",  FlprogW5100.readSnMR(s), state[s].RX_RD);
+	// Serial.printf("W5000socket prot=%d, RX_RD=%d\n",  _hardware->readSnMR(s), state[s].RX_RD);
 	SPI.endTransaction();
 	return s;
 }
@@ -139,7 +125,7 @@ uint8_t FlprogEthernetClass::socketBeginMulticast(uint8_t protocol, IPAddress ip
 	uint8_t s, status[MAX_SOCK_NUM], chip, maxindex = MAX_SOCK_NUM;
 
 	// first check hardware compatibility
-	chip = FlprogW5100.getChip();
+	chip = _hardware->getChip();
 	if (!chip)
 		return MAX_SOCK_NUM; // immediate error if no hardware detected
 #if MAX_SOCK_NUM > 4
@@ -151,8 +137,8 @@ uint8_t FlprogEthernetClass::socketBeginMulticast(uint8_t protocol, IPAddress ip
 	// look at all the hardware sockets, use any that are closed (unused)
 	for (s = 0; s < maxindex; s++)
 	{
-		status[s] = FlprogW5100.readSnSR(s);
-		if (status[s] == FlprogSnSR::CLOSED)
+		status[s] = _hardware->readSn(s, FLPROG_SN_SR);
+		if (status[s] == FLPROG_SN_SR_CLOSED)
 			goto makesocket;
 	}
 	// Serial.printf("W5000socket step2\n");
@@ -160,60 +146,57 @@ uint8_t FlprogEthernetClass::socketBeginMulticast(uint8_t protocol, IPAddress ip
 	for (s = 0; s < maxindex; s++)
 	{
 		uint8_t stat = status[s];
-		if (stat == FlprogSnSR::LAST_ACK)
+		if (stat == FLPROG_SN_SR_LAST_ACK)
 			goto closemakesocket;
-		if (stat == FlprogSnSR::TIME_WAIT)
+		if (stat == FLPROG_SN_SR_TIME_WAIT)
 			goto closemakesocket;
-		if (stat == FlprogSnSR::FIN_WAIT)
+		if (stat == FLPROG_SN_SR_FIN_WAIT)
 			goto closemakesocket;
-		if (stat == FlprogSnSR::CLOSING)
+		if (stat == FLPROG_SN_SR_CLOSING)
 			goto closemakesocket;
 	}
-#if 0
-	Serial.printf("W5000socket step3\n");
-	// next, use any that are effectively closed
-	for (s=0; s < MAX_SOCK_NUM; s++) {
-		uint8_t stat = status[s];
-		// TODO: this also needs to check if no more data
-		if (stat ==  FlprogSnSR::CLOSE_WAIT) goto closemakesocket;
-	}
-#endif
 	SPI.endTransaction();
 	return MAX_SOCK_NUM; // all sockets are in use
 closemakesocket:
 	// Serial.printf("W5000socket close\n");
-	FlprogW5100.execCmdSn(s, Sock_CLOSE);
+	_hardware->execCmdSn(s, FLPROG_SOCK_CMD_CLOSE);
 makesocket:
 	// Serial.printf("W5000socket %d\n", s);
 	FlprogEthernetServer::server_port[s] = 0;
 	delayMicroseconds(250); // TODO: is this needed??
-	FlprogW5100.writeSnMR(s, protocol);
-	FlprogW5100.writeSnIR(s, 0xFF);
+	_hardware->writeSn(s, FLPROG_SN_MR, protocol);
+	_hardware->writeSn(s, FLPROG_SN_IR, 0xFF);
 	if (port > 0)
 	{
-		FlprogW5100.writeSnPORT(s, port);
+		_hardware->writeSn16(s, FLPROG_SN_PORT, port);
 	}
 	else
 	{
 		// if don't set the source port, set local_port number.
 		if (++local_port < 49152)
 			local_port = 49152;
-		FlprogW5100.writeSnPORT(s, local_port);
+		_hardware->writeSn16(s, FLPROG_SN_PORT, local_port);
 	}
 	// Calculate MAC address from Multicast IP Address
 	byte mac[] = {0x01, 0x00, 0x5E, 0x00, 0x00, 0x00};
 	mac[3] = ip[1] & 0x7F;
 	mac[4] = ip[2];
 	mac[5] = ip[3];
-	FlprogW5100.writeSnDIPR(s, flprogConvertIp(ip)); // 239.255.0.1
-	FlprogW5100.writeSnDPORT(s, port);
-	FlprogW5100.writeSnDHAR(s, mac);
-	FlprogW5100.execCmdSn(s, Sock_OPEN);
+	uint8_t buf1[4];
+	buf1[0] = ip[0];
+	buf1[1] = ip[1];
+	buf1[2] = ip[2];
+	buf1[3] = ip[3];
+	_hardware->writeSn(s, FLPROG_SN_DIPR, buf1, 4); // 239.255.0.1
+
+	_hardware->writeSn16(s, FLPROG_SN_DPORT, port);
+	_hardware->writeSn(s, FLPROG_SN_DHAR, mac, 6);
+	_hardware->execCmdSn(s, FLPROG_SOCK_CMD_OPEN);
 	state[s].RX_RSR = 0;
-	state[s].RX_RD = FlprogW5100.readSnRX_RD(s); // always zero?
+	state[s].RX_RD = _hardware->readSn16(s, FLPROG_SN_RX_RD); // always zero?
 	state[s].RX_inc = 0;
 	state[s].TX_FSR = 0;
-	// Serial.printf("W5000socket prot=%d, RX_RD=%d\n",  FlprogW5100.readSnMR(s), state[s].RX_RD);
+	// Serial.printf("W5000socket prot=%d, RX_RD=%d\n",  _hardware->readSnMR(s), state[s].RX_RD);
 	SPI.endTransaction();
 	return s;
 }
@@ -222,7 +205,7 @@ makesocket:
 uint8_t FlprogEthernetClass::socketStatus(uint8_t s)
 {
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	uint8_t status = FlprogW5100.readSnSR(s);
+	uint8_t status = _hardware->readSn(s, FLPROG_SN_SR);
 	SPI.endTransaction();
 	return status;
 }
@@ -233,7 +216,7 @@ uint8_t FlprogEthernetClass::socketStatus(uint8_t s)
 void FlprogEthernetClass::socketClose(uint8_t s)
 {
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	FlprogW5100.execCmdSn(s, Sock_CLOSE);
+	_hardware->execCmdSn(s, FLPROG_SOCK_CMD_CLOSE);
 	SPI.endTransaction();
 }
 
@@ -242,12 +225,12 @@ void FlprogEthernetClass::socketClose(uint8_t s)
 uint8_t FlprogEthernetClass::socketListen(uint8_t s)
 {
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	if (FlprogW5100.readSnSR(s) != FlprogSnSR::INIT)
+	if (_hardware->readSn(s, FLPROG_SN_SR) != FLPROG_SN_SR_INIT)
 	{
 		SPI.endTransaction();
 		return 0;
 	}
-	FlprogW5100.execCmdSn(s, Sock_LISTEN);
+	_hardware->execCmdSn(s, FLPROG_SOCK_CMD_LISTEN);
 	SPI.endTransaction();
 	return 1;
 }
@@ -258,9 +241,9 @@ void FlprogEthernetClass::socketConnect(uint8_t s, uint8_t *addr, uint16_t port)
 {
 	// set destination IP
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	FlprogW5100.writeSnDIPR(s, addr);
-	FlprogW5100.writeSnDPORT(s, port);
-	FlprogW5100.execCmdSn(s, Sock_CONNECT);
+	_hardware->writeSn(s, FLPROG_SN_DIPR, addr, 4);
+	_hardware->writeSn16(s, FLPROG_SN_DPORT, port);
+	_hardware->execCmdSn(s, FLPROG_SOCK_CMD_CONNECT);
 	SPI.endTransaction();
 }
 
@@ -269,7 +252,7 @@ void FlprogEthernetClass::socketConnect(uint8_t s, uint8_t *addr, uint16_t port)
 void FlprogEthernetClass::socketDisconnect(uint8_t s)
 {
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	FlprogW5100.execCmdSn(s, Sock_DISCON);
+	_hardware->execCmdSn(s, FLPROG_SOCK_CMD_DISCON);
 	SPI.endTransaction();
 }
 
@@ -277,47 +260,41 @@ void FlprogEthernetClass::socketDisconnect(uint8_t s)
 /*    Socket Data Receive Functions      */
 /*****************************************/
 
-static uint16_t getSnRX_RSR(uint8_t s)
+uint16_t FlprogEthernetClass::getSnRX_RSR(uint8_t s)
 {
-#if 1
 	uint16_t val, prev;
-
-	prev = FlprogW5100.readSnRX_RSR(s);
+	prev = _hardware->readSn16(s, FLPROG_SN_RX_RSR);
 	while (1)
 	{
-		val = FlprogW5100.readSnRX_RSR(s);
+		val = _hardware->readSn16(s, FLPROG_SN_RX_RSR);
 		if (val == prev)
 		{
 			return val;
 		}
 		prev = val;
 	}
-#else
-	uint16_t val = FlprogW5100.readSnRX_RSR(s);
-	return val;
-#endif
 }
 
-static void read_data(uint8_t s, uint16_t src, uint8_t *dst, uint16_t len)
+void FlprogEthernetClass::read_data(uint8_t s, uint16_t src, uint8_t *dst, uint16_t len)
 {
 	uint16_t size;
 	uint16_t src_mask;
 	uint16_t src_ptr;
 
 	// Serial.printf("read_data, len=%d, at:%d\n", len, src);
-	src_mask = (uint16_t)src & FlprogW5100.SMASK;
-	src_ptr = FlprogW5100.RBASE(s) + src_mask;
+	src_mask = (uint16_t)src & _hardware->SMASK;
+	src_ptr = _hardware->RBASE(s) + src_mask;
 
-	if (FlprogW5100.hasOffsetAddressMapping() || src_mask + len <= FlprogW5100.SSIZE)
+	if (_hardware->hasOffsetAddressMapping() || src_mask + len <= _hardware->SSIZE)
 	{
-		FlprogW5100.read(src_ptr, dst, len);
+		_hardware->read(src_ptr, dst, len);
 	}
 	else
 	{
-		size = FlprogW5100.SSIZE - src_mask;
-		FlprogW5100.read(src_ptr, dst, size);
+		size = _hardware->SSIZE - src_mask;
+		_hardware->read(src_ptr, dst, size);
 		dst += size;
-		FlprogW5100.read(FlprogW5100.RBASE(s), dst, len - size);
+		_hardware->read(_hardware->RBASE(s), dst, len - size);
 	}
 }
 
@@ -338,9 +315,9 @@ int FlprogEthernetClass::socketRecv(uint8_t s, uint8_t *buf, int16_t len)
 	if (ret == 0)
 	{
 		// No data available.
-		uint8_t status = FlprogW5100.readSnSR(s);
-		if (status == FlprogSnSR::LISTEN || status == FlprogSnSR::CLOSED ||
-			status == FlprogSnSR::CLOSE_WAIT)
+		uint8_t status = _hardware->readSn(s, FLPROG_SN_CR);
+		if ((status == FLPROG_SN_SR_LISTEN) || (status == FLPROG_SN_SR_CLOSED) ||
+			(status == FLPROG_SN_SR_CLOSE_WAIT))
 		{
 			// The remote end has closed its side of the connection,
 			// so this is the eof state
@@ -366,8 +343,8 @@ int FlprogEthernetClass::socketRecv(uint8_t s, uint8_t *buf, int16_t len)
 		if (inc >= 250 || state[s].RX_RSR == 0)
 		{
 			state[s].RX_inc = 0;
-			FlprogW5100.writeSnRX_RD(s, ptr);
-			FlprogW5100.execCmdSn(s, Sock_RECV);
+			_hardware->writeSn16(s, FLPROG_SN_RX_RD, ptr);
+			_hardware->execCmdSn(s, FLPROG_SOCK_CMD_RECV);
 			// Serial.printf("Sock_RECV cmd, RX_RD=%d, RX_RSR=%d\n",
 			//   state[s].RX_RD, state[s].RX_RSR);
 		}
@@ -403,7 +380,7 @@ uint8_t FlprogEthernetClass::socketPeek(uint8_t s)
 	uint8_t b;
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 	uint16_t ptr = state[s].RX_RD;
-	FlprogW5100.read((ptr & FlprogW5100.SMASK) + FlprogW5100.RBASE(s), &b, 1);
+	_hardware->read((ptr & _hardware->SMASK) + _hardware->RBASE(s), &b, 1);
 	SPI.endTransaction();
 	return b;
 }
@@ -412,14 +389,14 @@ uint8_t FlprogEthernetClass::socketPeek(uint8_t s)
 /*    Socket Data Transmit Functions     */
 /*****************************************/
 
-static uint16_t getSnTX_FSR(uint8_t s)
+uint16_t FlprogEthernetClass::getSnTX_FSR(uint8_t s)
 {
 	uint16_t val, prev;
 
-	prev = FlprogW5100.readSnTX_FSR(s);
+	prev = _hardware->readSn16(s, FLPROG_SN_TX_FSR);
 	while (1)
 	{
-		val = FlprogW5100.readSnTX_FSR(s);
+		val = _hardware->readSn16(s, FLPROG_SN_TX_FSR);
 		if (val == prev)
 		{
 			state[s].TX_FSR = val;
@@ -429,26 +406,26 @@ static uint16_t getSnTX_FSR(uint8_t s)
 	}
 }
 
-static void write_data(uint8_t s, uint16_t data_offset, const uint8_t *data, uint16_t len)
+void FlprogEthernetClass::write_data(uint8_t s, uint16_t data_offset, const uint8_t *data, uint16_t len)
 {
-	uint16_t ptr = FlprogW5100.readSnTX_WR(s);
+	uint16_t ptr = _hardware->readSn16(s, FLPROG_SN_TX_WR);
 	ptr += data_offset;
-	uint16_t offset = ptr & FlprogW5100.SMASK;
-	uint16_t dstAddr = offset + FlprogW5100.SBASE(s);
+	uint16_t offset = ptr & _hardware->SMASK;
+	uint16_t dstAddr = offset + _hardware->SBASE(s);
 
-	if (FlprogW5100.hasOffsetAddressMapping() || offset + len <= FlprogW5100.SSIZE)
+	if (_hardware->hasOffsetAddressMapping() || offset + len <= _hardware->SSIZE)
 	{
-		FlprogW5100.write(dstAddr, data, len);
+		_hardware->write(dstAddr, data, len);
 	}
 	else
 	{
 		// Wrap around circular buffer
-		uint16_t size = FlprogW5100.SSIZE - offset;
-		FlprogW5100.write(dstAddr, data, size);
-		FlprogW5100.write(FlprogW5100.SBASE(s), data + size, len - size);
+		uint16_t size = _hardware->SSIZE - offset;
+		_hardware->write(dstAddr, data, size);
+		_hardware->write(_hardware->SBASE(s), data + size, len - size);
 	}
 	ptr += len;
-	FlprogW5100.writeSnTX_WR(s, ptr);
+	_hardware->writeSn16(s, FLPROG_SN_TX_WR, ptr);
 }
 
 /**
@@ -461,9 +438,9 @@ uint16_t FlprogEthernetClass::socketSend(uint8_t s, const uint8_t *buf, uint16_t
 	uint16_t ret = 0;
 	uint16_t freesize = 0;
 
-	if (len > FlprogW5100.SSIZE)
+	if (len > _hardware->SSIZE)
 	{
-		ret = FlprogW5100.SSIZE; // check size not to exceed MAX size.
+		ret = _hardware->SSIZE; // check size not to exceed MAX size.
 	}
 	else
 	{
@@ -475,9 +452,9 @@ uint16_t FlprogEthernetClass::socketSend(uint8_t s, const uint8_t *buf, uint16_t
 	{
 		SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 		freesize = getSnTX_FSR(s);
-		status = FlprogW5100.readSnSR(s);
+		status = _hardware->readSn(s, FLPROG_SN_SR);
 		SPI.endTransaction();
-		if ((status != FlprogSnSR::ESTABLISHED) && (status != FlprogSnSR::CLOSE_WAIT))
+		if ((status != FLPROG_SN_SR_ESTABLISHED) && (status != FLPROG_SN_SR_CLOSE_WAIT))
 		{
 			ret = 0;
 			break;
@@ -488,13 +465,13 @@ uint16_t FlprogEthernetClass::socketSend(uint8_t s, const uint8_t *buf, uint16_t
 	// copy data
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 	write_data(s, 0, (uint8_t *)buf, ret);
-	FlprogW5100.execCmdSn(s, Sock_SEND);
+	_hardware->execCmdSn(s, FLPROG_SOCK_CMD_SEND);
 
 	/* +2008.01 bj */
-	while ((FlprogW5100.readSnIR(s) & FlprogSnIR::SEND_OK) != FlprogSnIR::SEND_OK)
+	while ((_hardware->readSn(s, FLPROG_SN_IR) & FLPROG_SN_IR_SEND_OK) != FLPROG_SN_IR_SEND_OK)
 	{
 		/* m2008.01 [bj] : reduce code */
-		if (FlprogW5100.readSnSR(s) == FlprogSnSR::CLOSED)
+		if (_hardware->readSn(s, FLPROG_SN_SR) == FLPROG_SN_SR_CLOSED)
 		{
 			SPI.endTransaction();
 			return 0;
@@ -504,7 +481,7 @@ uint16_t FlprogEthernetClass::socketSend(uint8_t s, const uint8_t *buf, uint16_t
 		SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 	}
 	/* +2008.01 bj */
-	FlprogW5100.writeSnIR(s, FlprogSnIR::SEND_OK);
+	_hardware->writeSn(s, FLPROG_SN_IR, FLPROG_SN_IR_SEND_OK);
 	SPI.endTransaction();
 	return ret;
 }
@@ -515,9 +492,9 @@ uint16_t FlprogEthernetClass::socketSendAvailable(uint8_t s)
 	uint16_t freesize = 0;
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 	freesize = getSnTX_FSR(s);
-	status = FlprogW5100.readSnSR(s);
+	status = _hardware->readSn(s, FLPROG_SN_SR);
 	SPI.endTransaction();
-	if ((status == FlprogSnSR::ESTABLISHED) || (status == FlprogSnSR::CLOSE_WAIT))
+	if ((status == FLPROG_SN_SR_ESTABLISHED) || (status == FLPROG_SN_SR_CLOSE_WAIT))
 	{
 		return freesize;
 	}
@@ -551,8 +528,8 @@ bool FlprogEthernetClass::socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port
 		return false;
 	}
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	FlprogW5100.writeSnDIPR(s, addr);
-	FlprogW5100.writeSnDPORT(s, port);
+	_hardware->writeSn(s, FLPROG_SN_DIPR, addr, 4);
+	_hardware->writeSn16(s, FLPROG_SN_DPORT, port);
 	SPI.endTransaction();
 	return true;
 }
@@ -560,15 +537,15 @@ bool FlprogEthernetClass::socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port
 bool FlprogEthernetClass::socketSendUDP(uint8_t s)
 {
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	FlprogW5100.execCmdSn(s, Sock_SEND);
+	_hardware->execCmdSn(s, FLPROG_SOCK_CMD_SEND);
 
 	/* +2008.01 bj */
-	while ((FlprogW5100.readSnIR(s) & FlprogSnIR::SEND_OK) != FlprogSnIR::SEND_OK)
+	while ((_hardware->readSn(s, FLPROG_SN_IR) & FLPROG_SN_IR_SEND_OK) != FLPROG_SN_IR_SEND_OK)
 	{
-		if (FlprogW5100.readSnIR(s) & FlprogSnIR::TIMEOUT)
+		if (_hardware->readSn(s, FLPROG_SN_IR) & FLPROG_SN_IR_TIMEOUT)
 		{
 			/* +2008.01 [bj]: clear interrupt */
-			FlprogW5100.writeSnIR(s, (FlprogSnIR::SEND_OK | FlprogSnIR::TIMEOUT));
+			_hardware->writeSn(s, FLPROG_SN_IR, (FLPROG_SN_IR_SEND_OK | FLPROG_SN_IR_TIMEOUT));
 			SPI.endTransaction();
 			// Serial.printf("sendUDP timeout\n");
 			return false;
@@ -579,7 +556,7 @@ bool FlprogEthernetClass::socketSendUDP(uint8_t s)
 	}
 
 	/* +2008.01 bj */
-	FlprogW5100.writeSnIR(s, FlprogSnIR::SEND_OK);
+	_hardware->writeSn(s, FLPROG_SN_IR, FLPROG_SN_IR_SEND_OK);
 	SPI.endTransaction();
 
 	// Serial.printf("sendUDP ok\n");

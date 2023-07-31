@@ -1,82 +1,37 @@
-/*
- * Copyright 2018 Paul Stoffregen
- * Copyright (c) 2010 by Cristian Maglie <c.maglie@bug.st>
- *
- * This file is free software; you can redistribute it and/or modify
- * it under the terms of either the GNU General Public License version 2
- * or the GNU Lesser General Public License version 2.1, both as
- * published by the Free Software Foundation.
- */
-
 #include <Arduino.h>
 #include "flprogEthernet.h"
 #include "flprogW5100.h"
 
-/***************************************************/
-/**            Default SS pin setting             **/
-/***************************************************/
+uint16_t FlprogW5100Class::SBASE(uint8_t socknum)
+{
+	if (chip == 51)
+	{
+		return socknum * SSIZE + 0x4000;
+	}
+	else
+	{
+		return socknum * SSIZE + 0x8000;
+	}
+}
 
-// If variant.h or other headers specifically define the
-// default SS pin for ethernet, use it.
-#if defined(PIN_SPI_SS_ETHERNET_LIB)
-#define SS_PIN_DEFAULT PIN_SPI_SS_ETHERNET_LIB
+uint16_t FlprogW5100Class::RBASE(uint8_t socknum)
+{
+	if (chip == 51)
+	{
+		return socknum * SSIZE + 0x6000;
+	}
+	else
+	{
+		return socknum * SSIZE + 0xC000;
+	}
+}
 
-// MKR boards default to pin 5 for MKR ETH
-// Pins 8-10 are MOSI/SCK/MISO on MRK, so don't use pin 10
-#elif defined(USE_ARDUINO_MKR_PIN_LAYOUT) || defined(ARDUINO_SAMD_MKRZERO) || defined(ARDUINO_SAMD_MKR1000) || defined(ARDUINO_SAMD_MKRFox1200) || defined(ARDUINO_SAMD_MKRGSM1400) || defined(ARDUINO_SAMD_MKRWAN1300)
-#define SS_PIN_DEFAULT 5
-
-// For boards using AVR, assume shields with SS on pin 10
-// will be used.  This allows for Arduino Mega (where
-// SS is pin 53) and Arduino Leonardo (where SS is pin 17)
-// to work by default with Arduino Ethernet Shield R2 & R3.
-#elif defined(__AVR__)
-#define SS_PIN_DEFAULT 10
-
-// If variant.h or other headers define these names
-// use them if none of the other cases match
-#elif defined(PIN_SPI_SS)
-#define SS_PIN_DEFAULT PIN_SPI_SS
-#elif defined(CORE_SS0_PIN)
-#define SS_PIN_DEFAULT CORE_SS0_PIN
-
-// As a final fallback, use pin 10
-#else
-#define SS_PIN_DEFAULT 10
-#endif
-
-// W5100 controller instance
-uint8_t FlprogW5100Class::chip = 0;
-uint8_t FlprogW5100Class::CH_BASE_MSB;
-uint8_t FlprogW5100Class::ss_pin = SS_PIN_DEFAULT;
-#ifdef ETHERNET_LARGE_BUFFERS
-uint16_t FlprogW5100Class::SSIZE = 2048;
-uint16_t FlprogW5100Class::SMASK = 0x07FF;
-#endif
-FlprogW5100Class FlprogW5100;
-
-// pointers and bitmasks for optimized SS pin
-#if defined(__AVR__)
-volatile uint8_t *FlprogW5100Class::ss_pin_reg;
-uint8_t FlprogW5100Class::ss_pin_mask;
-#elif defined(__MK20DX128__) || defined(__MK20DX256__) || defined(__MK66FX1M0__) || defined(__MK64FX512__)
-volatile uint8_t *FlprogW5100Class::ss_pin_reg;
-#elif defined(__MKL26Z64__)
-volatile uint8_t *FlprogW5100Class::ss_pin_reg;
-uint8_t FlprogW5100Class::ss_pin_mask;
-#elif defined(__SAM3X8E__) || defined(__SAM3A8C__) || defined(__SAM3A4C__)
-volatile uint32_t *FlprogW5100Class::ss_pin_reg;
-uint32_t FlprogW5100Class::ss_pin_mask;
-#elif defined(__PIC32MX__)
-volatile uint32_t *FlprogW5100Class::ss_pin_reg;
-uint32_t FlprogW5100Class::ss_pin_mask;
-#elif defined(ARDUINO_ARCH_ESP8266)
-volatile uint32_t *FlprogW5100Class::ss_pin_reg;
-uint32_t FlprogW5100Class::ss_pin_mask;
-#elif defined(__SAMD21G18A__)
-volatile uint32_t *FlprogW5100Class::ss_pin_reg;
-uint32_t FlprogW5100Class::ss_pin_mask;
-#endif
+bool FlprogW5100Class::hasOffsetAddressMapping(void)
+{
+	if (chip == 55)
+		return true;
+	return false;
+}
 
 void FlprogW5100Class::setIPAddress(IPAddress addr)
 {
@@ -131,10 +86,7 @@ IPAddress FlprogW5100Class::getSubnetMask()
 
 void FlprogW5100Class::setRetransmissionTime(uint16_t timeout)
 {
-	uint8_t buf[2];
-	buf[0] = timeout >> 8;
-	buf[1] = timeout & 0xFF;
-	write(FLPROG_RTR, buf, 2);
+	write16(FLPROG_RTR, timeout);
 }
 
 uint8_t FlprogW5100Class::read(uint16_t addr)
@@ -144,34 +96,44 @@ uint8_t FlprogW5100Class::read(uint16_t addr)
 	return data;
 }
 
+uint16_t FlprogW5100Class::readSn16(SOCKET _s, uint16_t address)
+{
+	uint8_t buf[2];
+	readSn(_s, address, buf, 2);
+	return (buf[0] << 8) | buf[1];
+}
+
+void FlprogW5100Class::writeSn16(SOCKET _s, uint16_t address, uint16_t _data)
+{
+	uint8_t buf[2];
+	buf[0] = _data >> 8;
+	buf[1] = _data & 0xFF;
+	writeSn(_s, address, buf, 2);
+}
+
+void FlprogW5100Class::write16(uint16_t address, uint16_t _data)
+{
+	uint8_t buf[2];
+	buf[0] = _data >> 8;
+	buf[1] = _data & 0xFF;
+	write(address, buf, 2);
+}
+
 uint8_t FlprogW5100Class::init(void)
 {
-	static bool initialized = false;
 	uint8_t i;
-
+	Serial.print("Init3 - ");
+	Serial.println(initialized);
 	if (initialized)
 		return 1;
-
-	// Many Ethernet shields have a CAT811 or similar reset chip
-	// connected to W5100 or W5200 chips.  The W5200 will not work at
-	// all, and may even drive its MISO pin, until given an active low
-	// reset pulse!  The CAT811 has a 240 ms typical pulse length, and
-	// a 400 ms worst case maximum pulse length.  MAX811 has a worst
-	// case maximum 560 ms pulse length.  This delay is meant to wait
-	// until the reset pulse is ended.  If your hardware has a shorter
-	// reset time, this can be edited or removed.
 	delay(560);
 	// Serial.println("w5100 init");
-
+	Serial.print("Init4");
+	Serial.println(initialized);
 	SPI.begin();
 	initSS();
 	resetSS();
 	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-
-	// Attempt W5200 detection first, because W5200 does not properly
-	// reset its SPI state when CS goes high (inactive).  Communication
-	// from detecting the other chips can leave the W5200 in a state
-	// where it won't recover, unless given a reset pulse.
 	if (isW5200())
 	{
 		CH_BASE_MSB = 0x40;
@@ -201,69 +163,75 @@ uint8_t FlprogW5100Class::init(void)
 		// SPI well with this chip.  It appears to be very resilient,
 		// so try it after the fragile W5200
 	}
-	else if (isW5500())
-	{
-		CH_BASE_MSB = 0x10;
-#ifdef ETHERNET_LARGE_BUFFERS
-#if MAX_SOCK_NUM <= 1
-		SSIZE = 16384;
-#elif MAX_SOCK_NUM <= 2
-		SSIZE = 8192;
-#elif MAX_SOCK_NUM <= 4
-		SSIZE = 4096;
-#else
-		SSIZE = 2048;
-#endif
-		SMASK = SSIZE - 1;
-		for (i = 0; i < MAX_SOCK_NUM; i++)
-		{
-			writeSn(i, FLPROG_SN_RX_SIZE, SSIZE >> 10);
-			writeSn(i, FLPROG_SN_TX_SIZE, SSIZE >> 10);
-		}
-		for (; i < 8; i++)
-		{
-			writeSn(i, FLPROG_SN_RX_SIZE, 0);
-			writeSn(i, FLPROG_SN_TX_SIZE, 0);
-		}
-#endif
-		// Try W5100 last.  This simple chip uses fixed 4 byte frames
-		// for every 8 bit access.  Terribly inefficient, but so simple
-		// it recovers from "hearing" unsuccessful W5100 or W5200
-		// communication.  W5100 is also the only chip without a VERSIONR
-		// register for identification, so we check this last.
-	}
-	else if (isW5100())
-	{
-		CH_BASE_MSB = 0x04;
-#ifdef ETHERNET_LARGE_BUFFERS
-#if MAX_SOCK_NUM <= 1
-		SSIZE = 8192;
-		write(FLPROG_TMSR, 0x03);
-		write(FLPROG_RMSR, 0x03);
-#elif MAX_SOCK_NUM <= 2
-		SSIZE = 4096;
-		write(FLPROG_TMSR, 0x0A);
-		write(FLPROG_RMSR, 0x0A);
-#else
-		SSIZE = 2048;
-		write(FLPROG_TMSR, 0x55);
-		write(FLPROG_RMSR, 0x55);
-#endif
-		SMASK = SSIZE - 1;
-#else
-		write(FLPROG_TMSR, 0x55);
-		write(FLPROG_RMSR, 0x55);
-#endif
-		// No hardware seems to be present.  Or it could be a W5200
-		// that's heard other SPI communication if its chip select
-		// pin wasn't high when a SD card or other SPI chip was used.
-	}
 	else
 	{
-		// Serial.println("no chip :-(");
-		chip = 0;
-		SPI.endTransaction();
-		return 0; // no known chip is responding :-(
+		if (isW5500())
+		{
+			CH_BASE_MSB = 0x10;
+#ifdef ETHERNET_LARGE_BUFFERS
+#if MAX_SOCK_NUM <= 1
+			SSIZE = 16384;
+#elif MAX_SOCK_NUM <= 2
+			SSIZE = 8192;
+#elif MAX_SOCK_NUM <= 4
+			SSIZE = 4096;
+#else
+			SSIZE = 2048;
+#endif
+			SMASK = SSIZE - 1;
+			for (i = 0; i < MAX_SOCK_NUM; i++)
+			{
+				writeSn(i, FLPROG_SN_RX_SIZE, SSIZE >> 10);
+				writeSn(i, FLPROG_SN_TX_SIZE, SSIZE >> 10);
+			}
+			for (; i < 8; i++)
+			{
+				writeSn(i, FLPROG_SN_RX_SIZE, 0);
+				writeSn(i, FLPROG_SN_TX_SIZE, 0);
+			}
+#endif
+			// Try W5100 last.  This simple chip uses fixed 4 byte frames
+			// for every 8 bit access.  Terribly inefficient, but so simple
+			// it recovers from "hearing" unsuccessful W5100 or W5200
+			// communication.  W5100 is also the only chip without a VERSIONR
+			// register for identification, so we check this last.
+		}
+		else
+		{
+			if (isW5100())
+			{
+				CH_BASE_MSB = 0x04;
+#ifdef ETHERNET_LARGE_BUFFERS
+#if MAX_SOCK_NUM <= 1
+				SSIZE = 8192;
+				write(FLPROG_TMSR, 0x03);
+				write(FLPROG_RMSR, 0x03);
+#elif MAX_SOCK_NUM <= 2
+				SSIZE = 4096;
+				write(FLPROG_TMSR, 0x0A);
+				write(FLPROG_RMSR, 0x0A);
+#else
+				SSIZE = 2048;
+				write(FLPROG_TMSR, 0x55);
+				write(FLPROG_RMSR, 0x55);
+#endif
+				SMASK = SSIZE - 1;
+#else
+				write(FLPROG_TMSR, 0x55);
+				write(FLPROG_RMSR, 0x55);
+#endif
+				// No hardware seems to be present.  Or it could be a W5200
+				// that's heard other SPI communication if its chip select
+				// pin wasn't high when a SD card or other SPI chip was used.
+			}
+			else
+			{
+				// Serial.println("no chip :-(");
+				chip = 0;
+				SPI.endTransaction();
+				return 0; // no known chip is responding :-(
+			}
+		}
 	}
 	SPI.endTransaction();
 	initialized = true;
@@ -326,8 +294,8 @@ uint8_t FlprogW5100Class::isW5200(void)
 	if (read(FLPROG_MR) != 0x00)
 		return 0;
 	int ver = read(FLPROG_VERSIONR_W5200);
-	// Serial.print("version=");
-	// Serial.println(ver);
+	Serial.print("version=");
+	Serial.println(ver);
 	if (ver != 3)
 		return 0;
 	// Serial.println("chip is W5200");
@@ -358,12 +326,12 @@ uint8_t FlprogW5100Class::isW5500(void)
 	return 1;
 }
 
-FlprogW5100Linkstatus FlprogW5100Class::getLinkStatus()
+uint8_t FlprogW5100Class::getLinkStatus()
 {
 	uint8_t phystatus;
 
 	if (!init())
-		return UNKNOWN;
+		return FLPROG_ETHERNET_LINK_UNKNOWN;
 	switch (chip)
 	{
 	case 52:
@@ -371,17 +339,17 @@ FlprogW5100Linkstatus FlprogW5100Class::getLinkStatus()
 		phystatus = read(FLPROG_PSTATUS_W5200);
 		SPI.endTransaction();
 		if (phystatus & 0x20)
-			return LINK_ON;
-		return LINK_OFF;
+			return FLPROG_ETHERNET_LINK_ON;
+		return FLPROG_ETHERNET_LINK_OFF;
 	case 55:
 		SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
 		phystatus = read(FLPROG_PHYCFGR_W5500);
 		SPI.endTransaction();
 		if (phystatus & 0x01)
-			return LINK_ON;
-		return LINK_OFF;
+			return FLPROG_ETHERNET_LINK_ON;
+		return FLPROG_ETHERNET_LINK_OFF;
 	default:
-		return UNKNOWN;
+		return FLPROG_ETHERNET_LINK_UNKNOWN;
 	}
 }
 
@@ -590,7 +558,7 @@ uint16_t FlprogW5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
 	return len;
 }
 
-void FlprogW5100Class::execCmdSn(SOCKET s, FlprogSockCMD _cmd)
+void FlprogW5100Class::execCmdSn(SOCKET s, uint8_t _cmd)
 {
 	// Send command to socket
 	writeSn(s, FLPROG_SN_CR, _cmd);
