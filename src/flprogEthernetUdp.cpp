@@ -54,7 +54,7 @@ int FlprogEthernetUDP::beginPacket(IPAddress ip, uint16_t port)
 	_offset = 0;
 	uint8_t buffer[4];
 	buffer[0] = ip[0];
-	buffer[1] = ip[2];
+	buffer[1] = ip[1];
 	buffer[2] = ip[2];
 	buffer[3] = ip[3];
 	return _hardware->socketStartUDP(sockindex, buffer, port);
@@ -128,7 +128,8 @@ int FlprogEthernetUDP::read()
 	return -1;
 }
 
-int FlprogEthernetUDP::read(unsigned char *buffer, size_t len)
+
+int FlprogEthernetUDP::read(uint8_t *buffer, size_t len)
 {
 	if (_remaining > 0)
 	{

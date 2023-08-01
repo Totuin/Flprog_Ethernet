@@ -132,6 +132,8 @@ typedef struct _FLPROG_RIP_MSG_FIXED
 	uint8_t chaddr[6];
 } FLPROG_RIP_MSG_FIXED;
 
+
+
 class FlprogDhcpClass
 {
 public:

@@ -39,7 +39,7 @@ void FlprogDNSClient::setUDP(FlprogEthernetUDP *udp)
 	_udp = udp;
 }
 
-void FlprogDNSClient::begin(const IPAddress &aDNSServer)
+void FlprogDNSClient::begin(const IPAddress aDNSServer)
 {
 	iDNSServer = aDNSServer;
 	iRequestId = 0;
@@ -82,6 +82,8 @@ int FlprogDNSClient::inet_aton(const char *address, IPAddress &result)
 	return 1;
 }
 
+
+
 int FlprogDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint16_t timeout)
 {
 	int ret = 0;
@@ -90,18 +92,19 @@ int FlprogDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 	temp[1] = aResult[1];
 	temp[2] = aResult[2];
 	temp[3] = aResult[3];
+	
+		if (inet_aton(aHostname, temp))
+		{
+			return 1;
+		}
 
-	if (inet_aton(aHostname, temp))
-	{
-		return 1;
-	}
+	
 	if (iDNSServer == INADDR_NONE)
 	{
 		return FLPROG_INVALID_SERVER;
 	}
 	if (_udp->begin(1024 + (millis() & 0xF)) == 1)
 	{
-		int retries = 0;
 		ret = _udp->beginPacket(iDNSServer, FLPROG_DNS_PORT);
 		if (ret != 0)
 		{
@@ -121,7 +124,6 @@ int FlprogDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 				}
 			}
 		}
-		retries++;
 		_udp->stop();
 	}
 	return ret;
@@ -190,7 +192,7 @@ uint16_t FlprogDNSClient::ProcessResponse(uint16_t aTimeout, uint8_t *aAddress)
 	{
 		return FLPROG_INVALID_SERVER;
 	}
-	
+
 	if (_udp->available() < FLPROG_DNS_HEADER_SIZE)
 	{
 		return FLPROG_TRUNCATED;

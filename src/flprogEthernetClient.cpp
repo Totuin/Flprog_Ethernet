@@ -37,11 +37,9 @@ int FlprogEthernetClient::connect(const char *host, uint16_t port)
 	}
 
 	if (!_dns->getHostByName(host, remote_addr))
-		return 0; // TODO: use _timeout
-
-	Serial.print("Result address - ");
-	Serial.println(IPAddress(remote_addr[0], remote_addr[1], remote_addr[2], remote_addr[3]));
-
+	{
+		return 0;
+	} // TODO: use _timeout
 	return connect(IPAddress(remote_addr[0], remote_addr[1], remote_addr[2], remote_addr[3]), port);
 }
 
