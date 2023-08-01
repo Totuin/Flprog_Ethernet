@@ -6,6 +6,7 @@
 #include "flprogEthernet.h"
 #include "flprogEthernetClient.h"
 
+class FlprogEthernetClient;
 
 class FlprogEthernetServer : public Server
 {

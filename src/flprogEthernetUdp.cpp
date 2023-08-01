@@ -41,25 +41,23 @@ void FlprogEthernetUDP::stop()
 
 int FlprogEthernetUDP::beginPacket(const char *host, uint16_t port)
 {
-	// Внимание!!!! Исправить.
-
-	/*
-	Look up the host first
 	int ret = 0;
-	IPAddress remote_addr;
-	ret = _hardware->dnsClient()->getHostByName(host, remote_addr);
+	uint8_t remote_addr[4] = {0, 0, 0, 0};
+	ret = _dns->getHostByName(host, remote_addr);
 	if (ret != 1)
 		return ret;
-	return beginPacket(remote_addr, port);
-	*/
-	return 0;
+	return beginPacket(IPAddress(remote_addr[0], remote_addr[1], remote_addr[2], remote_addr[3]), port);
 }
 
 int FlprogEthernetUDP::beginPacket(IPAddress ip, uint16_t port)
 {
 	_offset = 0;
-	// Serial.printf("UDP beginPacket\n");
-	return _hardware->socketStartUDP(sockindex, rawIPAddress(ip), port);
+	uint8_t buffer[4];
+	buffer[0] = ip[0];
+	buffer[1] = ip[2];
+	buffer[2] = ip[2];
+	buffer[3] = ip[3];
+	return _hardware->socketStartUDP(sockindex, buffer, port);
 }
 
 int FlprogEthernetUDP::endPacket()

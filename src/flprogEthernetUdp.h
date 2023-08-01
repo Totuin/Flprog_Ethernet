@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include "Udp.h"
+#include "flprogDns.h"
 #include "flprogW5100.h"
 
 #ifndef MAX_SOCK_NUM
@@ -11,27 +12,20 @@
 #endif
 #endif
 
-
 #define FLPROG_UDP_TX_PACKET_MAX_SIZE 24
+
+class FlprogDNSClient;
 
 class FlprogEthernetUDP : public UDP
 {
-	public:
+public:
 	void setHatdware(FlprogW5100Class *hardware);
+	void setDNS(FlprogDNSClient *dns) { _dns = dns; };
 	virtual uint8_t begin(uint16_t);					 // initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use
 	virtual uint8_t beginMulticast(IPAddress, uint16_t); // initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use
 	virtual void stop();								 // Finish with the UDP socket
-
-	// Sending UDP packets
-
-	// Start building up a packet to send to the remote host specific in ip and port
-	// Returns 1 if successful, 0 if there was a problem with the supplied IP address or port
 	virtual int beginPacket(IPAddress ip, uint16_t port);
-	// Start building up a packet to send to the remote host specific in host and port
-	// Returns 1 if successful, 0 if there was a problem resolving the hostname or port
 	virtual int beginPacket(const char *host, uint16_t port);
-	// Finish off this packet and send it
-	// Returns 1 if the packet was sent successfully, 0 if there was an error
 	virtual int endPacket();
 	// Write a single byte into the packet
 	virtual size_t write(uint8_t);
@@ -67,16 +61,11 @@ protected:
 	uint8_t sockindex;
 	uint16_t _remaining; // remaining bytes of incoming packet yet to be processed
 
-
 private:
 	uint16_t _port;		  // local port to listen on
 	IPAddress _remoteIP;  // remote IP address for the incoming packet whilst it's being processed
 	uint16_t _remotePort; // remote port for the incoming packet whilst it's being processed
 	uint16_t _offset;	  // offset into the packet being sent
 	FlprogW5100Class *_hardware;
-
-
-
+	FlprogDNSClient *_dns;
 };
-
-

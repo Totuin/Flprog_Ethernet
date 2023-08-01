@@ -1,5 +1,13 @@
 #include "flprogEthernetClient.h"
 
+FlprogEthernetClient::FlprogEthernetClient(FlprogEthernetClass *sourse)
+{
+	_hardware = sourse->hardware();
+	_dns = sourse->dnsClient();
+	sockindex = MAX_SOCK_NUM;
+	_timeout = 1000;
+}
+
 FlprogEthernetClient::FlprogEthernetClient(FlprogW5100Class *hardware, FlprogDNSClient *dns)
 {
 	_hardware = hardware;
@@ -18,7 +26,7 @@ FlprogEthernetClient::FlprogEthernetClient(FlprogW5100Class *hardware, FlprogDNS
 
 int FlprogEthernetClient::connect(const char *host, uint16_t port)
 {
-	IPAddress remote_addr;
+	uint8_t remote_addr[4] = {0, 0, 0, 0};
 	if (sockindex < MAX_SOCK_NUM)
 	{
 		if (_hardware->socketStatus(sockindex) != FLPROG_SN_SR_CLOSED)
@@ -27,9 +35,14 @@ int FlprogEthernetClient::connect(const char *host, uint16_t port)
 		}
 		sockindex = MAX_SOCK_NUM;
 	}
+
 	if (!_dns->getHostByName(host, remote_addr))
 		return 0; // TODO: use _timeout
-	return connect(remote_addr, port);
+
+	Serial.print("Result address - ");
+	Serial.println(IPAddress(remote_addr[0], remote_addr[1], remote_addr[2], remote_addr[3]));
+
+	return connect(IPAddress(remote_addr[0], remote_addr[1], remote_addr[2], remote_addr[3]), port);
 }
 
 int FlprogEthernetClient::connect(IPAddress ip, uint16_t port)
@@ -52,7 +65,7 @@ int FlprogEthernetClient::connect(IPAddress ip, uint16_t port)
 	sockindex = _hardware->socketBegin(FLPROG_SN_MR_TCP, 0);
 	if (sockindex >= MAX_SOCK_NUM)
 		return 0;
-	_hardware->socketConnect(sockindex, rawIPAddress(ip), port);
+	_hardware->socketConnect(sockindex, ip, port);
 	uint32_t start = millis();
 	while (1)
 	{
@@ -197,41 +210,17 @@ bool FlprogEthernetClient::operator==(const FlprogEthernetClient &rhs)
 	return true;
 }
 
-// https://github.com/per1234/EthernetMod
-// from: https://github.com/ntruchsess/Arduino-1/commit/937bce1a0bb2567f6d03b15df79525569377dabd
 uint16_t FlprogEthernetClient::localPort()
 {
-	if (sockindex >= MAX_SOCK_NUM)
-		return 0;
-	uint16_t port;
-	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	port = _hardware->readSn16(sockindex, FLPROG_SN_PORT);
-	SPI.endTransaction();
-	return port;
+	return _hardware->localPort(sockindex);
 }
 
-// https://github.com/per1234/EthernetMod
-// returns the remote IP address: http://forum.arduino.cc/index.php?topic=82416.0
 IPAddress FlprogEthernetClient::remoteIP()
 {
-	if (sockindex >= MAX_SOCK_NUM)
-		return IPAddress((uint32_t)0);
-	uint8_t remoteIParray[4];
-	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	_hardware->readSn(sockindex, FLPROG_SN_DIPR, remoteIParray, 4);
-	SPI.endTransaction();
-	return IPAddress(remoteIParray);
+	return _hardware->remoteIP(sockindex);
 }
 
-// https://github.com/per1234/EthernetMod
-// from: https://github.com/ntruchsess/Arduino-1/commit/ca37de4ba4ecbdb941f14ac1fe7dd40f3008af75
 uint16_t FlprogEthernetClient::remotePort()
 {
-	if (sockindex >= MAX_SOCK_NUM)
-		return 0;
-	uint16_t port;
-	SPI.beginTransaction(SPI_ETHERNET_SETTINGS);
-	port = _hardware->readSn16(sockindex, FLPROG_SN_DPORT);
-	SPI.endTransaction();
-	return port;
+	return _hardware->remotePort(sockindex);
 }

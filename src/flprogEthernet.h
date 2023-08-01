@@ -1,5 +1,6 @@
 #pragma once
 #include <Arduino.h>
+#include <SPI.h>
 #include "flprogW5100.h"
 #include "flprogEthernetUdp.h"
 #include "flprogDns.h"
@@ -22,17 +23,10 @@
 #define FLPROG_ETHERNET_W5200 2
 #define FLPROG_ETHERNET_W5500 3
 
-/*
-class FlprogW5100Class;
-class FlprogEthernetUDP;
-class FlprogDhcpClass;
-class FlprogDNSClient;
-*/
-
 class FlprogEthernetClass
 {
 public:
-	FlprogEthernetClass();
+	FlprogEthernetClass(SPIClass *spi, uint8_t pin = 10);
 	uint8_t begin(uint8_t *mac, unsigned long timeout = 60000, unsigned long responseTimeout = 4000);
 	int maintain();
 	uint8_t linkStatus();

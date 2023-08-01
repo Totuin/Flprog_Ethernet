@@ -3,10 +3,12 @@
 #include "Client.h"
 #include "flprogW5100.h"
 #include "flprogDns.h"
+#include "flprogEthernet.h"
 
 class FlprogEthernetClient : public Client
 {
 public:
+    FlprogEthernetClient(FlprogEthernetClass *sourse);
     FlprogEthernetClient(FlprogW5100Class *hardware, FlprogDNSClient *dns);
     FlprogEthernetClient(FlprogW5100Class *hardware, FlprogDNSClient *dns, uint8_t s);
 

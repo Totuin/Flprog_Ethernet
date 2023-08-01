@@ -1,16 +1,18 @@
 #include "flprogEthernet.h"
 
-FlprogEthernetClass::FlprogEthernetClass()
+FlprogEthernetClass::FlprogEthernetClass(SPIClass *spi, uint8_t pin)
 {
-	_hardware.setSS(10);
+	_hardware.setSS(pin);
+	_hardware.setSPI(spi);
 	_udp.setHatdware(&_hardware);
+	_udp.setDNS(&_dns);
 	_dhcp.setUDP(&_udp);
 	_dns.setUDP(&_udp);
 }
 
 uint8_t FlprogEthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned long responseTimeout)
 {
-	_dns.begin(_dnsServerAddress);
+
 	if (_hardware.init() == 0)
 		return 0;
 	_hardware.setNetSettings(mac, IPAddress(0, 0, 0, 0));
@@ -19,6 +21,7 @@ uint8_t FlprogEthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned
 	{
 		_hardware.setNetSettings(_dhcp.getLocalIp(), _dhcp.getGatewayIp(), _dhcp.getSubnetMask());
 		_dnsServerAddress = _dhcp.getDnsServerIp();
+		_dns.begin(_dnsServerAddress);
 		_hardware.socketPortRand(micros());
 	}
 	return ret;

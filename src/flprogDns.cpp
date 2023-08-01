@@ -82,10 +82,16 @@ int FlprogDNSClient::inet_aton(const char *address, IPAddress &result)
 	return 1;
 }
 
-int FlprogDNSClient::getHostByName(const char *aHostname, IPAddress &aResult, uint16_t timeout)
+int FlprogDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint16_t timeout)
 {
 	int ret = 0;
-	if (inet_aton(aHostname, aResult))
+	IPAddress temp;
+	temp[0] = aResult[0];
+	temp[1] = aResult[1];
+	temp[2] = aResult[2];
+	temp[3] = aResult[3];
+
+	if (inet_aton(aHostname, temp))
 	{
 		return 1;
 	}
@@ -163,7 +169,7 @@ uint16_t FlprogDNSClient::BuildRequest(const char *aName)
 	return 1;
 }
 
-uint16_t FlprogDNSClient::ProcessResponse(uint16_t aTimeout, IPAddress &aAddress)
+uint16_t FlprogDNSClient::ProcessResponse(uint16_t aTimeout, uint8_t *aAddress)
 {
 	uint32_t startTime = millis();
 	while (_udp->parsePacket() <= 0)
@@ -179,10 +185,12 @@ uint16_t FlprogDNSClient::ProcessResponse(uint16_t aTimeout, IPAddress &aAddress
 		uint8_t byte[FLPROG_DNS_HEADER_SIZE]; // Enough space to reuse for the DNS header
 		uint16_t word[FLPROG_DNS_HEADER_SIZE / 2];
 	} header;
+
 	if ((iDNSServer != _udp->remoteIP()) || (_udp->remotePort() != FLPROG_DNS_PORT))
 	{
 		return FLPROG_INVALID_SERVER;
 	}
+	
 	if (_udp->available() < FLPROG_DNS_HEADER_SIZE)
 	{
 		return FLPROG_TRUNCATED;
@@ -251,16 +259,7 @@ uint16_t FlprogDNSClient::ProcessResponse(uint16_t aTimeout, IPAddress &aAddress
 				_udp->flush(); // FIXME
 				return -9;	   // INVALID_RESPONSE;
 			}
-			uint8_t flporgConvertTmpBytes[4];
-			flporgConvertTmpBytes[0] = aAddress[0];
-			flporgConvertTmpBytes[1] = aAddress[1];
-			flporgConvertTmpBytes[2] = aAddress[2];
-			flporgConvertTmpBytes[3] = aAddress[3];
-			_udp->read(flporgConvertTmpBytes, 4);
-			aAddress[0] = flporgConvertTmpBytes[0];
-			aAddress[1] = flporgConvertTmpBytes[1];
-			aAddress[2] = flporgConvertTmpBytes[2];
-			aAddress[3] = flporgConvertTmpBytes[3];
+			_udp->read(aAddress, 4);
 			return FLPROG_SUCCESS;
 		}
 		else

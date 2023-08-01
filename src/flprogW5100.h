@@ -1,6 +1,5 @@
 
 #pragma once
-
 #include <Arduino.h>
 #include <SPI.h>
 #include <IPAddress.h>
@@ -117,6 +116,7 @@ class FlprogW5100Class
 public:
   uint8_t init(void);
   uint8_t getLinkStatus();
+  void setSPI(SPIClass *spi) { _spi = spi; };
   void setGatewayIp(IPAddress addr);
   IPAddress getGatewayIp();
   void setSubnetMask(IPAddress addr);
@@ -174,6 +174,9 @@ public:
   IPAddress subnetMask();
   IPAddress gatewayIP();
   void MACAddress(uint8_t *mac_address);
+  uint16_t localPort(uint8_t soc);
+  IPAddress remoteIP(uint8_t soc);
+  uint16_t remotePort(uint8_t soc);
 
   // Сокет
   void socketPortRand(uint16_t n);
@@ -182,7 +185,7 @@ public:
   uint8_t socketStatus(uint8_t s);
   void socketClose(uint8_t s);
   uint8_t socketListen(uint8_t s);
-  void socketConnect(uint8_t s, uint8_t *addr, uint16_t port);
+  void socketConnect(uint8_t s, IPAddress ip, uint16_t port);
   void socketDisconnect(uint8_t s);
   uint16_t getSnRX_RSR(uint8_t s);
   void read_data(uint8_t s, uint16_t src, uint8_t *dst, uint16_t len);
@@ -202,6 +205,7 @@ private:
   uint16_t local_port = 49152; // 49152 to 65535 TODO: randomize this when not using DHCP, but how?
   bool initialized = false;
   socketstate_t state[MAX_SOCK_NUM];
+  SPIClass *_spi;
   uint8_t softReset(void);
   uint8_t isW5100(void);
   uint8_t isW5200(void);
