@@ -1,10 +1,15 @@
 
 #include "flprogEthernetUdp.h"
-#include "flprogW5100.h"
 
 /* Start EthernetUDP socket, listening at local port PORT */
 
-void FlprogEthernetUDP::setHatdware(FlprogW5100Class *hardware)
+FlprogEthernetUDP::FlprogEthernetUDP(FlprogAbstractEthernet *sourse)
+{
+	_hardware = sourse->hardware();
+	_dns = sourse->dnsClient();
+}
+
+void FlprogEthernetUDP::setHatdware(FlprogAbstractEthernetHardware *hardware)
 {
 	sockindex = MAX_SOCK_NUM;
 	_hardware = hardware;
@@ -127,7 +132,6 @@ int FlprogEthernetUDP::read()
 	// If we get here, there's no data available
 	return -1;
 }
-
 
 int FlprogEthernetUDP::read(uint8_t *buffer, size_t len)
 {

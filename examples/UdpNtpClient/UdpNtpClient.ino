@@ -1,4 +1,3 @@
-#include <SPI.h>
 #include <flprogEthernet.h>
 
 // Enter a MAC address for your controller below.
@@ -27,15 +26,14 @@ byte packetBuffer[NTP_PACKET_SIZE]; // buffer to hold incoming and outgoing pack
    15 - ESP8266 with Adafruit Featherwing Ethernet
    33 - ESP32 with Adafruit Featherwing Ethernet
 */
-FlprogEthernetClass W5100_Interface(&SPI, 10);
+FlprogW5100Interface W5100_Interface(&SPI, 10);
 
-FlprogEthernetUDP Udp; //Создаём UDP клиента
+//Сщздаём UDP клиента на выбранном интерфейсе 
+
+FlprogEthernetUDP Udp(&W5100_Interface); //Создаём UDP клиента
 
 void setup()
 {
-
-  Udp.setHatdware(W5100_Interface.hardware()); //Привязываем UDP клиента к выбранному интерфейсу (Обязательно)
-  Udp.setDNS(W5100_Interface.dnsClient()); // Передаём клиенту DNS интерфейса (Обязательно)
   Serial.begin(9600);
   while (!Serial)
   {

@@ -1,7 +1,6 @@
 #include "flprogEthernetServer.h"
 
-
-FlprogEthernetServer::FlprogEthernetServer(FlprogEthernetClass *sourse, uint16_t port)
+FlprogEthernetServer::FlprogEthernetServer(FlprogAbstractEthernet *sourse, uint16_t port)
 {
 	_hardware = sourse->hardware();
 	_dns = sourse->dnsClient();
@@ -117,7 +116,7 @@ FlprogEthernetServer::operator bool()
 {
 	uint8_t maxindex = MAX_SOCK_NUM;
 #if MAX_SOCK_NUM > 4
-	if (W5100.getChip() == 51)
+	if (_hardware->getChip() == 51)
 		maxindex = 4; // W5100 chip never supports more than 4 sockets
 #endif
 	for (uint8_t i = 0; i < maxindex; i++)

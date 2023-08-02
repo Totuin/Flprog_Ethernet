@@ -1,8 +1,8 @@
 
 #pragma once
 #include <Arduino.h>
-#include <SPI.h>
 #include <IPAddress.h>
+
 
 #if ARDUINO >= 156 && !defined(ARDUINO_ARCH_PIC32)
 extern void yield(void);
@@ -111,110 +111,64 @@ typedef struct
   uint8_t RX_inc;  // how much have we advanced RX_RD
 } socketstate_t;
 
-class FlprogW5100Class
+class FlprogAbstractEthernetHardware
 {
 public:
-  uint8_t init(void);
-  uint8_t getLinkStatus();
-  void setSPI(SPIClass *spi) { _spi = spi; };
-  void setGatewayIp(IPAddress addr);
-  IPAddress getGatewayIp();
-  void setSubnetMask(IPAddress addr);
-  IPAddress getSubnetMask();
-  void setMACAddress(const uint8_t *addr) { write(FLPROG_SHAR, addr, 6); };
-  void getMACAddress(uint8_t *addr) { read(FLPROG_SHAR, addr, 6); };
-  void setIPAddress(IPAddress addr);
-  IPAddress getIPAddress();
-  void setRetransmissionTime(uint16_t timeout);
-  void setRetransmissionCount(uint8_t retry);
-  void execCmdSn(SOCKET s, uint8_t _cmd);
-  uint8_t getChip(void) { return chip; }
-
-  // W5100 Registers
-  uint16_t write(uint16_t addr, const uint8_t *buf, uint16_t len);
-  uint8_t write(uint16_t addr, uint8_t data) { return write(addr, &data, 1); };
-  void write16(uint16_t address, uint16_t _data);
-  uint16_t read(uint16_t addr, uint8_t *buf, uint16_t len);
-  uint8_t read(uint16_t addr);
-  uint16_t CH_BASE(void) { return CH_BASE_MSB << 8; };
-  uint8_t CH_BASE_MSB; // 1 redundant byte, saves ~80 bytes code on AVR
-  const uint16_t CH_SIZE = 0x0100;
-
-  // W5100 Socket registers
-  uint8_t readSn(SOCKET s, uint16_t addr) { return read(CH_BASE() + s * CH_SIZE + addr); };
-  uint8_t writeSn(SOCKET s, uint16_t addr, uint8_t data) { return write(CH_BASE() + s * CH_SIZE + addr, data); };
-  uint16_t readSn(SOCKET s, uint16_t addr, uint8_t *buf, uint16_t len) { return read(CH_BASE() + s * CH_SIZE + addr, buf, len); };
-  uint16_t writeSn(SOCKET s, uint16_t addr, uint8_t *buf, uint16_t len) { return write(CH_BASE() + s * CH_SIZE + addr, buf, len); };
-  uint16_t readSn16(SOCKET _s, uint16_t address);
-  void writeSn16(SOCKET _s, uint16_t address, uint16_t _data);
-  uint8_t _pinSS;
-
-#ifdef ETHERNET_LARGE_BUFFERS
-  uint16_t SSIZE;
-  uint16_t SMASK;
-#else
-  const uint16_t SSIZE = 2048;
-  const uint16_t SMASK = 0x07FF;
-#endif
-  uint16_t SBASE(uint8_t socknum);
-  uint16_t RBASE(uint8_t socknum);
-  bool hasOffsetAddressMapping(void);
-  void setSS(uint8_t pin) { _pinSS = pin; };
+  virtual uint8_t init() = 0;
+  virtual uint8_t getLinkStatus() = 0;
+  virtual void setGatewayIp(IPAddress addr) = 0;
+  virtual IPAddress getGatewayIp() = 0;
+  virtual void setSubnetMask(IPAddress addr);
+  virtual IPAddress getSubnetMask() = 0;
+  virtual void setMACAddress(const uint8_t *addr) = 0;
+  virtual void getMACAddress(uint8_t *addr) = 0;
+  virtual void setIPAddress(IPAddress addr) = 0;
+  virtual IPAddress getIPAddress() = 0;
+  virtual void setRetransmissionTime(uint16_t timeout) = 0;
+  virtual void setRetransmissionCount(uint8_t retry) = 0;
+  virtual void execCmdSn(SOCKET s, uint8_t _cmd) = 0;
+  virtual uint8_t getChip() = 0;
+  virtual uint16_t _CH_SIZE() = 0;
+  virtual uint16_t _SSIZE() = 0;
 
   // утилиты
-  void setNetSettings(uint8_t *mac, IPAddress ip);
-  void setNetSettings(IPAddress ip, IPAddress gateway, IPAddress subnet);
-  void setNetSettings(uint8_t *mac, IPAddress ip, IPAddress gateway, IPAddress subnet);
-  void setOnlyMACAddress(const uint8_t *mac_address);
-  void setOnlyLocalIP(const IPAddress local_ip);
-  void setOnlySubnetMask(const IPAddress subnet);
-  void setOnlyGatewayIP(const IPAddress gateway);
+  virtual void setNetSettings(uint8_t *mac, IPAddress ip) = 0;
+  virtual void setNetSettings(IPAddress ip, IPAddress gateway, IPAddress subnet) = 0;
+  virtual void setNetSettings(uint8_t *mac, IPAddress ip, IPAddress gateway, IPAddress subnet) = 0;
+  virtual void setOnlyMACAddress(const uint8_t *mac_address) = 0;
+  virtual void setOnlyLocalIP(const IPAddress local_ip) = 0;
+  virtual void setOnlySubnetMask(const IPAddress subnet) = 0;
+  virtual void setOnlyGatewayIP(const IPAddress gateway) = 0;
 
-  IPAddress localIP();
-  IPAddress subnetMask();
-  IPAddress gatewayIP();
-  void MACAddress(uint8_t *mac_address);
-  uint16_t localPort(uint8_t soc);
-  IPAddress remoteIP(uint8_t soc);
-  uint16_t remotePort(uint8_t soc);
+  virtual IPAddress localIP() = 0;
+  virtual IPAddress subnetMask() = 0;
+  virtual IPAddress gatewayIP() = 0;
+  virtual void MACAddress(uint8_t *mac_address) = 0;
+  virtual uint16_t localPort(uint8_t soc) = 0;
+  virtual IPAddress remoteIP(uint8_t soc) = 0;
+  virtual uint16_t remotePort(uint8_t soc) = 0;
 
   // Сокет
-  void socketPortRand(uint16_t n);
-  uint8_t socketBegin(uint8_t protocol, uint16_t port);
-  uint8_t socketBeginMulticast(uint8_t protocol, IPAddress ip, uint16_t port);
-  uint8_t socketStatus(uint8_t s);
-  void socketClose(uint8_t s);
-  uint8_t socketListen(uint8_t s);
-  void socketConnect(uint8_t s, IPAddress ip, uint16_t port);
-  void socketDisconnect(uint8_t s);
-  uint16_t getSnRX_RSR(uint8_t s);
-  void read_data(uint8_t s, uint16_t src, uint8_t *dst, uint16_t len);
-  int socketRecv(uint8_t s, uint8_t *buf, int16_t len);
-  uint16_t socketRecvAvailable(uint8_t s);
-  uint8_t socketPeek(uint8_t s);
-  uint16_t getSnTX_FSR(uint8_t s);
-  void write_data(uint8_t s, uint16_t data_offset, const uint8_t *data, uint16_t len);
-  uint16_t socketSend(uint8_t s, const uint8_t *buf, uint16_t len);
-  uint16_t socketSendAvailable(uint8_t s);
-  uint16_t socketBufferData(uint8_t s, uint16_t offset, const uint8_t *buf, uint16_t len);
-  bool socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port);
-  bool socketSendUDP(uint8_t s);
-
-private:
-  uint8_t chip = 0;
-  uint16_t local_port = 49152; // 49152 to 65535 TODO: randomize this when not using DHCP, but how?
-  bool initialized = false;
-  socketstate_t state[MAX_SOCK_NUM];
-  SPIClass *_spi;
-  uint8_t softReset(void);
-  uint8_t isW5100(void);
-  uint8_t isW5200(void);
-  uint8_t isW5500(void);
-  void initSS() { pinMode(_pinSS, OUTPUT); };
-  void setSS() { digitalWrite(_pinSS, LOW); };
-  void resetSS() { digitalWrite(_pinSS, HIGH); };
-  void privateMaceSocet(uint8_t soc, uint8_t protocol, uint16_t port);
-  void privateMaceSocetMulticast(uint8_t soc, uint8_t protocol, IPAddress ip, uint16_t port);
+  virtual void socketPortRand(uint16_t n) = 0;
+  virtual uint8_t socketBegin(uint8_t protocol, uint16_t port) = 0;
+  virtual uint8_t socketBeginMulticast(uint8_t protocol, IPAddress ip, uint16_t port) = 0;
+  virtual uint8_t socketStatus(uint8_t s) = 0;
+  virtual void socketClose(uint8_t s) = 0;
+  virtual uint8_t socketListen(uint8_t s) = 0;
+  virtual void socketConnect(uint8_t s, IPAddress ip, uint16_t port) = 0;
+  virtual void socketDisconnect(uint8_t s) = 0;
+  virtual uint16_t getSnRX_RSR(uint8_t s) = 0;
+  virtual void read_data(uint8_t s, uint16_t src, uint8_t *dst, uint16_t len) = 0;
+  virtual int socketRecv(uint8_t s, uint8_t *buf, int16_t len) = 0;
+  virtual uint16_t socketRecvAvailable(uint8_t s) = 0;
+  virtual uint8_t socketPeek(uint8_t s) = 0;
+  virtual uint16_t getSnTX_FSR(uint8_t s) = 0;
+  virtual void write_data(uint8_t s, uint16_t data_offset, const uint8_t *data, uint16_t len) = 0;
+  virtual uint16_t socketSend(uint8_t s, const uint8_t *buf, uint16_t len) = 0;
+  virtual uint16_t socketSendAvailable(uint8_t s) = 0;
+  virtual uint16_t socketBufferData(uint8_t s, uint16_t offset, const uint8_t *buf, uint16_t len) = 0;
+  virtual bool socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port) = 0;
+  virtual bool socketSendUDP(uint8_t s) = 0;
 };
 
 #ifndef FLPROG_W5100_UTIL_H
@@ -229,3 +183,5 @@ private:
                              ((x) >> 24 & 0x000000FFUL))
 #define flporgW5100Ntohl(x) flprogW5100Htonl(x)
 #endif
+
+#include "flprogW5100.h"

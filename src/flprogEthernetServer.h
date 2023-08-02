@@ -1,17 +1,17 @@
 #pragma once
 #include <Arduino.h>
 #include "Server.h"
-#include "flprogW5100.h"
+#include "hardware/flprogAbstractEthernetHardware.h"
+#include "flprogAbstractEthernet.h"
 #include "flprogDns.h"
-#include "flprogEthernet.h"
 #include "flprogEthernetClient.h"
 
-class FlprogEthernetClient;
+// class FlprogEthernetClient;
 
 class FlprogEthernetServer : public Server
 {
 public:
-    FlprogEthernetServer(FlprogEthernetClass *sourse, uint16_t port);
+    FlprogEthernetServer(FlprogAbstractEthernet *sourse, uint16_t port);
     FlprogEthernetClient available();
     FlprogEthernetClient accept();
     virtual void begin();
@@ -23,6 +23,6 @@ public:
 
 private:
     uint16_t _port;
-    FlprogW5100Class *_hardware;
+    FlprogAbstractEthernetHardware *_hardware;
     FlprogDNSClient *_dns;
 };

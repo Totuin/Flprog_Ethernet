@@ -1,16 +1,17 @@
 #pragma once
 #include <Arduino.h>
 #include "Client.h"
-#include "flprogW5100.h"
+#include "hardware/flprogAbstractEthernetHardware.h"
+#include "flprogAbstractEthernet.h"
 #include "flprogDns.h"
-#include "flprogEthernet.h"
+
 
 class FlprogEthernetClient : public Client
 {
 public:
-    FlprogEthernetClient(FlprogEthernetClass *sourse);
-    FlprogEthernetClient(FlprogW5100Class *hardware, FlprogDNSClient *dns);
-    FlprogEthernetClient(FlprogW5100Class *hardware, FlprogDNSClient *dns, uint8_t s);
+    FlprogEthernetClient(FlprogAbstractEthernet *sourse);
+    FlprogEthernetClient(FlprogAbstractEthernetHardware *hardware, FlprogDNSClient *dns);
+    FlprogEthernetClient(FlprogAbstractEthernetHardware *hardware, FlprogDNSClient *dns, uint8_t s);
 
     uint8_t status();
     virtual int connect(IPAddress ip, uint16_t port);
@@ -39,7 +40,7 @@ public:
     using Print::write;
 
 private:
-    FlprogW5100Class *_hardware;
+    FlprogAbstractEthernetHardware *_hardware;
     FlprogDNSClient *_dns;
     uint8_t sockindex; // MAX_SOCK_NUM means client not in use
     uint16_t _timeout;

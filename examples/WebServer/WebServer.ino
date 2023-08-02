@@ -1,5 +1,7 @@
-#include <SPI.h>
-#include <flprogEthernet.h>
+#include "flprogEthernet.h"
+
+//Создаем объект шины 
+FLProgSPI spiBus(0);
 
 /*
    Создаём обект интерфейса на чипе W5100 (поддерживаются W5200 и W5500)
@@ -12,11 +14,14 @@
    15 - ESP8266 with Adafruit Featherwing Ethernet
    33 - ESP32 with Adafruit Featherwing Ethernet
 */
-FlprogEthernetClass W5100_Interface(&SPI, 10);
+FlprogW5100Interface W5100_Interface(&spiBus, 10);
+
+
 
 // Создаём массив с MAC адресом
 byte mac[] = {
-    0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
+};
 
 // Создаём IP адрес для интерфейса
 IPAddress ip(192, 168, 199, 177);

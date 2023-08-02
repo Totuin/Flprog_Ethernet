@@ -1,5 +1,3 @@
-#include <Arduino.h>
-#include "flprogEthernet.h"
 #include "flprogW5100.h"
 
 void FlprogW5100Class::setNetSettings(uint8_t *mac, IPAddress ip)

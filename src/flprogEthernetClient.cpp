@@ -1,6 +1,6 @@
 #include "flprogEthernetClient.h"
 
-FlprogEthernetClient::FlprogEthernetClient(FlprogEthernetClass *sourse)
+FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernet *sourse)
 {
 	_hardware = sourse->hardware();
 	_dns = sourse->dnsClient();
@@ -8,7 +8,7 @@ FlprogEthernetClient::FlprogEthernetClient(FlprogEthernetClass *sourse)
 	_timeout = 1000;
 }
 
-FlprogEthernetClient::FlprogEthernetClient(FlprogW5100Class *hardware, FlprogDNSClient *dns)
+FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernetHardware *hardware, FlprogDNSClient *dns)
 {
 	_hardware = hardware;
 	_dns = dns;
@@ -16,7 +16,7 @@ FlprogEthernetClient::FlprogEthernetClient(FlprogW5100Class *hardware, FlprogDNS
 	_timeout = 1000;
 }
 
-FlprogEthernetClient::FlprogEthernetClient(FlprogW5100Class *hardware, FlprogDNSClient *dns, uint8_t s)
+FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernetHardware *hardware, FlprogDNSClient *dns, uint8_t s)
 {
 	_hardware = hardware;
 	_dns = dns;
@@ -149,7 +149,7 @@ void FlprogEthernetClient::flush()
 		uint8_t stat = _hardware->socketStatus(sockindex);
 		if ((stat != FLPROG_SN_SR_ESTABLISHED) && (stat != FLPROG_SN_SR_CLOSE_WAIT))
 			return;
-		if (_hardware->socketSendAvailable(sockindex) >= _hardware->SSIZE)
+		if (_hardware->socketSendAvailable(sockindex) >= _hardware->_SSIZE())
 			return;
 	}
 }

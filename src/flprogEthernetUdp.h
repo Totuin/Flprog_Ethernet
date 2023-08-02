@@ -2,8 +2,8 @@
 #include <Arduino.h>
 #include "Udp.h"
 #include "flprogDns.h"
-#include "flprogW5100.h"
-
+#include "hardware/flprogAbstractEthernetHardware.h"
+#include "flprogAbstractEthernet.h"
 
 #ifndef MAX_SOCK_NUM
 #if defined(RAMEND) && defined(RAMSTART) && ((RAMEND - RAMSTART) <= 2048)
@@ -20,7 +20,9 @@ class FlprogDNSClient;
 class FlprogEthernetUDP : public UDP
 {
 public:
-	void setHatdware(FlprogW5100Class *hardware);
+	FlprogEthernetUDP(){};
+	FlprogEthernetUDP(FlprogAbstractEthernet *sourse);
+	void setHatdware(FlprogAbstractEthernetHardware *hardware);
 	void setDNS(FlprogDNSClient *dns) { _dns = dns; };
 	virtual uint8_t begin(uint16_t);					 // initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use
 	virtual uint8_t beginMulticast(IPAddress, uint16_t); // initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use
@@ -67,6 +69,6 @@ private:
 	IPAddress _remoteIP;  // remote IP address for the incoming packet whilst it's being processed
 	uint16_t _remotePort; // remote port for the incoming packet whilst it's being processed
 	uint16_t _offset;	  // offset into the packet being sent
-	FlprogW5100Class *_hardware;
+	FlprogAbstractEthernetHardware *_hardware;
 	FlprogDNSClient *_dns;
 };
