@@ -6,15 +6,12 @@
 #######################################
 FlprogAbstractEthernet	KEYWORD1
 FlprogAbstractEthernetHardware	KEYWORD1
-FlprogAbstractEthernetHardware;	KEYWORD1
 FlprogDNSClient	KEYWORD1
-FlprogDNSClient;	KEYWORD1
 FlprogDhcpClass	KEYWORD1
 FlprogEthernetClass	KEYWORD1
 FlprogEthernetClient	KEYWORD1
 FlprogEthernetServer	KEYWORD1
 FlprogEthernetUDP	KEYWORD1
-FlprogEthernetUDP;	KEYWORD1
 FlprogW5100Class	KEYWORD1
 FlprogW5100Interface	KEYWORD1
 

@@ -47,12 +47,13 @@ protected:
 class FlprogW5100Interface : public FlprogEthernetClass
 {
 public:
+	FlprogW5100Interface(){};
 	FlprogW5100Interface(FLProgSPI *spi, uint8_t pin = 10);
 	virtual FlprogAbstractEthernetHardware *hardware()
 	{
 		return &_hardware;
 	};
-	void init(uint8_t sspin = 10);
+	void init(FLProgSPI *spi, uint8_t sspin = 10);
 
 protected:
 	FlprogW5100Class _hardware;

@@ -147,7 +147,13 @@ FlprogW5100Interface::FlprogW5100Interface(FLProgSPI *spi, uint8_t pin)
 	_dns.setUDP(&_udp);
 }
 
-void FlprogW5100Interface::init(uint8_t sspin)
+
+void FlprogW5100Interface::init(FLProgSPI *spi, uint8_t sspin)
 {
 	_hardware.setSS(sspin);
+	_hardware.setSPI(spi);
+	_udp.setHatdware(&_hardware);
+	_udp.setDNS(&_dns);
+	_dhcp.setUDP(&_udp);
+	_dns.setUDP(&_udp);
 }

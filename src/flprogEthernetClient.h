@@ -5,14 +5,15 @@
 #include "flprogAbstractEthernet.h"
 #include "flprogDns.h"
 
-
 class FlprogEthernetClient : public Client
 {
 public:
+    FlprogEthernetClient(){};
     FlprogEthernetClient(FlprogAbstractEthernet *sourse);
     FlprogEthernetClient(FlprogAbstractEthernetHardware *hardware, FlprogDNSClient *dns);
     FlprogEthernetClient(FlprogAbstractEthernetHardware *hardware, FlprogDNSClient *dns, uint8_t s);
 
+    void init(FlprogAbstractEthernet *sourse);
     uint8_t status();
     virtual int connect(IPAddress ip, uint16_t port);
     virtual int connect(const char *host, uint16_t port);
@@ -44,4 +45,5 @@ private:
     FlprogDNSClient *_dns;
     uint8_t sockindex; // MAX_SOCK_NUM means client not in use
     uint16_t _timeout;
+    bool isInit = false;
 };

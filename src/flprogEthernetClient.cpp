@@ -6,6 +6,20 @@ FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernet *sourse)
 	_dns = sourse->dnsClient();
 	sockindex = MAX_SOCK_NUM;
 	_timeout = 1000;
+	isInit = true;
+}
+
+void FlprogEthernetClient::init(FlprogAbstractEthernet *sourse)
+{
+	if (isInit)
+	{
+		return;
+	}
+	_hardware = sourse->hardware();
+	_dns = sourse->dnsClient();
+	sockindex = MAX_SOCK_NUM;
+	_timeout = 1000;
+	isInit = true;
 }
 
 FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernetHardware *hardware, FlprogDNSClient *dns)
@@ -14,6 +28,7 @@ FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernetHardware *hardw
 	_dns = dns;
 	sockindex = MAX_SOCK_NUM;
 	_timeout = 1000;
+	isInit = true;
 }
 
 FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernetHardware *hardware, FlprogDNSClient *dns, uint8_t s)
@@ -22,6 +37,7 @@ FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernetHardware *hardw
 	_dns = dns;
 	sockindex = s;
 	_timeout = 1000;
+	isInit = true;
 }
 
 int FlprogEthernetClient::connect(const char *host, uint16_t port)
