@@ -44,6 +44,8 @@ protected:
 	FlprogDNSClient _dns;
 };
 
+
+
 class FlprogW5100Interface : public FlprogEthernetClass
 {
 public:

@@ -1,7 +1,6 @@
 #pragma once
 #include <Arduino.h>
 
-
 #ifndef MAX_SOCK_NUM
 #if defined(RAMEND) && defined(RAMSTART) && ((RAMEND - RAMSTART) <= 2048)
 #define MAX_SOCK_NUM 4
@@ -22,7 +21,7 @@
 class FlprogAbstractEthernetHardware;
 class FlprogDNSClient;
 
-class FlprogAbstractEthernet
+class FlprogAbstractEthernet 
 {
 public:
     virtual FlprogAbstractEthernetHardware *hardware() = 0;
