@@ -26,7 +26,9 @@ byte packetBuffer[NTP_PACKET_SIZE]; // buffer to hold incoming and outgoing pack
    15 - ESP8266 with Adafruit Featherwing Ethernet
    33 - ESP32 with Adafruit Featherwing Ethernet
 */
-FlprogW5100Interface W5100_Interface(&SPI, 10);
+
+FLProgSPI spiBus(0);
+FlprogW5100Interface W5100_Interface(&spiBus, 10);
 
 //Сщздаём UDP клиента на выбранном интерфейсе 
 

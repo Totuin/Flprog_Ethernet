@@ -1,11 +1,11 @@
 #pragma once
 #include <Arduino.h>
 
-#ifndef MAX_SOCK_NUM
+#ifndef FLPROG_ETHERNET_MAX_SOCK_NUM
 #if defined(RAMEND) && defined(RAMSTART) && ((RAMEND - RAMSTART) <= 2048)
-#define MAX_SOCK_NUM 4
+#define FLPROG_ETHERNET_MAX_SOCK_NUM 4
 #else
-#define MAX_SOCK_NUM 8
+#define FLPROG_ETHERNET_MAX_SOCK_NUM 8
 #endif
 #endif
 

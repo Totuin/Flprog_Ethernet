@@ -98,7 +98,7 @@ private:
   uint16_t local_port = 49152; // 49152 to 65535 TODO: randomize this when not using DHCP, but how?
   bool initialized = false;
   const uint16_t CH_SIZE = 0x0100;
-  socketstate_t state[MAX_SOCK_NUM];
+  socketstate_t state[FLPROG_ETHERNET_MAX_SOCK_NUM];
   FLProgSPI *_spi;
   uint8_t softReset(void);
   uint8_t isW5100(void);

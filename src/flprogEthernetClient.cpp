@@ -4,7 +4,7 @@ FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernet *sourse)
 {
 	_hardware = sourse->hardware();
 	_dns = sourse->dnsClient();
-	sockindex = MAX_SOCK_NUM;
+	sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	_timeout = 1000;
 	isInit = true;
 }
@@ -17,7 +17,7 @@ void FlprogEthernetClient::init(FlprogAbstractEthernet *sourse)
 	}
 	_hardware = sourse->hardware();
 	_dns = sourse->dnsClient();
-	sockindex = MAX_SOCK_NUM;
+	sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	_timeout = 1000;
 	isInit = true;
 }
@@ -26,7 +26,7 @@ FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernetHardware *hardw
 {
 	_hardware = hardware;
 	_dns = dns;
-	sockindex = MAX_SOCK_NUM;
+	sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	_timeout = 1000;
 	isInit = true;
 }
@@ -43,13 +43,13 @@ FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernetHardware *hardw
 int FlprogEthernetClient::connect(const char *host, uint16_t port)
 {
 	uint8_t remote_addr[4] = {0, 0, 0, 0};
-	if (sockindex < MAX_SOCK_NUM)
+	if (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
 		if (_hardware->socketStatus(sockindex) != FLPROG_SN_SR_CLOSED)
 		{
 			_hardware->socketDisconnect(sockindex); // TODO: should we call stop()?
 		}
-		sockindex = MAX_SOCK_NUM;
+		sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	}
 
 	if (!_dns->getHostByName(host, remote_addr))
@@ -61,13 +61,13 @@ int FlprogEthernetClient::connect(const char *host, uint16_t port)
 
 int FlprogEthernetClient::connect(IPAddress ip, uint16_t port)
 {
-	if (sockindex < MAX_SOCK_NUM)
+	if (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
 		if (_hardware->socketStatus(sockindex) != FLPROG_SN_SR_CLOSED)
 		{
 			_hardware->socketDisconnect(sockindex); // TODO: should we call stop()?
 		}
-		sockindex = MAX_SOCK_NUM;
+		sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	}
 #if defined(ESP8266) || defined(ESP32)
 	if (ip == IPAddress((uint32_t)0) || ip == IPAddress(0xFFFFFFFFul))
@@ -77,7 +77,7 @@ int FlprogEthernetClient::connect(IPAddress ip, uint16_t port)
 		return 0;
 #endif
 	sockindex = _hardware->socketBegin(FLPROG_SN_MR_TCP, 0);
-	if (sockindex >= MAX_SOCK_NUM)
+	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
 	_hardware->socketConnect(sockindex, ip, port);
 	uint32_t start = millis();
@@ -95,13 +95,13 @@ int FlprogEthernetClient::connect(IPAddress ip, uint16_t port)
 		delay(1);
 	}
 	_hardware->socketClose(sockindex);
-	sockindex = MAX_SOCK_NUM;
+	sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	return 0;
 }
 
 int FlprogEthernetClient::availableForWrite(void)
 {
-	if (sockindex >= MAX_SOCK_NUM)
+	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
 	return _hardware->socketSendAvailable(sockindex);
 }
@@ -113,7 +113,7 @@ size_t FlprogEthernetClient::write(uint8_t b)
 
 size_t FlprogEthernetClient::write(const uint8_t *buf, size_t size)
 {
-	if (sockindex >= MAX_SOCK_NUM)
+	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
 	if (_hardware->socketSend(sockindex, buf, size))
 		return size;
@@ -123,7 +123,7 @@ size_t FlprogEthernetClient::write(const uint8_t *buf, size_t size)
 
 int FlprogEthernetClient::available()
 {
-	if (sockindex >= MAX_SOCK_NUM)
+	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
 	return _hardware->socketRecvAvailable(sockindex);
 	// TODO: do the Wiznet chips automatically retransmit TCP ACK
@@ -136,14 +136,14 @@ int FlprogEthernetClient::available()
 
 int FlprogEthernetClient::read(uint8_t *buf, size_t size)
 {
-	if (sockindex >= MAX_SOCK_NUM)
+	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
 	return _hardware->socketRecv(sockindex, buf, size);
 }
 
 int FlprogEthernetClient::peek()
 {
-	if (sockindex >= MAX_SOCK_NUM)
+	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return -1;
 	if (!available())
 		return -1;
@@ -160,7 +160,7 @@ int FlprogEthernetClient::read()
 
 void FlprogEthernetClient::flush()
 {
-	while (sockindex < MAX_SOCK_NUM)
+	while (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
 		uint8_t stat = _hardware->socketStatus(sockindex);
 		if ((stat != FLPROG_SN_SR_ESTABLISHED) && (stat != FLPROG_SN_SR_CLOSE_WAIT))
@@ -172,7 +172,7 @@ void FlprogEthernetClient::flush()
 
 void FlprogEthernetClient::stop()
 {
-	if (sockindex >= MAX_SOCK_NUM)
+	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return;
 
 	// attempt to close the connection gracefully (send a FIN to other side)
@@ -184,7 +184,7 @@ void FlprogEthernetClient::stop()
 	{
 		if (_hardware->socketStatus(sockindex) == FLPROG_SN_SR_CLOSED)
 		{
-			sockindex = MAX_SOCK_NUM;
+			sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 			return; // exit the loop
 		}
 		delay(1);
@@ -192,12 +192,12 @@ void FlprogEthernetClient::stop()
 
 	// if it hasn't closed, close it forcefully
 	_hardware->socketClose(sockindex);
-	sockindex = MAX_SOCK_NUM;
+	sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 }
 
 uint8_t FlprogEthernetClient::connected()
 {
-	if (sockindex >= MAX_SOCK_NUM)
+	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
 	uint8_t s = _hardware->socketStatus(sockindex);
 	return !((s == FLPROG_SN_SR_LISTEN) || (s == FLPROG_SN_SR_CLOSED) || (s == FLPROG_SN_SR_FIN_WAIT) ||
@@ -206,7 +206,7 @@ uint8_t FlprogEthernetClient::connected()
 
 uint8_t FlprogEthernetClient::status()
 {
-	if (sockindex >= MAX_SOCK_NUM)
+	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return FLPROG_SN_SR_CLOSED;
 	return _hardware->socketStatus(sockindex);
 }
@@ -217,9 +217,9 @@ bool FlprogEthernetClient::operator==(const FlprogEthernetClient &rhs)
 {
 	if (sockindex != rhs.sockindex)
 		return false;
-	if (sockindex >= MAX_SOCK_NUM)
+	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return false;
-	if (rhs.sockindex >= MAX_SOCK_NUM)
+	if (rhs.sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return false;
 	return true;
 }

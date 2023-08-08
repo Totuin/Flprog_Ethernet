@@ -92,7 +92,7 @@ void FlprogW5100Class::MACAddress(uint8_t *mac_address)
 
 uint16_t FlprogW5100Class::localPort(uint8_t soc)
 {
-	if (soc >= MAX_SOCK_NUM)
+	if (soc >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
 	uint16_t port;
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
@@ -103,7 +103,7 @@ uint16_t FlprogW5100Class::localPort(uint8_t soc)
 
 IPAddress FlprogW5100Class::remoteIP(uint8_t soc)
 {
-	if (soc >= MAX_SOCK_NUM)
+	if (soc >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return IPAddress((uint32_t)0);
 	uint8_t remoteIParray[4];
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
@@ -114,7 +114,7 @@ IPAddress FlprogW5100Class::remoteIP(uint8_t soc)
 
 uint16_t FlprogW5100Class::remotePort(uint8_t soc)
 {
-	if (soc >= MAX_SOCK_NUM)
+	if (soc >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
 	uint16_t port;
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
@@ -265,18 +265,18 @@ uint8_t FlprogW5100Class::init(void)
 	{
 		CH_BASE_MSB = 0x40;
 #ifdef ETHERNET_LARGE_BUFFERS
-#if MAX_SOCK_NUM <= 1
+#if FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
 		SSIZE = 16384;
-#elif MAX_SOCK_NUM <= 2
+#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
 		SSIZE = 8192;
-#elif MAX_SOCK_NUM <= 4
+#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
 		SSIZE = 4096;
 #else
 		SSIZE = 2048;
 #endif
 		SMASK = SSIZE - 1;
 #endif
-		for (i = 0; i < MAX_SOCK_NUM; i++)
+		for (i = 0; i < FLPROG_ETHERNET_MAX_SOCK_NUM; i++)
 		{
 			writeSn(i, FLPROG_SN_RX_SIZE, SSIZE >> 10);
 			writeSn(i, FLPROG_SN_TX_SIZE, SSIZE >> 10);
@@ -293,17 +293,17 @@ uint8_t FlprogW5100Class::init(void)
 		{
 			CH_BASE_MSB = 0x10;
 #ifdef ETHERNET_LARGE_BUFFERS
-#if MAX_SOCK_NUM <= 1
+#if FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
 			SSIZE = 16384;
-#elif MAX_SOCK_NUM <= 2
+#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
 			SSIZE = 8192;
-#elif MAX_SOCK_NUM <= 4
+#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
 			SSIZE = 4096;
 #else
 			SSIZE = 2048;
 #endif
 			SMASK = SSIZE - 1;
-			for (i = 0; i < MAX_SOCK_NUM; i++)
+			for (i = 0; i < FLPROG_ETHERNET_MAX_SOCK_NUM; i++)
 			{
 				writeSn(i, FLPROG_SN_RX_SIZE, SSIZE >> 10);
 				writeSn(i, FLPROG_SN_TX_SIZE, SSIZE >> 10);
@@ -326,11 +326,11 @@ uint8_t FlprogW5100Class::init(void)
 			{
 				CH_BASE_MSB = 0x04;
 #ifdef ETHERNET_LARGE_BUFFERS
-#if MAX_SOCK_NUM <= 1
+#if FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
 				SSIZE = 8192;
 				write(FLPROG_TMSR, 0x03);
 				write(FLPROG_RMSR, 0x03);
-#elif MAX_SOCK_NUM <= 2
+#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
 				SSIZE = 4096;
 				write(FLPROG_TMSR, 0x0A);
 				write(FLPROG_RMSR, 0x0A);
@@ -536,11 +536,11 @@ uint16_t FlprogW5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len
 			//  10## #nnn nnnn nnnn
 			cmd[0] = addr >> 8;
 			cmd[1] = addr & 0xFF;
-#if defined(ETHERNET_LARGE_BUFFERS) && MAX_SOCK_NUM <= 1
+#if defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
 			cmd[2] = 0x14; // 16K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && MAX_SOCK_NUM <= 2
+#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
 			cmd[2] = ((addr >> 8) & 0x20) | 0x14; // 8K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && MAX_SOCK_NUM <= 4
+#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
 			cmd[2] = ((addr >> 7) & 0x60) | 0x14; // 4K buffers
 #else
 			cmd[2] = ((addr >> 6) & 0xE0) | 0x14; // 2K buffers
@@ -551,11 +551,11 @@ uint16_t FlprogW5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len
 			// receive buffers
 			cmd[0] = addr >> 8;
 			cmd[1] = addr & 0xFF;
-#if defined(ETHERNET_LARGE_BUFFERS) && MAX_SOCK_NUM <= 1
+#if defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
 			cmd[2] = 0x1C; // 16K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && MAX_SOCK_NUM <= 2
+#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
 			cmd[2] = ((addr >> 8) & 0x20) | 0x1C; // 8K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && MAX_SOCK_NUM <= 4
+#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
 			cmd[2] = ((addr >> 7) & 0x60) | 0x1C; // 4K buffers
 #else
 			cmd[2] = ((addr >> 6) & 0xE0) | 0x1C; // 2K buffers
@@ -648,11 +648,11 @@ uint16_t FlprogW5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
 			//  10## #nnn nnnn nnnn
 			cmd[0] = addr >> 8;
 			cmd[1] = addr & 0xFF;
-#if defined(ETHERNET_LARGE_BUFFERS) && MAX_SOCK_NUM <= 1
+#if defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
 			cmd[2] = 0x10; // 16K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && MAX_SOCK_NUM <= 2
+#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
 			cmd[2] = ((addr >> 8) & 0x20) | 0x10; // 8K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && MAX_SOCK_NUM <= 4
+#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
 			cmd[2] = ((addr >> 7) & 0x60) | 0x10; // 4K buffers
 #else
 			cmd[2] = ((addr >> 6) & 0xE0) | 0x10; // 2K buffers
@@ -663,11 +663,11 @@ uint16_t FlprogW5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
 			// receive buffers
 			cmd[0] = addr >> 8;
 			cmd[1] = addr & 0xFF;
-#if defined(ETHERNET_LARGE_BUFFERS) && MAX_SOCK_NUM <= 1
+#if defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
 			cmd[2] = 0x18; // 16K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && MAX_SOCK_NUM <= 2
+#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
 			cmd[2] = ((addr >> 8) & 0x20) | 0x18; // 8K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && MAX_SOCK_NUM <= 4
+#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
 			cmd[2] = ((addr >> 7) & 0x60) | 0x18; // 4K buffers
 #else
 			cmd[2] = ((addr >> 6) & 0xE0) | 0x18; // 2K buffers
@@ -700,10 +700,10 @@ void FlprogW5100Class::socketPortRand(uint16_t n)
 
 uint8_t FlprogW5100Class::socketBegin(uint8_t protocol, uint16_t port)
 {
-	uint8_t s, status[MAX_SOCK_NUM], maxindex = MAX_SOCK_NUM;
+	uint8_t s, status[FLPROG_ETHERNET_MAX_SOCK_NUM], maxindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	if (!chip)
-		return MAX_SOCK_NUM; // immediate error if no hardware detected
-#if MAX_SOCK_NUM > 4
+		return FLPROG_ETHERNET_MAX_SOCK_NUM; // immediate error if no hardware detected
+#if FLPROG_ETHERNET_MAX_SOCK_NUM > 4
 	if (chip == 51)
 		maxindex = 4; // W5100 chip never supports more than 4 sockets
 #endif
@@ -729,7 +729,7 @@ uint8_t FlprogW5100Class::socketBegin(uint8_t protocol, uint16_t port)
 		}
 	}
 	_spi->endTransaction();
-	return MAX_SOCK_NUM; // all sockets are in use
+	return FLPROG_ETHERNET_MAX_SOCK_NUM; // all sockets are in use
 }
 
 void FlprogW5100Class::privateMaceSocet(uint8_t soc, uint8_t protocol, uint16_t port)
@@ -756,10 +756,10 @@ void FlprogW5100Class::privateMaceSocet(uint8_t soc, uint8_t protocol, uint16_t 
 
 uint8_t FlprogW5100Class::socketBeginMulticast(uint8_t protocol, IPAddress ip, uint16_t port)
 {
-	uint8_t s, status[MAX_SOCK_NUM], maxindex = MAX_SOCK_NUM;
+	uint8_t s, status[FLPROG_ETHERNET_MAX_SOCK_NUM], maxindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	if (!chip)
-		return MAX_SOCK_NUM;
-#if MAX_SOCK_NUM > 4
+		return FLPROG_ETHERNET_MAX_SOCK_NUM;
+#if FLPROG_ETHERNET_MAX_SOCK_NUM > 4
 	if (chip == 51)
 		maxindex = 4;
 #endif
@@ -785,7 +785,7 @@ uint8_t FlprogW5100Class::socketBeginMulticast(uint8_t protocol, IPAddress ip, u
 		}
 	}
 	_spi->endTransaction();
-	return MAX_SOCK_NUM;
+	return FLPROG_ETHERNET_MAX_SOCK_NUM;
 }
 
 void FlprogW5100Class::privateMaceSocetMulticast(uint8_t soc, uint8_t protocol, IPAddress ip, uint16_t port)

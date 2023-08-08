@@ -27,7 +27,7 @@ public:
     virtual void flush();
     virtual void stop();
     virtual uint8_t connected();
-    virtual operator bool() { return sockindex < MAX_SOCK_NUM; }
+    virtual operator bool() { return sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM; }
     virtual bool operator==(const bool value) { return bool() == value; }
     virtual bool operator!=(const bool value) { return bool() != value; }
     virtual bool operator==(const FlprogEthernetClient &);
@@ -43,7 +43,7 @@ public:
 private:
     FlprogAbstractEthernetHardware *_hardware;
     FlprogDNSClient *_dns;
-    uint8_t sockindex; // MAX_SOCK_NUM means client not in use
+    uint8_t sockindex; // FLPROG_ETHERNET_MAX_SOCK_NUM means client not in use
     uint16_t _timeout;
     bool isInit = false;
 };

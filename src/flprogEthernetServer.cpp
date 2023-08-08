@@ -7,10 +7,16 @@ FlprogEthernetServer::FlprogEthernetServer(FlprogAbstractEthernet *sourse, uint1
 	_port = port;
 }
 
+void FlprogEthernetServer::begin(uint16_t port)
+{
+	_port = port;
+	begin();
+}
+
 void FlprogEthernetServer::begin()
 {
 	uint8_t sockindex = _hardware->socketBegin(FLPROG_SN_MR_TCP, _port);
-	if (sockindex < MAX_SOCK_NUM)
+	if (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
 		if (_hardware->socketListen(sockindex))
 		{
@@ -26,12 +32,12 @@ void FlprogEthernetServer::begin()
 FlprogEthernetClient FlprogEthernetServer::available()
 {
 	bool listening = false;
-	uint8_t sockindex = MAX_SOCK_NUM;
-	uint8_t chip, maxindex = MAX_SOCK_NUM;
+	uint8_t sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
+	uint8_t chip, maxindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	chip = _hardware->getChip();
 	if (!chip)
-		return FlprogEthernetClient(_hardware, _dns, MAX_SOCK_NUM);
-#if MAX_SOCK_NUM > 4
+		return FlprogEthernetClient(_hardware, _dns, FLPROG_ETHERNET_MAX_SOCK_NUM);
+#if FLPROG_ETHERNET_MAX_SOCK_NUM > 4
 	if (chip == 51)
 		maxindex = 4; // W5100 chip never supports more than 4 sockets
 #endif
@@ -76,13 +82,13 @@ FlprogEthernetClient FlprogEthernetServer::available()
 FlprogEthernetClient FlprogEthernetServer::accept()
 {
 	bool listening = false;
-	uint8_t sockindex = MAX_SOCK_NUM;
-	uint8_t chip, maxindex = MAX_SOCK_NUM;
+	uint8_t sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
+	uint8_t chip, maxindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 
 	chip = _hardware->getChip();
 	if (!chip)
-		return FlprogEthernetClient(_hardware, _dns, MAX_SOCK_NUM);
-#if MAX_SOCK_NUM > 4
+		return FlprogEthernetClient(_hardware, _dns, FLPROG_ETHERNET_MAX_SOCK_NUM);
+#if FLPROG_ETHERNET_MAX_SOCK_NUM > 4
 	if (chip == 51)
 		maxindex = 4; // W5100 chip never supports more than 4 sockets
 #endif
@@ -91,7 +97,7 @@ FlprogEthernetClient FlprogEthernetServer::accept()
 		if (server_port[i] == _port)
 		{
 			uint8_t stat = _hardware->socketStatus(i);
-			if (sockindex == MAX_SOCK_NUM &&
+			if (sockindex == FLPROG_ETHERNET_MAX_SOCK_NUM &&
 				((stat == FLPROG_SN_SR_ESTABLISHED) || (stat == FLPROG_SN_SR_CLOSE_WAIT)))
 			{
 				sockindex = i;
@@ -114,8 +120,8 @@ FlprogEthernetClient FlprogEthernetServer::accept()
 
 FlprogEthernetServer::operator bool()
 {
-	uint8_t maxindex = MAX_SOCK_NUM;
-#if MAX_SOCK_NUM > 4
+	uint8_t maxindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
+#if FLPROG_ETHERNET_MAX_SOCK_NUM > 4
 	if (_hardware->getChip() == 51)
 		maxindex = 4; // W5100 chip never supports more than 4 sockets
 #endif
@@ -136,7 +142,7 @@ FlprogEthernetServer::operator bool()
 void FlprogEthernetServer::statusreport()
 {
 	Serial.printf("EthernetServer, port=%d\n", _port);
-	for (uint8_t i=0; i < MAX_SOCK_NUM; i++) {
+	for (uint8_t i=0; i < FLPROG_ETHERNET_MAX_SOCK_NUM; i++) {
 		uint16_t port = server_port[i];
 		uint8_t stat = _hardware->socketStatus(i);
 		const char *name;
@@ -172,12 +178,12 @@ size_t FlprogEthernetServer::write(uint8_t b)
 
 size_t FlprogEthernetServer::write(const uint8_t *buffer, size_t size)
 {
-	uint8_t chip, maxindex = MAX_SOCK_NUM;
+	uint8_t chip, maxindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 
 	chip = _hardware->getChip();
 	if (!chip)
 		return 0;
-#if MAX_SOCK_NUM > 4
+#if FLPROG_ETHERNET_MAX_SOCK_NUM > 4
 	if (chip == 51)
 		maxindex = 4; // W5100 chip never supports more than 4 sockets
 #endif

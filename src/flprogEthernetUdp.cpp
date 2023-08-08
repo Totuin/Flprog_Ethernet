@@ -11,16 +11,16 @@ FlprogEthernetUDP::FlprogEthernetUDP(FlprogAbstractEthernet *sourse)
 
 void FlprogEthernetUDP::setHatdware(FlprogAbstractEthernetHardware *hardware)
 {
-	sockindex = MAX_SOCK_NUM;
+	sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	_hardware = hardware;
 }
 
 uint8_t FlprogEthernetUDP::begin(uint16_t port)
 {
-	if (sockindex < MAX_SOCK_NUM)
+	if (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
 		_hardware->socketClose(sockindex);
 	sockindex = _hardware->socketBegin(FLPROG_SN_MR_UDP, port);
-	if (sockindex >= MAX_SOCK_NUM)
+	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
 	_port = port;
 	_remaining = 0;
@@ -37,10 +37,10 @@ int FlprogEthernetUDP::available()
 /* Release any resources being used by this EthernetUDP instance */
 void FlprogEthernetUDP::stop()
 {
-	if (sockindex < MAX_SOCK_NUM)
+	if (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
 		_hardware->socketClose(sockindex);
-		sockindex = MAX_SOCK_NUM;
+		sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	}
 }
 
@@ -165,7 +165,7 @@ int FlprogEthernetUDP::peek()
 	// Unlike recv, peek doesn't check to see if there's any data available, so we must.
 	// If the user hasn't called parsePacket yet then return nothing otherwise they
 	// may get the UDP header
-	if (sockindex >= MAX_SOCK_NUM || _remaining == 0)
+	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM || _remaining == 0)
 		return -1;
 	return _hardware->socketPeek(sockindex);
 }
@@ -178,10 +178,10 @@ void FlprogEthernetUDP::flush()
 /* Start EthernetUDP socket, listening at local port PORT */
 uint8_t FlprogEthernetUDP::beginMulticast(IPAddress ip, uint16_t port)
 {
-	if (sockindex < MAX_SOCK_NUM)
+	if (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
 		_hardware->socketClose(sockindex);
 	sockindex = _hardware->socketBeginMulticast((FLPROG_SN_MR_UDP | FLPROG_SN_MR_MULTI), ip, port);
-	if (sockindex >= MAX_SOCK_NUM)
+	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
 	_port = port;
 	_remaining = 0;

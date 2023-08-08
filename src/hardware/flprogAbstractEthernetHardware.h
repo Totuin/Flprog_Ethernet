@@ -34,11 +34,11 @@ extern void yield(void);
 #define SPI_ETHERNET_SETTINGS SPISettings(8000000, MSBFIRST, SPI_MODE0)
 #endif
 
-#ifndef MAX_SOCK_NUM
+#ifndef FLPROG_ETHERNET_MAX_SOCK_NUM
 #if defined(RAMEND) && defined(RAMSTART) && ((RAMEND - RAMSTART) <= 2048)
-#define MAX_SOCK_NUM 4
+#define FLPROG_ETHERNET_MAX_SOCK_NUM 4
 #else
-#define MAX_SOCK_NUM 8
+#define FLPROG_ETHERNET_MAX_SOCK_NUM 8
 #endif
 #endif
 
