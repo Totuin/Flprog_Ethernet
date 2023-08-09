@@ -21,9 +21,16 @@
 class FlprogAbstractEthernetHardware;
 class FlprogDNSClient;
 
-class FlprogAbstractEthernet 
+class FlprogAbstractEthernet
 {
 public:
     virtual FlprogAbstractEthernetHardware *hardware() = 0;
     virtual FlprogDNSClient *dnsClient() = 0;
+    virtual bool isBusy() { return busy; };
+    void setBusy() { busy = true; };
+    void resetBusy() { busy = false; };
+    virtual bool isReady() = 0;
+
+protected:
+    bool busy = false;
 };

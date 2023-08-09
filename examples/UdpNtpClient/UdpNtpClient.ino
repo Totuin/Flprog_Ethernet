@@ -1,145 +1,302 @@
-#include <flprogEthernet.h>
+//=================================================================================================
+//                              1.Test Ethernet
+//  Получение по UDP точного времени.
+//=================================================================================================
+#include <flprogEthernet.h> //подключаем библиотеку Ethernet
 
-// Enter a MAC address for your controller below.
-// Newer Ethernet shields have a MAC address printed on a sticker on the shield
-byte mac[] = {
-    0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED};
+//=================================================================================================
+//  Определяем целевую платформу
+//=================================================================================================
 
-unsigned int localPort = 8888; // local port to listen for UDP packets
+#ifdef ARDUINO_ARCH_AVR
+#define TEST_CS_PIN 10
+#define TEST_BOARD "AVR"
+#elif ARDUINO_ARCH_SAM
+#define TEST_CS_PIN 10
+#define TEST_BOARD "SAM"
+#elif ARDUINO_ARCH_ESP8266
+#define TEST_CS_PIN 15
+#define TEST_BOARD "ESP8266"
+#elif ARDUINO_ARCH_ESP32
+#define TEST_CS_PIN 33
+#define TEST_BOARD "ESP32"
+#elif ARDUINO_ARCH_RP2040
+#define TEST_CS_PIN 5
+#define TEST_BOARD "RP2040"
+#elif ARDUINO_ARCH_STM32
+#define PB15
+#define TEST_BOARD "STM32"
+#else
+#define TEST_CS_PIN 255
+#define TEST_BOARD "ANON"
+#endif
 
-const char timeServer[] = "time.nist.gov"; // time.nist.gov NTP server
+//-------------------------------------------------------------------------------------------------
+//         Вариант с  шиной (SPI0) и пином(10) по умолчаниюю. Пин потом можно поменять.
+//         Но если на этой шине висит ещё какое то устройство лучше применять второй вариант
+//-------------------------------------------------------------------------------------------------
+FlprogW5100Interface W5100_Interface;
 
-const int NTP_PACKET_SIZE = 48; // NTP time stamp is in the first 48 bytes of the message
+//-------------------------------------------------------------------------------------------------
+//        Второй вариант с непосредственной привязкой к шине и пину.
+//        Cсылку на шину(spiBus) можно так же передавать на другие устройства на этой шине
+//-------------------------------------------------------------------------------------------------
+// FLProgSPI spiBus(0);                               //--Создание объекта для привязки к требуемой шине SPI;
+// FlprogW5100Interface W5100_Interface(&spiBus, 10); //--Создание интерфейса для работы с чипом W5100(W5200,W5500);
 
-byte packetBuffer[NTP_PACKET_SIZE]; // buffer to hold incoming and outgoing packets
+//-------------------------------------------------------------------------------------------------
+//         Задание параметров интернет соеденения и параметров UDP
+//-------------------------------------------------------------------------------------------------
+uint8_t mac[] = {0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED}; //--Установка MAC-адрес контроллера (лучше адрес прошитый производителем);
+uint32_t localPort = 8888;                            //--Определение порта для UDP пакетов (используется стандартный номер);
+const char timeServer[] = "time.nist.gov";            //--Имя NTP сервера - сервер точного времени;
+const int NTP_PACKET_SIZE = 48;                       //--Установка размера буфера (отметка времени NTP находится в первых 48 байтах сообщения);
+uint8_t packetBuffer[NTP_PACKET_SIZE];                //--Создание буфера для хранения входящих и исходящих пакетов;
+uint16_t cntGettingNTP = 0;                           //--Cчетчик принятых пакетов;
 
-// A UDP instance to let us send and receive packets over UDP
+//-------------------------------------------------------------------------------------------------
+//          1.2.Создание объекта UDP для отправки и получения пакетов по UDP с привязкой к интерфейсу
+//-------------------------------------------------------------------------------------------------
+FlprogEthernetUDP Udp(&W5100_Interface); //--Создание UDP клиента;
 
-/*
-   Создаём обект интерфейса на чипе W5100 (поддерживаются W5200 и W5500)
-   В конструкторе передаём ссылку на шину к которой он подключён и номер пина SS
-   стандартныйе номера пинов
-   10 - Arduino shield
-   5 - MKR ETH shield
-   0 - Teensy 2.0
-   20 - Teensy++ 2.0
-   15 - ESP8266 with Adafruit Featherwing Ethernet
-   33 - ESP32 with Adafruit Featherwing Ethernet
-*/
+//-----------------------------------------------------------------------------------------
+//          1.3.Определение рабочих параметров и функций
+//-----------------------------------------------------------------------------------------
+uint32_t startTime, sendPacadeTime;   // Время начала ожидания
+uint32_t checkInterfacePeriod = 2000; // Период проверки интерфейса
+uint32_t reqestPeriod = 5000;         // Периодичность запроса времени от сервера
+bool isReplyInProcess = false;        // Флаг ожидания ответа
+bool interfaceIsReady = false;        // Флаг готовности интерфейса
 
-FLProgSPI spiBus(0);
-FlprogW5100Interface W5100_Interface(&spiBus, 10);
+void sendNTPpacket(const char *nameSever); //--Предопределение функции;
+void processingResponse();                 //--Предопределение функции;
+void checkInterface();                     //--Предопределение функции;
 
-//Сщздаём UDP клиента на выбранном интерфейсе 
-
-FlprogEthernetUDP Udp(&W5100_Interface); //Создаём UDP клиента
-
+//=================================================================================================
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   while (!Serial)
   {
-    ; // wait for serial port to connect. Needed for native USB port only
   }
-
-  // start Ethernet and UDP
-  if (W5100_Interface.begin(mac) == 0)
-  {
-    Serial.println("Failed to configure Ethernet using DHCP");
-    // Check for Ethernet hardware present
-    if (W5100_Interface.hardwareStatus() == FLPROG_ETHERNET_NO_HARDWARE)
-    {
-      Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
-    }
-    else if (W5100_Interface.linkStatus() == FLPROG_ETHERNET_LINK_OFF)
-    {
-      Serial.println("Ethernet cable is not connected.");
-    }
-    // no point in carrying on, so do nothing forevermore:
-    while (true)
-    {
-      delay(1);
-    }
-  }
-  Udp.begin(localPort);
+  Serial.print(String(F("\n-----Тест UdpNtpClient для платы ")));
+  Serial.print(String(F(TEST_BOARD)));
+  Serial.print(String(F(": cs.SPI=")));
+  Serial.print(TEST_CS_PIN);
+  Serial.println(String(F("-----")));
+  startTime = flprog::timeBack(checkInterfacePeriod);
+  sendPacadeTime = flprog::timeBack(reqestPeriod);
 }
-
+//=================================================================================================
 void loop()
 {
+  //-----------------------------------------------------------------------------------------
+  //         Если необходимо - можно сменить пин.
+  //         Это можно делать хоть в каждом Loop.
+  //         Какие то действия будут происходить только при изменении передаваемого значения.
+  //-----------------------------------------------------------------------------------------
+  W5100_Interface.setSsPin(TEST_CS_PIN);
 
-  sendNTPpacket(timeServer); // send an NTP packet to a time server
-
-  // wait to see if a reply is available
-  delay(1000);
-
-  if (Udp.parsePacket())
+  //-------------------------------------------------------------------------------------------------
+  //                Основная логика
+  //-------------------------------------------------------------------------------------------------
+  if (interfaceIsReady)
   {
-    // We've received a packet, read the data from it
-    Udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
-
-    // the timestamp starts at byte 40 of the received packet and is four bytes,
-    // or two words, long. First, extract the two words:
-
-    unsigned long highWord = word(packetBuffer[40], packetBuffer[41]);
-    unsigned long lowWord = word(packetBuffer[42], packetBuffer[43]);
-    // combine the four bytes (two words) into a long integer
-    // this is NTP time (seconds since Jan 1 1900):
-    unsigned long secsSince1900 = highWord << 16 | lowWord;
-    Serial.print("Seconds since Jan 1 1900 = ");
-    Serial.println(secsSince1900);
-
-    // now convert NTP time into everyday time:
-    Serial.print("Unix time = ");
-    // Unix time starts on Jan 1 1970. In seconds, that's 2208988800:
-    const unsigned long seventyYears = 2208988800UL;
-    // subtract seventy years:
-    unsigned long epoch = secsSince1900 - seventyYears;
-    // print Unix time:
-    Serial.println(epoch);
-
-    // print the hour, minute and second:
-    Serial.print("The UTC time is ");      // UTC is the time at Greenwich Meridian (GMT)
-    Serial.print((epoch % 86400L) / 3600); // print the hour (86400 equals secs per day)
-    Serial.print(':');
-    if (((epoch % 3600) / 60) < 10)
+    //-------------------------------------------------------------------------------------------------
+    //                                 Если интерфейс готов то работаем с NTP сервером
+    //-------------------------------------------------------------------------------------------------
+    if (isReplyInProcess)
     {
-      // In the first 10 minutes of each hour, we'll want a leading '0'
-      Serial.print('0');
+      //--Если  ждём ответа проверяем ответ
+      processingResponse();
     }
-    Serial.print((epoch % 3600) / 60); // print the minute (3600 equals secs per minute)
-    Serial.print(':');
-    if ((epoch % 60) < 10)
+    else
     {
-      // In the first 10 seconds of each minute, we'll want a leading '0'
-      Serial.print('0');
+      //--Если не ждём ответа отправляем запрос
+      sendNTPpacket(timeServer);
     }
-    Serial.println(epoch % 60); // print the second
   }
-  // wait ten seconds before asking for the time again
-  delay(10000);
-  W5100_Interface.maintain();
-}
+  else
+  {
+    //-------------------------------------------------------------------------------------------------
+    //      Если интерфейс не готов то   проверяем  наличие модуля Ethernet, кабеля Ethernet
+    //                  (проверяется каждые 2 сек )
+    //-------------------------------------------------------------------------------------------------
+    checkInterface();
+  }
 
-// send an NTP request to the time server at the given address
-void sendNTPpacket(const char *address)
+} //======END loop();
+  //-------------------------------------------------------------------------------------------------
+  // #################################################################################################
+  //=================================================================================================
+  //                         1.ФУНКЦИЯ checkInterface()
+  //    Проверка готовности интерфейса и получение адреса по DHCP
+  //=================================================================================================
+void checkInterface()
 {
-  // set all bytes in the buffer to 0
-  memset(packetBuffer, 0, NTP_PACKET_SIZE);
-  // Initialize values needed to form NTP request
-  // (see URL above for details on the packets)
-  packetBuffer[0] = 0b11100011; // LI, Version, Mode
-  packetBuffer[1] = 0;          // Stratum, or type of clock
-  packetBuffer[2] = 6;          // Polling Interval
-  packetBuffer[3] = 0xEC;       // Peer Clock Precision
-  // 8 bytes of zero for Root Delay & Root Dispersion
+  if (!flprog::isTimer(startTime, checkInterfacePeriod)) //--Проверяем - пора ли проверять интерфейс
+  {
+    return; //-- если нет - то выходим
+  }
+  if (W5100_Interface.isReady()) //--На всякий случай проверяем - А вдруг волшебным образом интерфейс уже готов))))))))
+  {
+    interfaceIsReady = true; //--Если внезапно готов  - вешаем флаг готовности и выходим
+    return;
+  }
+
+  //=================================================================================================
+  //                        Проверяем подключение по DHCP.
+  //     Второй параметр - необязательный - таймаут ответа от DHCP - по умолчанию 60 секунд.
+  //                     Ну очень долго ждать....... Задал 20 секунд
+  //=================================================================================================
+  uint8_t result = W5100_Interface.begin(mac, 20000);
+
+  startTime = millis();        //--Запоминаем время попытки
+  isReplyInProcess = false;    // Если ждали ответа  - больше не ждём
+  W5100_Interface.resetBusy(); // Если интерфейс  был занят - освобождаем
+
+  if (result == 0) //--Если попытка не удалась :(
+  {
+    //--Выводим причину неудачи и выходим
+    Serial.println(String(F("Не удалось настроить Ethernet с помощью DHCP.")));
+    if (W5100_Interface.hardwareStatus() == FLPROG_ETHERNET_NO_HARDWARE)
+    {
+      Serial.println(F("Ethernet не найден. Дальнейшая работать не возможна :("));
+    }
+    if (W5100_Interface.linkStatus() == FLPROG_ETHERNET_LINK_OFF)
+    {
+      Serial.println(F("Ethernet кабель не соединен"));
+    }
+    if (W5100_Interface.linkStatus() == FLPROG_ETHERNET_LINK_UNKNOWN)
+    {
+      Serial.println(F("Ethernet кабель не соединен"));
+    }
+    return;
+  }
+
+  //--Если попытка  удалась :) Радостно сообщаем об этом
+  Serial.println(F("Успешный старт Ethernet :)"));
+  Serial.print(F("Полученный IP - "));
+  Serial.println(W5100_Interface.localIP());
+  Udp.begin(localPort);
+  interfaceIsReady = true; //--Выставляем флаг готовности интерфейса
+};                         //======END checkInterface();
+
+// #################################################################################################
+//=================================================================================================
+//                         1.ФУНКЦИЯ sendNTPpacket(*nameServer)
+//     Формирование запроса в буфере packetBuffer и его отправка в NTP сервер
+//=================================================================================================
+void sendNTPpacket(const char *nameServer)
+{
+  //-------------------------------------------------------------------------------------------------
+  //                 Отправка запроса на сервер точного времени
+  //------------------------------------------------------------------------------------------------ -
+  if (!flprog::isTimer(sendPacadeTime, reqestPeriod)) //--Проверяем - прошло ли время после последнего запроса
+  {
+    return; //-- Если нет - выходим
+  }
+
+  if (W5100_Interface.isBusy()) //--Проверяем готов ли и не занят ли интерфейс (в isBusy включён и isReady)
+  {
+    return; //--Если не готов или занят - выходим
+  }
+  //-------------------------------------------------------------------------------------------------
+  //  1.1.Инициализация буфера для отправки запросра требуемой формы в  NTP сервер
+  //    (see URL above for details on the packets)
+  //    Байты 4-11: 8 bytes of zero for Root Delay & Root Dispersion
+  //-------------------------------------------------------------------------------------------------
+  memset(packetBuffer, 0, NTP_PACKET_SIZE); //--Очистка буфера
+  packetBuffer[0] = 0b11100011;             // LI, Version, Mode
+  packetBuffer[1] = 0;                      // Stratum, or type of clock
+  packetBuffer[2] = 6;                      // Polling Interval
+  packetBuffer[3] = 0xEC;                   // Peer Clock Precision
   packetBuffer[12] = 49;
   packetBuffer[13] = 0x4E;
   packetBuffer[14] = 49;
   packetBuffer[15] = 52;
+  //-------------------------------------------------------------------------------------------------
+  //   1.2.Отправка подготовленного  пакет с запросом метки времени
+  //-------------------------------------------------------------------------------------------------
+  Udp.beginPacket(nameServer, 123);         //--Инициализация NTP запроса к порту 123
+  Udp.write(packetBuffer, NTP_PACKET_SIZE); //--Отправка запроса;
+  Udp.endPacket();                          //--Завершение запроса;
 
-  // all NTP fields have been given values, now
-  // you can send a packet requesting a timestamp:
-  Udp.beginPacket(address, 123); // NTP requests are to port 123
-  Udp.write(packetBuffer, NTP_PACKET_SIZE);
-  Udp.endPacket();
-}
+  W5100_Interface.setBusy(); //--Занимаем интерфейс
+  isReplyInProcess = true;   //--Вешаем флаг ожидания ответа
+
+  sendPacadeTime = millis(); // --Запоминаем время отправки запроса
+};                           //======END sendNTPpacket();
+
+// #################################################################################################
+//=================================================================================================
+//                2.ФУНКЦИЯ processingResponse()
+//                обработка ответа из NTP сервера
+//=================================================================================================
+void processingResponse()
+{
+  //-------------------------------------------------------------------------------------------------
+  //                Ожидание ответа и его обработка
+  //-------------------------------------------------------------------------------------------------
+  if (!flprog::isTimer(sendPacadeTime, 1000)) // проверяем прошло ли время ожидания ответа
+  {
+    return; //-- если нет - выходим
+  }
+  isReplyInProcess = false;    // сбрасываем флаг ожидания ответа
+  W5100_Interface.resetBusy(); // освобождаем интерфейс
+
+  //-------------------------------------------------------------------------------------------------
+  //               Не знаю нужно ли это после каждого запроса???
+  //   Это проверка аренды IP адреса на DHCP сервере и если она кончилась получение нового
+  //-------------------------------------------------------------------------------------------------
+  W5100_Interface.maintain();
+
+  //--Проверка наличия ответного пакета от сервера;
+  if (!Udp.parsePacket())
+  {
+    return; //--если нет ответа - выходим
+  }
+
+  Udp.read(packetBuffer, NTP_PACKET_SIZE); //--Чтение пакета в буфер.read. В байтах 40-43 находятся сведения о времени;
+  cntGettingNTP++;                         //--Считаем пакеты
+
+  //--Вывод текущего, абсолютного и UNIX времени;
+  uint16_t highWord = word(packetBuffer[40], packetBuffer[41]);
+  uint16_t lowWord = word(packetBuffer[42], packetBuffer[43]);
+  uint32_t secsSince1900 = ((uint32_t)highWord << 16) | lowWord; //--Получения времени в сек от 01.01.1900;
+
+  //-------------------------------------------------------------------------------------------------
+  //              Unix-time время в сек от 01.01.1970,
+  //                  что соответствует 2208988800;
+  //-------------------------------------------------------------------------------------------------
+  uint32_t epoch = secsSince1900 - 2208988800UL;
+  uint32_t vr;
+  Serial.print(F("\nUTC(Greenwich)="));
+  vr = (epoch % 86400L) / 3600;
+  if (vr < 10)
+  {
+    Serial.print('0');
+  }
+  Serial.print(vr); //--Вывод часов (86400 сек в сутках);
+  vr = (epoch % 3600) / 60;
+  Serial.print(':');
+  if (vr < 10)
+  {
+    Serial.print('0');
+  }
+  Serial.print(vr); //--Вывод минут (3600 сек в минуте);
+  vr = epoch % 60;
+  Serial.print(':');
+  if (vr < 10)
+  {
+    Serial.print('0');
+  }
+  Serial.print(vr); //--Вывод сек;
+  Serial.print(F(";  Time 01.01.1900="));
+  Serial.print(secsSince1900); //--Вывод абсолютного времени в сек(с 01.01.1990);
+  Serial.print(F(";  Time Unix="));
+  Serial.print(epoch); //--Вывод UNIX времени (с 01.01.1970)
+  Serial.print(F(";  Счетчик="));
+  Serial.print(cntGettingNTP);
+  Serial.println(';'); //--Вывод счетчика принятых пакетов;
+};

@@ -46,11 +46,6 @@ uint8_t FlprogEthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IP
 	return 1;
 }
 
-uint8_t FlprogEthernetClass::linkStatus()
-{
-	return hardware()->getLinkStatus();
-}
-
 uint8_t FlprogEthernetClass::hardwareStatus()
 {
 	switch (hardware()->getChip())
@@ -86,60 +81,21 @@ int FlprogEthernetClass::maintain()
 	return rc;
 }
 
-void FlprogEthernetClass::MACAddress(uint8_t *mac_address)
-{
-	hardware()->MACAddress(mac_address);
-}
-
-IPAddress FlprogEthernetClass::localIP()
-{
-	return hardware()->localIP();
-}
-
-IPAddress FlprogEthernetClass::subnetMask()
-{
-	return hardware()->subnetMask();
-}
-
-IPAddress FlprogEthernetClass::gatewayIP()
-{
-	return hardware()->gatewayIP();
-}
-
-void FlprogEthernetClass::setMACAddress(const uint8_t *mac_address)
-{
-	hardware()->setOnlyMACAddress(mac_address);
-}
-
-void FlprogEthernetClass::setLocalIP(const IPAddress local_ip)
-{
-	hardware()->setOnlyLocalIP(local_ip);
-}
-
-void FlprogEthernetClass::setSubnetMask(const IPAddress subnet)
-{
-	hardware()->setOnlySubnetMask(subnet);
-}
-
-void FlprogEthernetClass::setGatewayIP(const IPAddress gateway)
-{
-	hardware()->setOnlyGatewayIP(gateway);
-}
-
-void FlprogEthernetClass::setRetransmissionTimeout(uint16_t milliseconds)
-{
-	hardware()->setRetransmissionTime(milliseconds);
-}
-
-void FlprogEthernetClass::setRetransmissionCount(uint8_t num)
-{
-	hardware()->setRetransmissionCount(num);
-}
-
 //----------------------------FlprogW5100Ethernet-----------------------------
-FlprogW5100Interface::FlprogW5100Interface(FLProgSPI *spi, uint8_t pin)
+
+FlprogW5100Interface::FlprogW5100Interface()
 {
-	_hardware.setSS(pin);
+	_hardware.setSsPin(10);
+	_hardware.setSPI(new FLProgSPI(0));
+	_udp.setHatdware(&_hardware);
+	_udp.setDNS(&_dns);
+	_dhcp.setUDP(&_udp);
+	_dns.setUDP(&_udp);
+}
+
+FlprogW5100Interface::FlprogW5100Interface(FLProgSPI *spi, int pin)
+{
+	_hardware.setSsPin(pin);
 	_hardware.setSPI(spi);
 	_udp.setHatdware(&_hardware);
 	_udp.setDNS(&_dns);
@@ -147,13 +103,40 @@ FlprogW5100Interface::FlprogW5100Interface(FLProgSPI *spi, uint8_t pin)
 	_dns.setUDP(&_udp);
 }
 
-
-void FlprogW5100Interface::init(FLProgSPI *spi, uint8_t sspin)
+void FlprogW5100Interface::init(FLProgSPI *spi, int sspin)
 {
-	_hardware.setSS(sspin);
+	_hardware.setSsPin(sspin);
 	_hardware.setSPI(spi);
 	_udp.setHatdware(&_hardware);
 	_udp.setDNS(&_dns);
 	_dhcp.setUDP(&_udp);
 	_dns.setUDP(&_udp);
+}
+
+bool FlprogW5100Interface::isReady()
+{
+	if (hardwareStatus() == FLPROG_ETHERNET_NO_HARDWARE)
+	{
+		return false;
+	}
+	if (localIP() == IPAddress(0, 0, 0, 0))
+	{
+		return false;
+	}
+	uint8_t link = linkStatus();
+	if (link == FLPROG_ETHERNET_LINK_OFF)
+	{
+		return false;
+	}
+	return true;
+}
+
+bool FlprogW5100Interface::isBusy()
+{
+	if (!isReady())
+	{
+		return true;
+	}
+
+	return busy;
 }

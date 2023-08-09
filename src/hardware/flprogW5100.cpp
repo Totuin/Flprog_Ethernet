@@ -1,5 +1,131 @@
 #include "flprogW5100.h"
 
+uint8_t FlprogW5100Class::init(void)
+{
+	uint8_t i;
+	if (initialized)
+		return 1;
+	delay(560);
+	_spi->begin();
+	initSS();
+	resetSS();
+	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	if (isW5200())
+	{
+		CH_BASE_MSB = 0x40;
+#ifdef ETHERNET_LARGE_BUFFERS
+#if FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
+		SSIZE = 16384;
+#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
+		SSIZE = 8192;
+#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
+		SSIZE = 4096;
+#else
+		SSIZE = 2048;
+#endif
+		SMASK = SSIZE - 1;
+#endif
+		for (i = 0; i < FLPROG_ETHERNET_MAX_SOCK_NUM; i++)
+		{
+			writeSn(i, FLPROG_SN_RX_SIZE, SSIZE >> 10);
+			writeSn(i, FLPROG_SN_TX_SIZE, SSIZE >> 10);
+		}
+		for (; i < 8; i++)
+		{
+			writeSn(i, FLPROG_SN_RX_SIZE, 0);
+			writeSn(i, FLPROG_SN_TX_SIZE, 0);
+		}
+	}
+	else
+	{
+		if (isW5500())
+		{
+			CH_BASE_MSB = 0x10;
+#ifdef ETHERNET_LARGE_BUFFERS
+#if FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
+			SSIZE = 16384;
+#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
+			SSIZE = 8192;
+#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
+			SSIZE = 4096;
+#else
+			SSIZE = 2048;
+#endif
+			SMASK = SSIZE - 1;
+			for (i = 0; i < FLPROG_ETHERNET_MAX_SOCK_NUM; i++)
+			{
+				writeSn(i, FLPROG_SN_RX_SIZE, SSIZE >> 10);
+				writeSn(i, FLPROG_SN_TX_SIZE, SSIZE >> 10);
+			}
+			for (; i < 8; i++)
+			{
+				writeSn(i, FLPROG_SN_RX_SIZE, 0);
+				writeSn(i, FLPROG_SN_TX_SIZE, 0);
+			}
+#endif
+			// Try W5100 last.  This simple chip uses fixed 4 byte frames
+			// for every 8 bit access.  Terribly inefficient, but so simple
+			// it recovers from "hearing" unsuccessful W5100 or W5200
+			// communication.  W5100 is also the only chip without a VERSIONR
+			// register for identification, so we check this last.
+		}
+		else
+		{
+			if (isW5100())
+			{
+				CH_BASE_MSB = 0x04;
+#ifdef ETHERNET_LARGE_BUFFERS
+#if FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
+				SSIZE = 8192;
+				write(FLPROG_TMSR, 0x03);
+				write(FLPROG_RMSR, 0x03);
+#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
+				SSIZE = 4096;
+				write(FLPROG_TMSR, 0x0A);
+				write(FLPROG_RMSR, 0x0A);
+#else
+				SSIZE = 2048;
+				write(FLPROG_TMSR, 0x55);
+				write(FLPROG_RMSR, 0x55);
+#endif
+				SMASK = SSIZE - 1;
+#else
+				write(FLPROG_TMSR, 0x55);
+				write(FLPROG_RMSR, 0x55);
+#endif
+				// No hardware seems to be present.  Or it could be a W5200
+				// that's heard other SPI communication if its chip select
+				// pin wasn't high when a SD card or other SPI chip was used.
+			}
+			else
+			{
+				// Serial.println("no chip :-(");
+				chip = 0;
+				_spi->endTransaction();
+				return 0; // no known chip is responding :-(
+			}
+		}
+	}
+	_spi->endTransaction();
+	initialized = true;
+	return 1; // successful init
+}
+
+void FlprogW5100Class::setSsPin(int sspin)
+{
+
+	if (sspin < 0)
+	{
+		return;
+	}
+	if (_pinSS == sspin)
+	{
+		return;
+	}
+	_pinSS = sspin;
+	initSS();
+}
+
 void FlprogW5100Class::setNetSettings(uint8_t *mac, IPAddress ip)
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
@@ -249,117 +375,6 @@ void FlprogW5100Class::write16(uint16_t address, uint16_t _data)
 	buf[0] = _data >> 8;
 	buf[1] = _data & 0xFF;
 	write(address, buf, 2);
-}
-
-uint8_t FlprogW5100Class::init(void)
-{
-	uint8_t i;
-	if (initialized)
-		return 1;
-	delay(560);
-	_spi->begin();
-	initSS();
-	resetSS();
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
-	if (isW5200())
-	{
-		CH_BASE_MSB = 0x40;
-#ifdef ETHERNET_LARGE_BUFFERS
-#if FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
-		SSIZE = 16384;
-#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
-		SSIZE = 8192;
-#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
-		SSIZE = 4096;
-#else
-		SSIZE = 2048;
-#endif
-		SMASK = SSIZE - 1;
-#endif
-		for (i = 0; i < FLPROG_ETHERNET_MAX_SOCK_NUM; i++)
-		{
-			writeSn(i, FLPROG_SN_RX_SIZE, SSIZE >> 10);
-			writeSn(i, FLPROG_SN_TX_SIZE, SSIZE >> 10);
-		}
-		for (; i < 8; i++)
-		{
-			writeSn(i, FLPROG_SN_RX_SIZE, 0);
-			writeSn(i, FLPROG_SN_TX_SIZE, 0);
-		}
-	}
-	else
-	{
-		if (isW5500())
-		{
-			CH_BASE_MSB = 0x10;
-#ifdef ETHERNET_LARGE_BUFFERS
-#if FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
-			SSIZE = 16384;
-#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
-			SSIZE = 8192;
-#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
-			SSIZE = 4096;
-#else
-			SSIZE = 2048;
-#endif
-			SMASK = SSIZE - 1;
-			for (i = 0; i < FLPROG_ETHERNET_MAX_SOCK_NUM; i++)
-			{
-				writeSn(i, FLPROG_SN_RX_SIZE, SSIZE >> 10);
-				writeSn(i, FLPROG_SN_TX_SIZE, SSIZE >> 10);
-			}
-			for (; i < 8; i++)
-			{
-				writeSn(i, FLPROG_SN_RX_SIZE, 0);
-				writeSn(i, FLPROG_SN_TX_SIZE, 0);
-			}
-#endif
-			// Try W5100 last.  This simple chip uses fixed 4 byte frames
-			// for every 8 bit access.  Terribly inefficient, but so simple
-			// it recovers from "hearing" unsuccessful W5100 or W5200
-			// communication.  W5100 is also the only chip without a VERSIONR
-			// register for identification, so we check this last.
-		}
-		else
-		{
-			if (isW5100())
-			{
-				CH_BASE_MSB = 0x04;
-#ifdef ETHERNET_LARGE_BUFFERS
-#if FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
-				SSIZE = 8192;
-				write(FLPROG_TMSR, 0x03);
-				write(FLPROG_RMSR, 0x03);
-#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
-				SSIZE = 4096;
-				write(FLPROG_TMSR, 0x0A);
-				write(FLPROG_RMSR, 0x0A);
-#else
-				SSIZE = 2048;
-				write(FLPROG_TMSR, 0x55);
-				write(FLPROG_RMSR, 0x55);
-#endif
-				SMASK = SSIZE - 1;
-#else
-				write(FLPROG_TMSR, 0x55);
-				write(FLPROG_RMSR, 0x55);
-#endif
-				// No hardware seems to be present.  Or it could be a W5200
-				// that's heard other SPI communication if its chip select
-				// pin wasn't high when a SD card or other SPI chip was used.
-			}
-			else
-			{
-				// Serial.println("no chip :-(");
-				chip = 0;
-				_spi->endTransaction();
-				return 0; // no known chip is responding :-(
-			}
-		}
-	}
-	_spi->endTransaction();
-	initialized = true;
-	return 1; // successful init
 }
 
 // Soft reset the Wiznet chip, by writing to its MR register reset bit

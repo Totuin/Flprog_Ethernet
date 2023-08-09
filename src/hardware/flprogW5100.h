@@ -7,6 +7,7 @@ class FlprogW5100Class : public FlprogAbstractEthernetHardware
 {
 public:
   virtual uint8_t init(void);
+  void setSsPin(int sspin);
   virtual uint8_t getLinkStatus();
   virtual void setSPI(FLProgSPI *spi) { _spi = spi; };
   virtual void setGatewayIp(IPAddress addr);
@@ -40,7 +41,7 @@ public:
   virtual uint16_t writeSn(SOCKET s, uint16_t addr, uint8_t *buf, uint16_t len) { return write(CH_BASE() + s * CH_SIZE + addr, buf, len); };
   virtual uint16_t readSn16(SOCKET _s, uint16_t address);
   virtual void writeSn16(SOCKET _s, uint16_t address, uint16_t _data);
-  uint8_t _pinSS;
+  int _pinSS;
 
 #ifdef ETHERNET_LARGE_BUFFERS
   uint16_t SSIZE;
