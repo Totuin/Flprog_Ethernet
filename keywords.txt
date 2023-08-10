@@ -59,6 +59,8 @@ hardwareStatus	KEYWORD2
 hasOffsetAddressMapping	KEYWORD2
 inet_aton	KEYWORD2
 init	KEYWORD2
+isBusy	KEYWORD2
+isReady	KEYWORD2
 linkStatus	KEYWORD2
 localIP	KEYWORD2
 localPort	KEYWORD2
@@ -73,6 +75,8 @@ readSn16	KEYWORD2
 read_data	KEYWORD2
 remoteIP	KEYWORD2
 remotePort	KEYWORD2
+resetBusy	KEYWORD2
+setBusy	KEYWORD2
 setConnectionTimeout	KEYWORD2
 setDNS	KEYWORD2
 setDnsServerIP	KEYWORD2
@@ -92,6 +96,7 @@ setRetransmissionTime	KEYWORD2
 setRetransmissionTimeout	KEYWORD2
 setSPI	KEYWORD2
 setSS	KEYWORD2
+setSsPin	KEYWORD2
 setSubnetMask	KEYWORD2
 setUDP	KEYWORD2
 socketBegin	KEYWORD2
