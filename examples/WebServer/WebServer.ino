@@ -1,37 +1,11 @@
 #include "flprogEthernet.h"
 
-//Создаем объект шины 
 FLProgSPI spiBus(0);
-
-/*
-   Создаём обект интерфейса на чипе W5100 (поддерживаются W5200 и W5500)
-   В конструкторе передаём ссылку на шину к которой он подключён и номер пина SS
-   стандартныйе номера пинов
-   10 - Arduino shield
-   5 - MKR ETH shield
-   0 - Teensy 2.0
-   20 - Teensy++ 2.0
-   15 - ESP8266 with Adafruit Featherwing Ethernet
-   33 - ESP32 with Adafruit Featherwing Ethernet
-*/
 FlprogW5100Interface W5100_Interface(&spiBus, 10);
-
-
-
-// Создаём массив с MAC адресом
-byte mac[] = {
-  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED
-};
-
-// Создаём IP адрес для интерфейса
-IPAddress ip(192, 168, 199, 177);
-
-/*
-   Создаём обект сервера
-   В конструкторе передаём ссылку на объект интерфейса на которм этот сервер будет слушать передаваемый порт
-*/
-
 FlprogEthernetServer server(&W5100_Interface, 80);
+
+bool isNeedSendConnectMessage = true;
+bool isNeedSendDisconnectMessage = true;
 
 void setup()
 {
@@ -40,37 +14,42 @@ void setup()
   {
     ; // Ожидаем инициализацию порта
   }
-  Serial.println("Ethernet WebServer Example");
+  Serial.println("WebServer демонстрация");
 
-  // Запускаем интерфейс
-  W5100_Interface.begin(mac, ip);
-
-  // Проверяем работоспособность интерфейса
-  if (W5100_Interface.hardwareStatus() == FLPROG_ETHERNET_NO_HARDWARE)
-  {
-    Serial.println("Ethernet shield was not found.  Sorry, can't run without hardware. :(");
-    while (true)
-    {
-      delay(1);
-    }
-  }
-
-  // Проверяем - находится ли в сети интерфейс
-  if (W5100_Interface.linkStatus() == FLPROG_ETHERNET_LINK_OFF)
-  {
-    Serial.println("Ethernet cable is not connected.");
-  }
-
-  // Стартуем сервер
-  server.begin();
-  Serial.print("server is at ");
-  Serial.println(W5100_Interface.localIP()); // Показываем Ip интерфейса
+  W5100_Interface.mac(0x78, 0xAC, 0xC0, 0x0D, 0x5B, 0x86);
 }
 
 void loop()
 {
-  // listen for incoming clients
-  FlprogEthernetClient client = server.available();
+  W5100_Interface.pool();
+  if (W5100_Interface.isReady())
+  {
+    if (isNeedSendConnectMessage)
+    {
+      Serial.println("Ethernet подключён!");
+      Serial.print("Ip - ");
+      Serial.println(W5100_Interface.localIP());
+      Serial.print("Subnet mask - ");
+      Serial.println(W5100_Interface.subnet());
+      Serial.print("Gateway IP - ");
+      Serial.println(W5100_Interface.gateway());
+      Serial.print("Dns IP - ");
+      Serial.println(W5100_Interface.dns());
+      isNeedSendConnectMessage = false;
+      isNeedSendDisconnectMessage = true;
+    }
+  }
+  else
+  {
+    if (isNeedSendDisconnectMessage)
+    {
+      Serial.println("Ethernet отключён!");
+      isNeedSendConnectMessage = true;
+      isNeedSendDisconnectMessage = false;
+    }
+  }
+
+  FlprogEthernetClient client = server.accept();
   if (client)
   {
     Serial.println("new client");

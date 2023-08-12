@@ -200,6 +200,7 @@ uint8_t FlprogDhcpClass::parseDHCPResponse(unsigned long responseTimeout, uint32
 	uint8_t type = 0;
 	uint8_t opt_len = 0;
 	unsigned long startTime = millis();
+
 	while (_udp->parsePacket() <= 0)
 	{
 		if ((millis() - startTime) > responseTimeout)
