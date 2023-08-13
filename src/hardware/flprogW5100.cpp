@@ -867,7 +867,6 @@ uint8_t FlprogW5100Class::socketListen(uint8_t s)
 
 void FlprogW5100Class::socketConnect(uint8_t s, IPAddress ip, uint16_t port)
 {
-
 	uint8_t buffer[4];
 	buffer[0] = ip[0];
 	buffer[1] = ip[1];

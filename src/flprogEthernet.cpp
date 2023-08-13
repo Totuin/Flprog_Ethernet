@@ -49,7 +49,7 @@ void FlprogEthernetClass::pool()
 			if (gatewayIp == IPAddress(0, 0, 0, 0))
 			{
 				gatewayIp = ip;
-				dnsIp[3] = 1;
+				gatewayIp[3] = 1;
 			}
 			if (begin(macAddress, ip, dnsIp, gatewayIp, subnetIp))
 			{

@@ -71,27 +71,41 @@ int FlprogEthernetClient::connect(IPAddress ip, uint16_t port)
 	}
 #if defined(ESP8266) || defined(ESP32)
 	if (ip == IPAddress((uint32_t)0) || ip == IPAddress(0xFFFFFFFFul))
+	{
 		return 0;
+	}
 #else
 	if (ip == IPAddress(0ul) || ip == IPAddress(0xFFFFFFFFul))
+	{
 		return 0;
+	}
 #endif
 	sockindex = _hardware->socketBegin(FLPROG_SN_MR_TCP, 0);
 	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
 		return 0;
+	}
 	_hardware->socketConnect(sockindex, ip, port);
 	uint32_t start = millis();
 	while (1)
 	{
 		uint8_t stat = _hardware->socketStatus(sockindex);
 		if (stat == FLPROG_SN_SR_ESTABLISHED)
+		{
 			return 1;
+		}
 		if (stat == FLPROG_SN_SR_CLOSE_WAIT)
+		{
 			return 1;
+		}
 		if (stat == FLPROG_SN_SR_CLOSED)
+		{
 			return 0;
+		}
 		if (millis() - start > _timeout)
+		{
 			break;
+		}
 		delay(1);
 	}
 	_hardware->socketClose(sockindex);
