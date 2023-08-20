@@ -1,6 +1,6 @@
 #include "flprogW5100.h"
 
-uint8_t FlprogW5100Class::init(void)
+uint8_t FLProgWiznetClass::init(void)
 {
 	uint8_t i;
 	if (initialized)
@@ -111,7 +111,7 @@ uint8_t FlprogW5100Class::init(void)
 	return 1; // successful init
 }
 
-void FlprogW5100Class::setSsPin(int sspin)
+void FLProgWiznetClass::setSsPin(int sspin)
 {
 
 	if (sspin < 0)
@@ -126,7 +126,7 @@ void FlprogW5100Class::setSsPin(int sspin)
 	initSS();
 }
 
-void FlprogW5100Class::setNetSettings(uint8_t *mac, IPAddress ip)
+void FLProgWiznetClass::setNetSettings(uint8_t *mac, IPAddress ip)
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	setMACAddress(mac);
@@ -134,7 +134,7 @@ void FlprogW5100Class::setNetSettings(uint8_t *mac, IPAddress ip)
 	_spi->endTransaction();
 }
 
-void FlprogW5100Class::setNetSettings(IPAddress ip, IPAddress gateway, IPAddress subnet)
+void FLProgWiznetClass::setNetSettings(IPAddress ip, IPAddress gateway, IPAddress subnet)
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	setIPAddress(ip);
@@ -143,7 +143,7 @@ void FlprogW5100Class::setNetSettings(IPAddress ip, IPAddress gateway, IPAddress
 	_spi->endTransaction();
 }
 
-void FlprogW5100Class::setNetSettings(uint8_t *mac, IPAddress ip, IPAddress gateway, IPAddress subnet)
+void FLProgWiznetClass::setNetSettings(uint8_t *mac, IPAddress ip, IPAddress gateway, IPAddress subnet)
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	setMACAddress(mac);
@@ -153,7 +153,7 @@ void FlprogW5100Class::setNetSettings(uint8_t *mac, IPAddress ip, IPAddress gate
 	_spi->endTransaction();
 }
 
-IPAddress FlprogW5100Class::localIP()
+IPAddress FLProgWiznetClass::localIP()
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	IPAddress result = getIPAddress();
@@ -161,7 +161,7 @@ IPAddress FlprogW5100Class::localIP()
 	return result;
 }
 
-IPAddress FlprogW5100Class::subnetMask()
+IPAddress FLProgWiznetClass::subnetMask()
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	IPAddress result = getSubnetMask();
@@ -169,7 +169,7 @@ IPAddress FlprogW5100Class::subnetMask()
 	return result;
 }
 
-IPAddress FlprogW5100Class::gatewayIP()
+IPAddress FLProgWiznetClass::gatewayIP()
 {
 	IPAddress ret;
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
@@ -178,14 +178,14 @@ IPAddress FlprogW5100Class::gatewayIP()
 	return result;
 }
 
-void FlprogW5100Class::setOnlyMACAddress(const uint8_t *mac_address)
+void FLProgWiznetClass::setOnlyMACAddress(const uint8_t *mac_address)
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	setMACAddress(mac_address);
 	_spi->endTransaction();
 }
 
-void FlprogW5100Class::setOnlyLocalIP(const IPAddress local_ip)
+void FLProgWiznetClass::setOnlyLocalIP(const IPAddress local_ip)
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	IPAddress ip = local_ip;
@@ -193,7 +193,7 @@ void FlprogW5100Class::setOnlyLocalIP(const IPAddress local_ip)
 	_spi->endTransaction();
 }
 
-void FlprogW5100Class::setOnlySubnetMask(const IPAddress subnet)
+void FLProgWiznetClass::setOnlySubnetMask(const IPAddress subnet)
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	IPAddress ip = subnet;
@@ -201,7 +201,7 @@ void FlprogW5100Class::setOnlySubnetMask(const IPAddress subnet)
 	_spi->endTransaction();
 }
 
-void FlprogW5100Class::setOnlyGatewayIP(const IPAddress gateway)
+void FLProgWiznetClass::setOnlyGatewayIP(const IPAddress gateway)
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	IPAddress ip = gateway;
@@ -209,14 +209,14 @@ void FlprogW5100Class::setOnlyGatewayIP(const IPAddress gateway)
 	_spi->endTransaction();
 }
 
-void FlprogW5100Class::MACAddress(uint8_t *mac_address)
+void FLProgWiznetClass::MACAddress(uint8_t *mac_address)
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	getMACAddress(mac_address);
 	_spi->endTransaction();
 }
 
-uint16_t FlprogW5100Class::localPort(uint8_t soc)
+uint16_t FLProgWiznetClass::localPort(uint8_t soc)
 {
 	if (soc >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
@@ -227,7 +227,7 @@ uint16_t FlprogW5100Class::localPort(uint8_t soc)
 	return port;
 }
 
-IPAddress FlprogW5100Class::remoteIP(uint8_t soc)
+IPAddress FLProgWiznetClass::remoteIP(uint8_t soc)
 {
 	if (soc >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return IPAddress((uint32_t)0);
@@ -238,7 +238,7 @@ IPAddress FlprogW5100Class::remoteIP(uint8_t soc)
 	return IPAddress(remoteIParray);
 }
 
-uint16_t FlprogW5100Class::remotePort(uint8_t soc)
+uint16_t FLProgWiznetClass::remotePort(uint8_t soc)
 {
 	if (soc >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
@@ -249,7 +249,7 @@ uint16_t FlprogW5100Class::remotePort(uint8_t soc)
 	return port;
 }
 
-uint16_t FlprogW5100Class::SBASE(uint8_t socknum)
+uint16_t FLProgWiznetClass::SBASE(uint8_t socknum)
 {
 	if (chip == 51)
 	{
@@ -261,7 +261,7 @@ uint16_t FlprogW5100Class::SBASE(uint8_t socknum)
 	}
 }
 
-uint16_t FlprogW5100Class::RBASE(uint8_t socknum)
+uint16_t FLProgWiznetClass::RBASE(uint8_t socknum)
 {
 	if (chip == 51)
 	{
@@ -273,14 +273,14 @@ uint16_t FlprogW5100Class::RBASE(uint8_t socknum)
 	}
 }
 
-bool FlprogW5100Class::hasOffsetAddressMapping(void)
+bool FLProgWiznetClass::hasOffsetAddressMapping(void)
 {
 	if (chip == 55)
 		return true;
 	return false;
 }
 
-void FlprogW5100Class::setIPAddress(IPAddress addr)
+void FLProgWiznetClass::setIPAddress(IPAddress addr)
 {
 	uint8_t buffer[4];
 	buffer[0] = addr[0];
@@ -290,14 +290,14 @@ void FlprogW5100Class::setIPAddress(IPAddress addr)
 	write(FLPROG_SIPR, buffer, 4);
 }
 
-IPAddress FlprogW5100Class::getIPAddress()
+IPAddress FLProgWiznetClass::getIPAddress()
 {
 	uint8_t buffer[4] = {0, 0, 0, 0};
 	read(FLPROG_SIPR, buffer, 4);
 	return IPAddress(buffer[0], buffer[1], buffer[2], buffer[3]);
 }
 
-void FlprogW5100Class::setGatewayIp(IPAddress addr)
+void FLProgWiznetClass::setGatewayIp(IPAddress addr)
 {
 	uint8_t buffer[4];
 	buffer[0] = addr[0];
@@ -307,14 +307,14 @@ void FlprogW5100Class::setGatewayIp(IPAddress addr)
 	write(FLPROG_GAR, buffer, 4);
 }
 
-IPAddress FlprogW5100Class::getGatewayIp()
+IPAddress FLProgWiznetClass::getGatewayIp()
 {
 	uint8_t buffer[4] = {0, 0, 0, 0};
 	read(FLPROG_GAR, buffer, 4);
 	return IPAddress(buffer[0], buffer[1], buffer[2], buffer[3]);
 }
 
-void FlprogW5100Class::setSubnetMask(IPAddress addr)
+void FLProgWiznetClass::setSubnetMask(IPAddress addr)
 {
 	uint8_t buffer[4];
 	buffer[0] = addr[0];
@@ -324,14 +324,14 @@ void FlprogW5100Class::setSubnetMask(IPAddress addr)
 	write(FLPROG_SUBR, buffer, 4);
 }
 
-IPAddress FlprogW5100Class::getSubnetMask()
+IPAddress FLProgWiznetClass::getSubnetMask()
 {
 	uint8_t buffer[4] = {0, 0, 0, 0};
 	read(FLPROG_SUBR, buffer, 4);
 	return IPAddress(buffer[0], buffer[1], buffer[2], buffer[3]);
 }
 
-void FlprogW5100Class::setRetransmissionTime(uint16_t timeout)
+void FLProgWiznetClass::setRetransmissionTime(uint16_t timeout)
 {
 	if (timeout > 6553)
 		timeout = 6553;
@@ -340,28 +340,28 @@ void FlprogW5100Class::setRetransmissionTime(uint16_t timeout)
 	_spi->endTransaction();
 }
 
-void FlprogW5100Class::setRetransmissionCount(uint8_t retry)
+void FLProgWiznetClass::setRetransmissionCount(uint8_t retry)
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	write(FLPROG_RCR, retry);
 	_spi->endTransaction();
 }
 
-uint8_t FlprogW5100Class::read(uint16_t addr)
+uint8_t FLProgWiznetClass::read(uint16_t addr)
 {
 	uint8_t data;
 	read(addr, &data, 1);
 	return data;
 }
 
-uint16_t FlprogW5100Class::readSn16(SOCKET _s, uint16_t address)
+uint16_t FLProgWiznetClass::readSn16(SOCKET _s, uint16_t address)
 {
 	uint8_t buf[2];
 	readSn(_s, address, buf, 2);
 	return (buf[0] << 8) | buf[1];
 }
 
-void FlprogW5100Class::writeSn16(SOCKET _s, uint16_t address, uint16_t _data)
+void FLProgWiznetClass::writeSn16(SOCKET _s, uint16_t address, uint16_t _data)
 {
 	uint8_t buf[2];
 	buf[0] = _data >> 8;
@@ -369,7 +369,7 @@ void FlprogW5100Class::writeSn16(SOCKET _s, uint16_t address, uint16_t _data)
 	writeSn(_s, address, buf, 2);
 }
 
-void FlprogW5100Class::write16(uint16_t address, uint16_t _data)
+void FLProgWiznetClass::write16(uint16_t address, uint16_t _data)
 {
 	uint8_t buf[2];
 	buf[0] = _data >> 8;
@@ -378,7 +378,7 @@ void FlprogW5100Class::write16(uint16_t address, uint16_t _data)
 }
 
 // Soft reset the Wiznet chip, by writing to its MR register reset bit
-uint8_t FlprogW5100Class::softReset(void)
+uint8_t FLProgWiznetClass::softReset(void)
 {
 	uint16_t count = 0;
 
@@ -398,7 +398,7 @@ uint8_t FlprogW5100Class::softReset(void)
 	return 0;
 }
 
-uint8_t FlprogW5100Class::isW5100(void)
+uint8_t FLProgWiznetClass::isW5100(void)
 {
 	chip = 51;
 	// Serial.println("w5100.cpp: detect W5100 chip");
@@ -417,7 +417,7 @@ uint8_t FlprogW5100Class::isW5100(void)
 	return 1;
 }
 
-uint8_t FlprogW5100Class::isW5200(void)
+uint8_t FLProgWiznetClass::isW5200(void)
 {
 	chip = 52;
 	// Serial.println("w5100.cpp: detect W5200 chip");
@@ -441,7 +441,7 @@ uint8_t FlprogW5100Class::isW5200(void)
 	return 1;
 }
 
-uint8_t FlprogW5100Class::isW5500(void)
+uint8_t FLProgWiznetClass::isW5500(void)
 {
 	chip = 55;
 	// Serial.println("w5100.cpp: detect W5500 chip");
@@ -465,7 +465,7 @@ uint8_t FlprogW5100Class::isW5500(void)
 	return 1;
 }
 
-uint8_t FlprogW5100Class::getLinkStatus()
+uint8_t FLProgWiznetClass::getLinkStatus()
 {
 	uint8_t phystatus;
 
@@ -492,7 +492,7 @@ uint8_t FlprogW5100Class::getLinkStatus()
 	}
 }
 
-uint16_t FlprogW5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len)
+uint16_t FLProgWiznetClass::write(uint16_t addr, const uint8_t *buf, uint16_t len)
 {
 	uint8_t cmd[8];
 
@@ -601,7 +601,7 @@ uint16_t FlprogW5100Class::write(uint16_t addr, const uint8_t *buf, uint16_t len
 	return len;
 }
 
-uint16_t FlprogW5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
+uint16_t FLProgWiznetClass::read(uint16_t addr, uint8_t *buf, uint16_t len)
 {
 	uint8_t cmd[4];
 
@@ -696,7 +696,7 @@ uint16_t FlprogW5100Class::read(uint16_t addr, uint8_t *buf, uint16_t len)
 	return len;
 }
 
-void FlprogW5100Class::execCmdSn(SOCKET s, uint8_t _cmd)
+void FLProgWiznetClass::execCmdSn(SOCKET s, uint8_t _cmd)
 {
 	writeSn(s, FLPROG_SN_CR, _cmd);
 	while (readSn(s, FLPROG_SN_CR))
@@ -707,13 +707,13 @@ void FlprogW5100Class::execCmdSn(SOCKET s, uint8_t _cmd)
 /*          Socket management            */
 /*****************************************/
 
-void FlprogW5100Class::socketPortRand(uint16_t n)
+void FLProgWiznetClass::socketPortRand(uint16_t n)
 {
 	n &= 0x3FFF;
 	local_port ^= n;
 }
 
-uint8_t FlprogW5100Class::socketBegin(uint8_t protocol, uint16_t port)
+uint8_t FLProgWiznetClass::socketBegin(uint8_t protocol, uint16_t port)
 {
 	uint8_t s, status[FLPROG_ETHERNET_MAX_SOCK_NUM], maxindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	if (!chip)
@@ -747,7 +747,7 @@ uint8_t FlprogW5100Class::socketBegin(uint8_t protocol, uint16_t port)
 	return FLPROG_ETHERNET_MAX_SOCK_NUM; // all sockets are in use
 }
 
-void FlprogW5100Class::privateMaceSocet(uint8_t soc, uint8_t protocol, uint16_t port)
+void FLProgWiznetClass::privateMaceSocet(uint8_t soc, uint8_t protocol, uint16_t port)
 {
 	delayMicroseconds(250); // TODO: is this needed??
 	writeSn(soc, FLPROG_SN_MR, protocol);
@@ -769,7 +769,7 @@ void FlprogW5100Class::privateMaceSocet(uint8_t soc, uint8_t protocol, uint16_t 
 	state[soc].TX_FSR = 0;
 }
 
-uint8_t FlprogW5100Class::socketBeginMulticast(uint8_t protocol, IPAddress ip, uint16_t port)
+uint8_t FLProgWiznetClass::socketBeginMulticast(uint8_t protocol, IPAddress ip, uint16_t port)
 {
 	uint8_t s, status[FLPROG_ETHERNET_MAX_SOCK_NUM], maxindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	if (!chip)
@@ -803,7 +803,7 @@ uint8_t FlprogW5100Class::socketBeginMulticast(uint8_t protocol, IPAddress ip, u
 	return FLPROG_ETHERNET_MAX_SOCK_NUM;
 }
 
-void FlprogW5100Class::privateMaceSocetMulticast(uint8_t soc, uint8_t protocol, IPAddress ip, uint16_t port)
+void FLProgWiznetClass::privateMaceSocetMulticast(uint8_t soc, uint8_t protocol, IPAddress ip, uint16_t port)
 {
 	delayMicroseconds(250); // TODO: is this needed??
 	writeSn(soc, FLPROG_SN_MR, protocol);
@@ -837,7 +837,7 @@ void FlprogW5100Class::privateMaceSocetMulticast(uint8_t soc, uint8_t protocol, 
 	state[soc].TX_FSR = 0;
 }
 
-uint8_t FlprogW5100Class::socketStatus(uint8_t s)
+uint8_t FLProgWiznetClass::socketStatus(uint8_t s)
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	uint8_t status = readSn(s, FLPROG_SN_SR);
@@ -845,14 +845,14 @@ uint8_t FlprogW5100Class::socketStatus(uint8_t s)
 	return status;
 }
 
-void FlprogW5100Class::socketClose(uint8_t s)
+void FLProgWiznetClass::socketClose(uint8_t s)
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	execCmdSn(s, FLPROG_SOCK_CMD_CLOSE);
 	_spi->endTransaction();
 }
 
-uint8_t FlprogW5100Class::socketListen(uint8_t s)
+uint8_t FLProgWiznetClass::socketListen(uint8_t s)
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	if (readSn(s, FLPROG_SN_SR) != FLPROG_SN_SR_INIT)
@@ -865,7 +865,7 @@ uint8_t FlprogW5100Class::socketListen(uint8_t s)
 	return 1;
 }
 
-void FlprogW5100Class::socketConnect(uint8_t s, IPAddress ip, uint16_t port)
+void FLProgWiznetClass::socketConnect(uint8_t s, IPAddress ip, uint16_t port)
 {
 	uint8_t buffer[4];
 	buffer[0] = ip[0];
@@ -879,7 +879,7 @@ void FlprogW5100Class::socketConnect(uint8_t s, IPAddress ip, uint16_t port)
 	_spi->endTransaction();
 }
 
-void FlprogW5100Class::socketDisconnect(uint8_t s)
+void FLProgWiznetClass::socketDisconnect(uint8_t s)
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	execCmdSn(s, FLPROG_SOCK_CMD_DISCON);
@@ -890,7 +890,7 @@ void FlprogW5100Class::socketDisconnect(uint8_t s)
 /*    Socket Data Receive Functions      */
 /*****************************************/
 
-uint16_t FlprogW5100Class::getSnRX_RSR(uint8_t s)
+uint16_t FLProgWiznetClass::getSnRX_RSR(uint8_t s)
 {
 	uint16_t val, prev;
 	prev = readSn16(s, FLPROG_SN_RX_RSR);
@@ -905,7 +905,7 @@ uint16_t FlprogW5100Class::getSnRX_RSR(uint8_t s)
 	}
 }
 
-void FlprogW5100Class::read_data(uint8_t s, uint16_t src, uint8_t *dst, uint16_t len)
+void FLProgWiznetClass::read_data(uint8_t s, uint16_t src, uint8_t *dst, uint16_t len)
 {
 	uint16_t size;
 	uint16_t src_mask;
@@ -925,7 +925,7 @@ void FlprogW5100Class::read_data(uint8_t s, uint16_t src, uint8_t *dst, uint16_t
 	}
 }
 
-int FlprogW5100Class::socketRecv(uint8_t s, uint8_t *buf, int16_t len)
+int FLProgWiznetClass::socketRecv(uint8_t s, uint8_t *buf, int16_t len)
 {
 	int ret = state[s].RX_RSR;
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
@@ -974,7 +974,7 @@ int FlprogW5100Class::socketRecv(uint8_t s, uint8_t *buf, int16_t len)
 	return ret;
 }
 
-uint16_t FlprogW5100Class::socketRecvAvailable(uint8_t s)
+uint16_t FLProgWiznetClass::socketRecvAvailable(uint8_t s)
 {
 	uint16_t ret = state[s].RX_RSR;
 	if (ret == 0)
@@ -988,7 +988,7 @@ uint16_t FlprogW5100Class::socketRecvAvailable(uint8_t s)
 	return ret;
 }
 
-uint8_t FlprogW5100Class::socketPeek(uint8_t s)
+uint8_t FLProgWiznetClass::socketPeek(uint8_t s)
 {
 	uint8_t b;
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
@@ -1002,7 +1002,7 @@ uint8_t FlprogW5100Class::socketPeek(uint8_t s)
 /*    Socket Data Transmit Functions     */
 /*****************************************/
 
-uint16_t FlprogW5100Class::getSnTX_FSR(uint8_t s)
+uint16_t FLProgWiznetClass::getSnTX_FSR(uint8_t s)
 {
 	uint16_t val, prev;
 	prev = readSn16(s, FLPROG_SN_TX_FSR);
@@ -1018,7 +1018,7 @@ uint16_t FlprogW5100Class::getSnTX_FSR(uint8_t s)
 	}
 }
 
-void FlprogW5100Class::write_data(uint8_t s, uint16_t data_offset, const uint8_t *data, uint16_t len)
+void FLProgWiznetClass::write_data(uint8_t s, uint16_t data_offset, const uint8_t *data, uint16_t len)
 {
 	uint16_t ptr = readSn16(s, FLPROG_SN_TX_WR);
 	ptr += data_offset;
@@ -1040,7 +1040,7 @@ void FlprogW5100Class::write_data(uint8_t s, uint16_t data_offset, const uint8_t
 	writeSn16(s, FLPROG_SN_TX_WR, ptr);
 }
 
-uint16_t FlprogW5100Class::socketSend(uint8_t s, const uint8_t *buf, uint16_t len)
+uint16_t FLProgWiznetClass::socketSend(uint8_t s, const uint8_t *buf, uint16_t len)
 {
 	uint8_t status = 0;
 	uint16_t ret = 0;
@@ -1086,7 +1086,7 @@ uint16_t FlprogW5100Class::socketSend(uint8_t s, const uint8_t *buf, uint16_t le
 	return ret;
 }
 
-uint16_t FlprogW5100Class::socketSendAvailable(uint8_t s)
+uint16_t FLProgWiznetClass::socketSendAvailable(uint8_t s)
 {
 	uint8_t status = 0;
 	uint16_t freesize = 0;
@@ -1101,7 +1101,7 @@ uint16_t FlprogW5100Class::socketSendAvailable(uint8_t s)
 	return 0;
 }
 
-uint16_t FlprogW5100Class::socketBufferData(uint8_t s, uint16_t offset, const uint8_t *buf, uint16_t len)
+uint16_t FLProgWiznetClass::socketBufferData(uint8_t s, uint16_t offset, const uint8_t *buf, uint16_t len)
 {
 	uint16_t ret = 0;
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
@@ -1119,7 +1119,7 @@ uint16_t FlprogW5100Class::socketBufferData(uint8_t s, uint16_t offset, const ui
 	return ret;
 }
 
-bool FlprogW5100Class::socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port)
+bool FLProgWiznetClass::socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port)
 {
 	if (((addr[0] == 0x00) && (addr[1] == 0x00) && (addr[2] == 0x00) && (addr[3] == 0x00)) ||
 		((port == 0x00)))
@@ -1133,7 +1133,7 @@ bool FlprogW5100Class::socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port)
 	return true;
 }
 
-bool FlprogW5100Class::socketSendUDP(uint8_t s)
+bool FLProgWiznetClass::socketSendUDP(uint8_t s)
 {
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	execCmdSn(s, FLPROG_SOCK_CMD_SEND);

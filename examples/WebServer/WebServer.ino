@@ -1,8 +1,8 @@
 #include "flprogEthernet.h"
 
 FLProgSPI spiBus(0);
-FlprogW5100Interface W5100_Interface(&spiBus, 10);
-FlprogEthernetServer server(&W5100_Interface, 80);
+FLProgWiznetInterface WiznetInterface(&spiBus, 10);
+FLProgEthernetServer server(&WiznetInterface, 80);
 
 bool isNeedSendConnectMessage = true;
 bool isNeedSendDisconnectMessage = true;
@@ -16,25 +16,25 @@ void setup()
   }
   Serial.println("WebServer демонстрация");
 
-  W5100_Interface.mac(0x78, 0xAC, 0xC0, 0x0D, 0x5B, 0x86);
+  WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x0D, 0x5B, 0x86);
 }
 
 void loop()
 {
-  W5100_Interface.pool();
-  if (W5100_Interface.isReady())
+  WiznetInterface.pool();
+  if (WiznetInterface.isReady())
   {
     if (isNeedSendConnectMessage)
     {
       Serial.println("Ethernet подключён!");
       Serial.print("Ip - ");
-      Serial.println(W5100_Interface.localIP());
+      Serial.println(WiznetInterface.localIP());
       Serial.print("Subnet mask - ");
-      Serial.println(W5100_Interface.subnet());
+      Serial.println(WiznetInterface.subnet());
       Serial.print("Gateway IP - ");
-      Serial.println(W5100_Interface.gateway());
+      Serial.println(WiznetInterface.gateway());
       Serial.print("Dns IP - ");
-      Serial.println(W5100_Interface.dns());
+      Serial.println(WiznetInterface.dns());
       isNeedSendConnectMessage = false;
       isNeedSendDisconnectMessage = true;
     }

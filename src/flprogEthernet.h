@@ -27,18 +27,20 @@ public:
 
 	void setRetransmissionTimeout(uint16_t milliseconds) { hardware()->setRetransmissionTime(milliseconds); };
 	void setRetransmissionCount(uint8_t num) { hardware()->setRetransmissionCount(num); };
-	
-	virtual FlprogDNSClient *dnsClient() { return &_dns; };
+
+	virtual FLProgDNSClient *dnsClient() { return &_dns; };
 
 	uint32_t checkLinePeriod() { return checkLineStatusPeriod; };
 	void checkLinePeriod(uint32_t period) { checkLineStatusPeriod = period; };
 	uint32_t reconnectPeriod() { return reconnectLinePeriod; };
 	void reconnectPeriod(uint32_t period) { reconnectLinePeriod = period; };
+	virtual FLProgAbstractTcpServer *getServer(int port) { return new FLProgEthernetServer(this, port); };
+	virtual Client *getClient() { return new FLProgEthernetClient(this); };
 
 protected:
-	FlprogEthernetUDP _udp;
-	FlprogDhcpClass _dhcp;
-	FlprogDNSClient _dns;
+	FLProgEthernetUDP _udp;
+	FLProgDhcpClass _dhcp;
+	FLProgDNSClient _dns;
 
 private:
 	uint8_t checkLineStatus();
@@ -48,15 +50,16 @@ private:
 	uint32_t lastReconnectTime = flprog::timeBack(reconnectLinePeriod);
 };
 
-class FlprogW5100Interface : public FlprogEthernetClass
+class FLProgWiznetInterface : public FlprogEthernetClass
 {
 public:
-	FlprogW5100Interface();
-	FlprogW5100Interface(FLProgSPI *spi, int pin = 10);
-	virtual FlprogAbstractEthernetHardware *hardware() { return &_hardware; };
+	FLProgWiznetInterface();
+	FLProgWiznetInterface(FLProgSPI *spi, int pin = 10);
+	virtual FLProgAbstractEthernetHardware *hardware() { return &_hardware; };
 	void init(FLProgSPI *spi, int sspin = 10);
 	void setSsPin(int sspin) { _hardware.setSsPin(sspin); };
+	virtual bool isImitation() { return false; }
 
 protected:
-	FlprogW5100Class _hardware;
+	FLProgWiznetClass _hardware;
 };

@@ -5,15 +5,15 @@
 #include "flprogAbstractEthernet.h"
 #include "flprogDns.h"
 
-class FlprogEthernetClient : public Client
+class FLProgEthernetClient : public Client
 {
 public:
-    FlprogEthernetClient(){};
-    FlprogEthernetClient(FlprogAbstractEthernet *sourse);
-    FlprogEthernetClient(FlprogAbstractEthernetHardware *hardware, FlprogDNSClient *dns);
-    FlprogEthernetClient(FlprogAbstractEthernetHardware *hardware, FlprogDNSClient *dns, uint8_t s);
+    FLProgEthernetClient(){};
+    FLProgEthernetClient(FlprogAbstractEthernet *sourse);
+    FLProgEthernetClient(FLProgAbstractEthernetHardware *hardware, FLProgDNSClient *dns);
+    FLProgEthernetClient(FLProgAbstractEthernetHardware *hardware, FLProgDNSClient *dns, uint8_t s);
 
-    void init(FlprogAbstractEthernet *sourse);
+    virtual void init(FlprogAbstractEthernet *sourse);
     uint8_t status();
     virtual int connect(IPAddress ip, uint16_t port);
     virtual int connect(const char *host, uint16_t port);
@@ -30,19 +30,19 @@ public:
     virtual operator bool() { return sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM; }
     virtual bool operator==(const bool value) { return bool() == value; }
     virtual bool operator!=(const bool value) { return bool() != value; }
-    virtual bool operator==(const FlprogEthernetClient &);
-    virtual bool operator!=(const FlprogEthernetClient &rhs) { return !this->operator==(rhs); }
+    virtual bool operator==(const FLProgEthernetClient &);
+    virtual bool operator!=(const FLProgEthernetClient &rhs) { return !this->operator==(rhs); }
     uint8_t getSocketNumber() const { return sockindex; }
     virtual uint16_t localPort();
     virtual IPAddress remoteIP();
     virtual uint16_t remotePort();
     virtual void setConnectionTimeout(uint16_t timeout) { _timeout = timeout; }
-    friend class FlprogEthernetServer;
+    friend class FLProgEthernetServer;
     using Print::write;
 
 private:
-    FlprogAbstractEthernetHardware *_hardware;
-    FlprogDNSClient *_dns;
+    FLProgAbstractEthernetHardware *_hardware;
+    FLProgDNSClient *_dns;
     uint8_t sockindex; // FLPROG_ETHERNET_MAX_SOCK_NUM means client not in use
     uint16_t _timeout;
     bool isInit = false;

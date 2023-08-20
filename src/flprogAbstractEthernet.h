@@ -24,49 +24,18 @@
 #define FLPROG_ETHERNET_STATUS_READY 1
 #define FLPROG_ETHERNET_STATUS_WHITE_DHCP 2
 
-class FlprogAbstractEthernetHardware;
-class FlprogDNSClient;
+class FLProgAbstractEthernetHardware;
+class FLProgDNSClient;
 
-class FlprogAbstractEthernet
+class FlprogAbstractEthernet : public FLProgAbstractTcpInterface
 {
 public:
-    virtual FlprogAbstractEthernetHardware *hardware() = 0;
-    virtual FlprogDNSClient *dnsClient() = 0;
-
-    virtual void pool(){};
-    virtual bool isBusy() { return busy; };
-    virtual void isBusy(bool val) { busy = val; };
-    void setBusy() { busy = true; };
-    void resetBusy() { busy = false; };
+    virtual FLProgAbstractEthernetHardware *hardware() = 0;
+    virtual FLProgDNSClient *dnsClient() = 0;
     virtual bool isReady() { return lineStatus == FLPROG_ETHERNET_STATUS_READY; };
-
-    IPAddress localIP() { return ip; };
-    void localIP(IPAddress _ip);
-    IPAddress dns() { return dnsIp; };
-    void dns(IPAddress _ip);
-    IPAddress subnet() { return subnetIp; };
-    void subnet(IPAddress _ip);
-    IPAddress gateway() { return gatewayIp; };
-    void gateway(IPAddress _ip);
-
-    void mac(uint8_t m0, uint8_t m1, uint8_t m2, uint8_t m3, uint8_t m4, uint8_t m5);
-    uint8_t *mac() { return macAddress; };
-    virtual void mac(uint8_t *mac_address);
-
-    void setDhcp();
-    void resetDhcp();
-    void dhcpMode(bool val);
-    bool dhcpMode() { return isDhcp; };
+    virtual uint8_t type() { return FLPROG_ETHERNET_INTERFACE; }
 
 protected:
-    IPAddress ip = IPAddress(0, 0, 0, 0);
-    IPAddress dnsIp = IPAddress(0, 0, 0, 0);
-    IPAddress subnetIp = IPAddress(255, 255, 255, 0);
-    IPAddress gatewayIp = IPAddress(0, 0, 0, 0);
-    uint8_t macAddress[6] = {0, 0, 0, 0, 0, 0};
     uint8_t lineStatus = FLPROG_ETHERNET_STATUS_NOTREADY;
-    bool isDhcp = true;
     bool needUpdateData = false;
-    bool isNeedReconect = false;
-    bool busy = false;
 };

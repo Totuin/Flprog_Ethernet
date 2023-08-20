@@ -5,23 +5,19 @@
 # # Datatypes (KEYWORD1)
 #######################################
 FlprogAbstractEthernet	KEYWORD1
-FlprogAbstractEthernetHardware	KEYWORD1
-FlprogDNSClient	KEYWORD1
-FlprogDhcpClass	KEYWORD1
+FLProgAbstractEthernetHardware	KEYWORD1
+FLProgDhcpClass	KEYWORD1
+FLProgDNSClient	KEYWORD1
 FlprogEthernetClass	KEYWORD1
-FlprogEthernetClient	KEYWORD1
-FlprogEthernetServer	KEYWORD1
-FlprogEthernetUDP	KEYWORD1
-FlprogW5100Class	KEYWORD1
-FlprogW5100Interface	KEYWORD1
+FLProgEthernetClient	KEYWORD1
+FLProgEthernetServer	KEYWORD1
+FLProgEthernetUDP	KEYWORD1
+FLProgWiznetClass	KEYWORD1
+FLProgWiznetInterface	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
 #######################################
-CH_BASE	KEYWORD2
-MACAddress	KEYWORD2
-RBASE	KEYWORD2
-SBASE	KEYWORD2
 _CH_SIZE	KEYWORD2
 _SSIZE	KEYWORD2
 accept	KEYWORD2
@@ -32,19 +28,19 @@ beginMulticast	KEYWORD2
 beginPacket	KEYWORD2
 beginWithDHCP	KEYWORD2
 bool	KEYWORD2
+CH_BASE	KEYWORD2
 checkLease	KEYWORD2
 checkLinePeriod	KEYWORD2
+client	KEYWORD2
 connect	KEYWORD2
 connected	KEYWORD2
-dhcpMode	KEYWORD2
-dns	KEYWORD2
 dnsClient	KEYWORD2
 endPacket	KEYWORD2
 execCmdSn	KEYWORD2
 flush	KEYWORD2
-gateway	KEYWORD2
 gatewayIP	KEYWORD2
 getChip	KEYWORD2
+getClient	KEYWORD2
 getDhcpServerIp	KEYWORD2
 getDnsServerIp	KEYWORD2
 getGatewayIp	KEYWORD2
@@ -53,6 +49,7 @@ getIPAddress	KEYWORD2
 getLinkStatus	KEYWORD2
 getLocalIp	KEYWORD2
 getMACAddress	KEYWORD2
+getServer	KEYWORD2
 getSnRX_RSR	KEYWORD2
 getSnTX_FSR	KEYWORD2
 getSocketNumber	KEYWORD2
@@ -62,31 +59,30 @@ hardwareStatus	KEYWORD2
 hasOffsetAddressMapping	KEYWORD2
 inet_aton	KEYWORD2
 init	KEYWORD2
-isBusy	KEYWORD2
+isImitation	KEYWORD2
 isReady	KEYWORD2
 linkStatus	KEYWORD2
 localIP	KEYWORD2
 localPort	KEYWORD2
-mac	KEYWORD2
+MACAddress	KEYWORD2
 maintain	KEYWORD2
 operator!=	KEYWORD2
 operator==	KEYWORD2
 parsePacket	KEYWORD2
 peek	KEYWORD2
 pool	KEYWORD2
+RBASE	KEYWORD2
 read	KEYWORD2
+read_data	KEYWORD2
 readSn	KEYWORD2
 readSn16	KEYWORD2
-read_data	KEYWORD2
 reconnectPeriod	KEYWORD2
 remoteIP	KEYWORD2
 remotePort	KEYWORD2
-resetBusy	KEYWORD2
-resetDhcp	KEYWORD2
-setBusy	KEYWORD2
+SBASE	KEYWORD2
+setClient	KEYWORD2
 setConnectionTimeout	KEYWORD2
 setDNS	KEYWORD2
-setDhcp	KEYWORD2
 setGatewayIp	KEYWORD2
 setHatdware	KEYWORD2
 setIPAddress	KEYWORD2
@@ -122,17 +118,19 @@ socketStartUDP	KEYWORD2
 socketStatus	KEYWORD2
 status	KEYWORD2
 stop	KEYWORD2
-subnet	KEYWORD2
 subnetMask	KEYWORD2
+type	KEYWORD2
 write	KEYWORD2
+write_data	KEYWORD2
 write16	KEYWORD2
 writeSn	KEYWORD2
 writeSn16	KEYWORD2
-write_data	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)
 #######################################
+__arm__	LITERAL1
+__SAMD21G18A__	LITERAL1
 ARDUINO_ARCH_ARC32	LITERAL1
 ARDUINO_ARCH_PIC32	LITERAL1
 ETHERNET_LARGE_BUFFERS	LITERAL1
@@ -200,8 +198,8 @@ FLPROG_SN_RX_RD	LITERAL1
 FLPROG_SN_RX_RSR	LITERAL1
 FLPROG_SN_RX_SIZE	LITERAL1
 FLPROG_SN_SR	LITERAL1
-FLPROG_SN_SR_CLOSED	LITERAL1
 FLPROG_SN_SR_CLOSE_WAIT	LITERAL1
+FLPROG_SN_SR_CLOSED	LITERAL1
 FLPROG_SN_SR_CLOSING	LITERAL1
 FLPROG_SN_SR_ESTABLISHED	LITERAL1
 FLPROG_SN_SR_FIN_WAIT	LITERAL1
@@ -235,5 +233,3 @@ RAMEND	LITERAL1
 RAMSTART	LITERAL1
 SPI_ETHERNET_SETTINGS	LITERAL1
 SS_PIN_DEFAULT	LITERAL1
-__SAMD21G18A__	LITERAL1
-__arm__	LITERAL1

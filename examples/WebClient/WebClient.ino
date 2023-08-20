@@ -2,7 +2,7 @@
 #include "flprogEthernet.h"
 
 FLProgSPI spiBus(0);
-FlprogW5100Interface W5100_Interface(&spiBus, 10);
+FLProgWiznetInterface WiznetInterface(&spiBus, 10);
 
 const char *host = "djxmmx.net";
 const uint16_t port = 17;
@@ -11,22 +11,22 @@ void setup()
 {
   Serial.begin(115200);
 
-  W5100_Interface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x28); //--Установка MAC-адрес контроллера 
-  while (!W5100_Interface.isReady())
+  WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x28); //--Установка MAC-адрес контроллера 
+  while (!WiznetInterface.isReady())
   {
-    W5100_Interface.pool();
+    WiznetInterface.pool();
     delay(500);
     Serial.print(".");
   }
   Serial.println("");
   Serial.println("Ethernet connected");
   Serial.println("IP address: ");
-  Serial.println(W5100_Interface.localIP());
+  Serial.println(WiznetInterface.localIP());
 }
 
 void loop()
 {
-  W5100_Interface.pool();
+  WiznetInterface.pool();
 
   static bool wait = false;
 
@@ -35,7 +35,7 @@ void loop()
   Serial.print(':');
   Serial.println(port);
 
-  FlprogEthernetClient client(&W5100_Interface);
+  FLProgEthernetClient client(&WiznetInterface);
   if (!client.connect(host, port))
   {
     Serial.println("connection failed");

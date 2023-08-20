@@ -1,6 +1,6 @@
 #include "flprogEthernetClient.h"
 
-FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernet *sourse)
+FLProgEthernetClient::FLProgEthernetClient(FlprogAbstractEthernet *sourse)
 {
 	_hardware = sourse->hardware();
 	_dns = sourse->dnsClient();
@@ -9,7 +9,7 @@ FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernet *sourse)
 	isInit = true;
 }
 
-void FlprogEthernetClient::init(FlprogAbstractEthernet *sourse)
+void FLProgEthernetClient::init(FlprogAbstractEthernet *sourse)
 {
 	if (isInit)
 	{
@@ -22,7 +22,7 @@ void FlprogEthernetClient::init(FlprogAbstractEthernet *sourse)
 	isInit = true;
 }
 
-FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernetHardware *hardware, FlprogDNSClient *dns)
+FLProgEthernetClient::FLProgEthernetClient(FLProgAbstractEthernetHardware *hardware, FLProgDNSClient *dns)
 {
 	_hardware = hardware;
 	_dns = dns;
@@ -31,7 +31,7 @@ FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernetHardware *hardw
 	isInit = true;
 }
 
-FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernetHardware *hardware, FlprogDNSClient *dns, uint8_t s)
+FLProgEthernetClient::FLProgEthernetClient(FLProgAbstractEthernetHardware *hardware, FLProgDNSClient *dns, uint8_t s)
 {
 	_hardware = hardware;
 	_dns = dns;
@@ -40,7 +40,7 @@ FlprogEthernetClient::FlprogEthernetClient(FlprogAbstractEthernetHardware *hardw
 	isInit = true;
 }
 
-int FlprogEthernetClient::connect(const char *host, uint16_t port)
+int FLProgEthernetClient::connect(const char *host, uint16_t port)
 {
 	uint8_t remote_addr[4] = {0, 0, 0, 0};
 	if (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
@@ -59,7 +59,7 @@ int FlprogEthernetClient::connect(const char *host, uint16_t port)
 	return connect(IPAddress(remote_addr[0], remote_addr[1], remote_addr[2], remote_addr[3]), port);
 }
 
-int FlprogEthernetClient::connect(IPAddress ip, uint16_t port)
+int FLProgEthernetClient::connect(IPAddress ip, uint16_t port)
 {
 	if (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
@@ -113,19 +113,19 @@ int FlprogEthernetClient::connect(IPAddress ip, uint16_t port)
 	return 0;
 }
 
-int FlprogEthernetClient::availableForWrite(void)
+int FLProgEthernetClient::availableForWrite(void)
 {
 	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
 	return _hardware->socketSendAvailable(sockindex);
 }
 
-size_t FlprogEthernetClient::write(uint8_t b)
+size_t FLProgEthernetClient::write(uint8_t b)
 {
 	return write(&b, 1);
 }
 
-size_t FlprogEthernetClient::write(const uint8_t *buf, size_t size)
+size_t FLProgEthernetClient::write(const uint8_t *buf, size_t size)
 {
 	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
@@ -135,7 +135,7 @@ size_t FlprogEthernetClient::write(const uint8_t *buf, size_t size)
 	return 0;
 }
 
-int FlprogEthernetClient::available()
+int FLProgEthernetClient::available()
 {
 	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
@@ -148,14 +148,14 @@ int FlprogEthernetClient::available()
 	// command to cause the Wiznet chip to resend the ACK packet.
 }
 
-int FlprogEthernetClient::read(uint8_t *buf, size_t size)
+int FLProgEthernetClient::read(uint8_t *buf, size_t size)
 {
 	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
 	return _hardware->socketRecv(sockindex, buf, size);
 }
 
-int FlprogEthernetClient::peek()
+int FLProgEthernetClient::peek()
 {
 	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return -1;
@@ -164,7 +164,7 @@ int FlprogEthernetClient::peek()
 	return _hardware->socketPeek(sockindex);
 }
 
-int FlprogEthernetClient::read()
+int FLProgEthernetClient::read()
 {
 	uint8_t b;
 	if (_hardware->socketRecv(sockindex, &b, 1) > 0)
@@ -172,7 +172,7 @@ int FlprogEthernetClient::read()
 	return -1;
 }
 
-void FlprogEthernetClient::flush()
+void FLProgEthernetClient::flush()
 {
 	while (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
@@ -184,7 +184,7 @@ void FlprogEthernetClient::flush()
 	}
 }
 
-void FlprogEthernetClient::stop()
+void FLProgEthernetClient::stop()
 {
 	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return;
@@ -209,7 +209,7 @@ void FlprogEthernetClient::stop()
 	sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 }
 
-uint8_t FlprogEthernetClient::connected()
+uint8_t FLProgEthernetClient::connected()
 {
 	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
@@ -218,7 +218,7 @@ uint8_t FlprogEthernetClient::connected()
 			 ((s == FLPROG_SN_SR_CLOSE_WAIT) && !available()));
 }
 
-uint8_t FlprogEthernetClient::status()
+uint8_t FLProgEthernetClient::status()
 {
 	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return FLPROG_SN_SR_CLOSED;
@@ -227,7 +227,7 @@ uint8_t FlprogEthernetClient::status()
 
 // the next function allows us to use the client returned by
 // EthernetServer::available() as the condition in an if-statement.
-bool FlprogEthernetClient::operator==(const FlprogEthernetClient &rhs)
+bool FLProgEthernetClient::operator==(const FLProgEthernetClient &rhs)
 {
 	if (sockindex != rhs.sockindex)
 		return false;
@@ -238,17 +238,17 @@ bool FlprogEthernetClient::operator==(const FlprogEthernetClient &rhs)
 	return true;
 }
 
-uint16_t FlprogEthernetClient::localPort()
+uint16_t FLProgEthernetClient::localPort()
 {
 	return _hardware->localPort(sockindex);
 }
 
-IPAddress FlprogEthernetClient::remoteIP()
+IPAddress FLProgEthernetClient::remoteIP()
 {
 	return _hardware->remoteIP(sockindex);
 }
 
-uint16_t FlprogEthernetClient::remotePort()
+uint16_t FLProgEthernetClient::remotePort()
 {
 	return _hardware->remotePort(sockindex);
 }

@@ -34,18 +34,18 @@
 #define FLPROG_TRUNCATED -3
 #define FLPROG_INVALID_RESPONSE -4
 
-void FlprogDNSClient::setUDP(FlprogEthernetUDP *udp)
+void FLProgDNSClient::setUDP(FLProgEthernetUDP *udp)
 {
 	_udp = udp;
 }
 
-void FlprogDNSClient::begin(const IPAddress aDNSServer)
+void FLProgDNSClient::begin(const IPAddress aDNSServer)
 {
 	iDNSServer = aDNSServer;
 	iRequestId = 0;
 }
 
-int FlprogDNSClient::inet_aton(const char *address, IPAddress &result)
+int FLProgDNSClient::inet_aton(const char *address, IPAddress &result)
 {
 	uint16_t acc = 0; // Accumulator
 	uint8_t dots = 0;
@@ -84,7 +84,7 @@ int FlprogDNSClient::inet_aton(const char *address, IPAddress &result)
 
 
 
-int FlprogDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint16_t timeout)
+int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint16_t timeout)
 {
 	int ret = 0;
 	IPAddress temp;
@@ -129,7 +129,7 @@ int FlprogDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 	return ret;
 }
 
-uint16_t FlprogDNSClient::BuildRequest(const char *aName)
+uint16_t FLProgDNSClient::BuildRequest(const char *aName)
 {
 	iRequestId = millis(); // generate a random ID
 	uint16_t twoByteBuffer;
@@ -171,7 +171,7 @@ uint16_t FlprogDNSClient::BuildRequest(const char *aName)
 	return 1;
 }
 
-uint16_t FlprogDNSClient::ProcessResponse(uint16_t aTimeout, uint8_t *aAddress)
+uint16_t FLProgDNSClient::ProcessResponse(uint16_t aTimeout, uint8_t *aAddress)
 {
 	uint32_t startTime = millis();
 	while (_udp->parsePacket() <= 0)

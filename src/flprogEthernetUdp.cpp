@@ -3,19 +3,19 @@
 
 /* Start EthernetUDP socket, listening at local port PORT */
 
-FlprogEthernetUDP::FlprogEthernetUDP(FlprogAbstractEthernet *sourse)
+FLProgEthernetUDP::FLProgEthernetUDP(FlprogAbstractEthernet *sourse)
 {
 	_hardware = sourse->hardware();
 	_dns = sourse->dnsClient();
 }
 
-void FlprogEthernetUDP::setHatdware(FlprogAbstractEthernetHardware *hardware)
+void FLProgEthernetUDP::setHatdware(FLProgAbstractEthernetHardware *hardware)
 {
 	sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	_hardware = hardware;
 }
 
-uint8_t FlprogEthernetUDP::begin(uint16_t port)
+uint8_t FLProgEthernetUDP::begin(uint16_t port)
 {
 	if (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
 		_hardware->socketClose(sockindex);
@@ -29,13 +29,13 @@ uint8_t FlprogEthernetUDP::begin(uint16_t port)
 
 /* return number of bytes available in the current packet,
    will return zero if parsePacket hasn't been called yet */
-int FlprogEthernetUDP::available()
+int FLProgEthernetUDP::available()
 {
 	return _remaining;
 }
 
 /* Release any resources being used by this EthernetUDP instance */
-void FlprogEthernetUDP::stop()
+void FLProgEthernetUDP::stop()
 {
 	if (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
@@ -44,7 +44,7 @@ void FlprogEthernetUDP::stop()
 	}
 }
 
-int FlprogEthernetUDP::beginPacket(const char *host, uint16_t port)
+int FLProgEthernetUDP::beginPacket(const char *host, uint16_t port)
 {
 	int ret = 0;
 	uint8_t remote_addr[4] = {0, 0, 0, 0};
@@ -54,7 +54,7 @@ int FlprogEthernetUDP::beginPacket(const char *host, uint16_t port)
 	return beginPacket(IPAddress(remote_addr[0], remote_addr[1], remote_addr[2], remote_addr[3]), port);
 }
 
-int FlprogEthernetUDP::beginPacket(IPAddress ip, uint16_t port)
+int FLProgEthernetUDP::beginPacket(IPAddress ip, uint16_t port)
 {
 	_offset = 0;
 	uint8_t buffer[4];
@@ -65,17 +65,17 @@ int FlprogEthernetUDP::beginPacket(IPAddress ip, uint16_t port)
 	return _hardware->socketStartUDP(sockindex, buffer, port);
 }
 
-int FlprogEthernetUDP::endPacket()
+int FLProgEthernetUDP::endPacket()
 {
 	return _hardware->socketSendUDP(sockindex);
 }
 
-size_t FlprogEthernetUDP::write(uint8_t byte)
+size_t FLProgEthernetUDP::write(uint8_t byte)
 {
 	return write(&byte, 1);
 }
 
-size_t FlprogEthernetUDP::write(const uint8_t *buffer, size_t size)
+size_t FLProgEthernetUDP::write(const uint8_t *buffer, size_t size)
 {
 	// Serial.printf("UDP write %d\n", size);
 	uint16_t bytes_written = _hardware->socketBufferData(sockindex, _offset, buffer, size);
@@ -83,7 +83,7 @@ size_t FlprogEthernetUDP::write(const uint8_t *buffer, size_t size)
 	return bytes_written;
 }
 
-int FlprogEthernetUDP::parsePacket()
+int FLProgEthernetUDP::parsePacket()
 {
 	// discard any remaining bytes in the last packet
 	while (_remaining)
@@ -118,7 +118,7 @@ int FlprogEthernetUDP::parsePacket()
 	return 0;
 }
 
-int FlprogEthernetUDP::read()
+int FLProgEthernetUDP::read()
 {
 	uint8_t byte;
 
@@ -133,7 +133,7 @@ int FlprogEthernetUDP::read()
 	return -1;
 }
 
-int FlprogEthernetUDP::read(uint8_t *buffer, size_t len)
+int FLProgEthernetUDP::read(uint8_t *buffer, size_t len)
 {
 	if (_remaining > 0)
 	{
@@ -160,7 +160,7 @@ int FlprogEthernetUDP::read(uint8_t *buffer, size_t len)
 	return -1;
 }
 
-int FlprogEthernetUDP::peek()
+int FLProgEthernetUDP::peek()
 {
 	// Unlike recv, peek doesn't check to see if there's any data available, so we must.
 	// If the user hasn't called parsePacket yet then return nothing otherwise they
@@ -170,13 +170,13 @@ int FlprogEthernetUDP::peek()
 	return _hardware->socketPeek(sockindex);
 }
 
-void FlprogEthernetUDP::flush()
+void FLProgEthernetUDP::flush()
 {
 	// TODO: we should wait for TX buffer to be emptied
 }
 
 /* Start EthernetUDP socket, listening at local port PORT */
-uint8_t FlprogEthernetUDP::beginMulticast(IPAddress ip, uint16_t port)
+uint8_t FLProgEthernetUDP::beginMulticast(IPAddress ip, uint16_t port)
 {
 	if (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
 		_hardware->socketClose(sockindex);

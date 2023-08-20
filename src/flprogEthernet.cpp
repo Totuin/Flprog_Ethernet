@@ -180,7 +180,7 @@ int FlprogEthernetClass::maintain()
 
 //----------------------------FlprogW5100Ethernet-----------------------------
 
-FlprogW5100Interface::FlprogW5100Interface()
+FLProgWiznetInterface::FLProgWiznetInterface()
 {
 	_hardware.setSsPin(10);
 	_hardware.setSPI(new FLProgSPI(0));
@@ -190,7 +190,7 @@ FlprogW5100Interface::FlprogW5100Interface()
 	_dns.setUDP(&_udp);
 }
 
-FlprogW5100Interface::FlprogW5100Interface(FLProgSPI *spi, int pin)
+FLProgWiznetInterface::FLProgWiznetInterface(FLProgSPI *spi, int pin)
 {
 	_hardware.setSsPin(pin);
 	_hardware.setSPI(spi);
@@ -200,7 +200,7 @@ FlprogW5100Interface::FlprogW5100Interface(FLProgSPI *spi, int pin)
 	_dns.setUDP(&_udp);
 }
 
-void FlprogW5100Interface::init(FLProgSPI *spi, int sspin)
+void FLProgWiznetInterface::init(FLProgSPI *spi, int sspin)
 {
 	_hardware.setSsPin(sspin);
 	_hardware.setSPI(spi);

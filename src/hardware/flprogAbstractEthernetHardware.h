@@ -111,7 +111,7 @@ typedef struct
   uint8_t RX_inc;  // how much have we advanced RX_RD
 } socketstate_t;
 
-class FlprogAbstractEthernetHardware
+class FLProgAbstractEthernetHardware
 {
 public:
   virtual uint8_t init() = 0;

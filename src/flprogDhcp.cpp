@@ -1,11 +1,11 @@
 #include "flprogDhcp.h"
 
-void FlprogDhcpClass::setUDP(FlprogEthernetUDP *udp)
+void FLProgDhcpClass::setUDP(FLProgEthernetUDP *udp)
 {
 	_udp = udp;
 }
 
-int FlprogDhcpClass::beginWithDHCP(uint8_t *mac, unsigned long timeout, unsigned long responseTimeout)
+int FLProgDhcpClass::beginWithDHCP(uint8_t *mac, unsigned long timeout, unsigned long responseTimeout)
 {
 	_dhcpLeaseTime = 0;
 	_dhcpT1 = 0;
@@ -19,12 +19,12 @@ int FlprogDhcpClass::beginWithDHCP(uint8_t *mac, unsigned long timeout, unsigned
 	return request_DHCP_lease();
 }
 
-void FlprogDhcpClass::reset_DHCP_lease()
+void FLProgDhcpClass::reset_DHCP_lease()
 {
 	memset(_dhcpLocalIp, 0, 20);
 }
 
-int FlprogDhcpClass::request_DHCP_lease()
+int FLProgDhcpClass::request_DHCP_lease()
 {
 	uint8_t messageType = 0;
 	_dhcpTransactionId = random(1UL, 2000UL);
@@ -114,11 +114,11 @@ int FlprogDhcpClass::request_DHCP_lease()
 	return result;
 }
 
-void FlprogDhcpClass::presend_DHCP()
+void FLProgDhcpClass::presend_DHCP()
 {
 }
 
-void FlprogDhcpClass::send_DHCP_MESSAGE(uint8_t messageType, uint16_t secondsElapsed)
+void FLProgDhcpClass::send_DHCP_MESSAGE(uint8_t messageType, uint16_t secondsElapsed)
 {
 	uint8_t buffer[32];
 	memset(buffer, 0, 32);
@@ -195,7 +195,7 @@ void FlprogDhcpClass::send_DHCP_MESSAGE(uint8_t messageType, uint16_t secondsEla
 	_udp->endPacket();
 }
 
-uint8_t FlprogDhcpClass::parseDHCPResponse(unsigned long responseTimeout, uint32_t &transactionId)
+uint8_t FLProgDhcpClass::parseDHCPResponse(unsigned long responseTimeout, uint32_t &transactionId)
 {
 	uint8_t type = 0;
 	uint8_t opt_len = 0;
@@ -309,7 +309,7 @@ uint8_t FlprogDhcpClass::parseDHCPResponse(unsigned long responseTimeout, uint32
 	3/FLPROG_DHCP_CHECK_REBIND_FAIL: rebind fail
 	4/FLPROG_DHCP_CHECK_REBIND_OK: rebind success
 */
-int FlprogDhcpClass::checkLease()
+int FLProgDhcpClass::checkLease()
 {
 	int rc = FLPROG_DHCP_CHECK_NONE;
 
@@ -364,32 +364,32 @@ int FlprogDhcpClass::checkLease()
 	return rc;
 }
 
-IPAddress FlprogDhcpClass::getLocalIp()
+IPAddress FLProgDhcpClass::getLocalIp()
 {
 	return IPAddress(_dhcpLocalIp);
 }
 
-IPAddress FlprogDhcpClass::getSubnetMask()
+IPAddress FLProgDhcpClass::getSubnetMask()
 {
 	return IPAddress(_dhcpSubnetMask);
 }
 
-IPAddress FlprogDhcpClass::getGatewayIp()
+IPAddress FLProgDhcpClass::getGatewayIp()
 {
 	return IPAddress(_dhcpGatewayIp);
 }
 
-IPAddress FlprogDhcpClass::getDhcpServerIp()
+IPAddress FLProgDhcpClass::getDhcpServerIp()
 {
 	return IPAddress(_dhcpDhcpServerIp);
 }
 
-IPAddress FlprogDhcpClass::getDnsServerIp()
+IPAddress FLProgDhcpClass::getDnsServerIp()
 {
 	return IPAddress(_dhcpDnsServerIp);
 }
 
-void FlprogDhcpClass::printByte(char *buf, uint8_t n)
+void FLProgDhcpClass::printByte(char *buf, uint8_t n)
 {
 	char *str = &buf[1];
 	buf[0] = '0';

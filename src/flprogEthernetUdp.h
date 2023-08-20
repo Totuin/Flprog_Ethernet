@@ -15,15 +15,15 @@
 
 #define FLPROG_UDP_TX_PACKET_MAX_SIZE 24
 
-class FlprogDNSClient;
+class FLProgDNSClient;
 
-class FlprogEthernetUDP : public UDP
+class FLProgEthernetUDP : public UDP
 {
 public:
-	FlprogEthernetUDP(){};
-	FlprogEthernetUDP(FlprogAbstractEthernet *sourse);
-	void setHatdware(FlprogAbstractEthernetHardware *hardware);
-	void setDNS(FlprogDNSClient *dns) { _dns = dns; };
+	FLProgEthernetUDP(){};
+	FLProgEthernetUDP(FlprogAbstractEthernet *sourse);
+	void setHatdware(FLProgAbstractEthernetHardware *hardware);
+	void setDNS(FLProgDNSClient *dns) { _dns = dns; };
 	virtual uint8_t begin(uint16_t);					 // initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use
 	virtual uint8_t beginMulticast(IPAddress, uint16_t); // initialize, start listening on specified port. Returns 1 if successful, 0 if there are no sockets available to use
 	virtual void stop();								 // Finish with the UDP socket
@@ -69,6 +69,6 @@ private:
 	IPAddress _remoteIP;  // remote IP address for the incoming packet whilst it's being processed
 	uint16_t _remotePort; // remote port for the incoming packet whilst it's being processed
 	uint16_t _offset;	  // offset into the packet being sent
-	FlprogAbstractEthernetHardware *_hardware;
-	FlprogDNSClient *_dns;
+	FLProgAbstractEthernetHardware *_hardware;
+	FLProgDNSClient *_dns;
 };

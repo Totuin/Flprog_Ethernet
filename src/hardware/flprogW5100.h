@@ -3,7 +3,7 @@
 #include "flprogAbstractEthernet.h"
 #include "flprogAbstractEthernetHardware.h"
 
-class FlprogW5100Class : public FlprogAbstractEthernetHardware
+class FLProgWiznetClass : public FLProgAbstractEthernetHardware
 {
 public:
   virtual uint8_t init(void);
