@@ -77,7 +77,7 @@ size_t FLProgEthernetUDP::write(uint8_t byte)
 
 size_t FLProgEthernetUDP::write(const uint8_t *buffer, size_t size)
 {
-	// Serial.printf("UDP write %d\n", size);
+	
 	uint16_t bytes_written = _hardware->socketBufferData(sockindex, _offset, buffer, size);
 	_offset += bytes_written;
 	return bytes_written;
@@ -152,7 +152,6 @@ int FLProgEthernetUDP::read(uint8_t *buffer, size_t len)
 		if (got > 0)
 		{
 			_remaining -= got;
-			// Serial.printf("UDP read %d\n", got);
 			return got;
 		}
 	}

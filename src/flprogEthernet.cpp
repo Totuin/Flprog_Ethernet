@@ -2,6 +2,7 @@
 
 void FlprogEthernetClass::pool()
 {
+
 	lineStatus = checkLineStatus();
 	if (isNeedReconect)
 	{
@@ -93,7 +94,6 @@ uint8_t FlprogEthernetClass::checkLineStatus()
 
 uint8_t FlprogEthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned long responseTimeout)
 {
-
 	if (hardware()->init() == 0)
 		return 0;
 	hardware()->setNetSettings(mac, IPAddress(0, 0, 0, 0));

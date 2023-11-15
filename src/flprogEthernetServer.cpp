@@ -88,38 +88,6 @@ FLProgEthernetServer::operator bool()
 	return false;
 }
 
-#if 0
-void FLProgEthernetServer::statusreport()
-{
-	Serial.printf("EthernetServer, port=%d\n", _port);
-	for (uint8_t i=0; i < FLPROG_ETHERNET_MAX_SOCK_NUM; i++) {
-		uint16_t port = server_port[i];
-		uint8_t stat = _hardware->socketStatus(i);
-		const char *name;
-		switch (stat) {
-			case 0x00: name = "CLOSED"; break;
-			case 0x13: name = "INIT"; break;
-			case 0x14: name = "LISTEN"; break;
-			case 0x15: name = "SYNSENT"; break;
-			case 0x16: name = "SYNRECV"; break;
-			case 0x17: name = "ESTABLISHED"; break;
-			case 0x18: name = "FIN_WAIT"; break;
-			case 0x1A: name = "CLOSING"; break;
-			case 0x1B: name = "TIME_WAIT"; break;
-			case 0x1C: name = "CLOSE_WAIT"; break;
-			case 0x1D: name = "LAST_ACK"; break;
-			case 0x22: name = "UDP"; break;
-			case 0x32: name = "IPRAW"; break;
-			case 0x42: name = "MACRAW"; break;
-			case 0x5F: name = "PPPOE"; break;
-			default: name = "???";
-		}
-		int avail = _hardware->socketRecvAvailable(i);
-		Serial.printf("  %d: port=%d, status=%s (0x%02X), avail=%d\n",
-			i, port, name, stat, avail);
-	}
-}
-#endif
 
 size_t FLProgEthernetServer::write(uint8_t b)
 {

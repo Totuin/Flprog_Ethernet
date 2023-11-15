@@ -9,6 +9,7 @@ uint8_t FLProgWiznetClass::init(void)
 	_spi->begin();
 	initSS();
 	resetSS();
+
 	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
 	if (isW5200())
 	{
@@ -99,7 +100,7 @@ uint8_t FLProgWiznetClass::init(void)
 			}
 			else
 			{
-				// Serial.println("no chip :-(");
+				
 				chip = 0;
 				_spi->endTransaction();
 				return 0; // no known chip is responding :-(
@@ -382,15 +383,13 @@ uint8_t FLProgWiznetClass::softReset(void)
 {
 	uint16_t count = 0;
 
-	// Serial.println("Wiznet soft reset");
-	//  write to reset bit
+	
 	write(FLPROG_MR, 0x80);
 	// then wait for soft reset to complete
 	do
 	{
 		uint8_t mr = read(FLPROG_MR);
-		// Serial.print("mr=");
-		// Serial.println(mr, HEX);
+		
 		if (mr == 0)
 			return 1;
 		delay(1);
@@ -401,7 +400,7 @@ uint8_t FLProgWiznetClass::softReset(void)
 uint8_t FLProgWiznetClass::isW5100(void)
 {
 	chip = 51;
-	// Serial.println("w5100.cpp: detect W5100 chip");
+
 	if (!softReset())
 		return 0;
 	write(FLPROG_MR, 0x10);
@@ -413,14 +412,13 @@ uint8_t FLProgWiznetClass::isW5100(void)
 	write(FLPROG_MR, 0x00);
 	if (read(FLPROG_MR) != 0x00)
 		return 0;
-	// Serial.println("chip is W5100");
+
 	return 1;
 }
 
 uint8_t FLProgWiznetClass::isW5200(void)
 {
 	chip = 52;
-	// Serial.println("w5100.cpp: detect W5200 chip");
 	if (!softReset())
 		return 0;
 	write(FLPROG_MR, 0x08);
@@ -433,18 +431,16 @@ uint8_t FLProgWiznetClass::isW5200(void)
 	if (read(FLPROG_MR) != 0x00)
 		return 0;
 	int ver = read(FLPROG_VERSIONR_W5200);
-	Serial.print("version=");
-	Serial.println(ver);
 	if (ver != 3)
 		return 0;
-	// Serial.println("chip is W5200");
+
 	return 1;
 }
 
 uint8_t FLProgWiznetClass::isW5500(void)
 {
 	chip = 55;
-	// Serial.println("w5100.cpp: detect W5500 chip");
+
 	if (!softReset())
 		return 0;
 	write(FLPROG_MR, 0x08);
@@ -457,11 +453,10 @@ uint8_t FLProgWiznetClass::isW5500(void)
 	if (read(FLPROG_MR) != 0x00)
 		return 0;
 	int ver = read(FLPROG_VERSIONR_W5500);
-	// Serial.print("version=");
-	// Serial.println(ver);
+
 	if (ver != 4)
 		return 0;
-	// Serial.println("chip is W5500");
+
 	return 1;
 }
 
