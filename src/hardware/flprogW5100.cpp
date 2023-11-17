@@ -12,18 +12,6 @@ uint8_t FLProgWiznetClass::init(void)
 	if (isW5200())
 	{
 		CH_BASE_MSB = 0x40;
-#ifdef ETHERNET_LARGE_BUFFERS
-#if FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
-		SSIZE = 16384;
-#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
-		SSIZE = 8192;
-#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
-		SSIZE = 4096;
-#else
-		SSIZE = 2048;
-#endif
-		SMASK = SSIZE - 1;
-#endif
 		for (i = 0; i < FLPROG_ETHERNET_MAX_SOCK_NUM; i++)
 		{
 			writeSn(i, FLPROG_SN_RX_SIZE, SSIZE >> 10);
@@ -40,74 +28,24 @@ uint8_t FLProgWiznetClass::init(void)
 		if (isW5500())
 		{
 			CH_BASE_MSB = 0x10;
-#ifdef ETHERNET_LARGE_BUFFERS
-#if FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
-			SSIZE = 16384;
-#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
-			SSIZE = 8192;
-#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
-			SSIZE = 4096;
-#else
-			SSIZE = 2048;
-#endif
-			SMASK = SSIZE - 1;
-			for (i = 0; i < FLPROG_ETHERNET_MAX_SOCK_NUM; i++)
-			{
-				writeSn(i, FLPROG_SN_RX_SIZE, SSIZE >> 10);
-				writeSn(i, FLPROG_SN_TX_SIZE, SSIZE >> 10);
-			}
-			for (; i < 8; i++)
-			{
-				writeSn(i, FLPROG_SN_RX_SIZE, 0);
-				writeSn(i, FLPROG_SN_TX_SIZE, 0);
-			}
-#endif
-			// Try W5100 last.  This simple chip uses fixed 4 byte frames
-			// for every 8 bit access.  Terribly inefficient, but so simple
-			// it recovers from "hearing" unsuccessful W5100 or W5200
-			// communication.  W5100 is also the only chip without a VERSIONR
-			// register for identification, so we check this last.
 		}
 		else
 		{
 			if (isW5100())
 			{
 				CH_BASE_MSB = 0x04;
-#ifdef ETHERNET_LARGE_BUFFERS
-#if FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
-				SSIZE = 8192;
-				write(FLPROG_TMSR, 0x03);
-				write(FLPROG_RMSR, 0x03);
-#elif FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
-				SSIZE = 4096;
-				write(FLPROG_TMSR, 0x0A);
-				write(FLPROG_RMSR, 0x0A);
-#else
-				SSIZE = 2048;
-				write(FLPROG_TMSR, 0x55);
-				write(FLPROG_RMSR, 0x55);
-#endif
-				SMASK = SSIZE - 1;
-#else
-				write(FLPROG_TMSR, 0x55);
-				write(FLPROG_RMSR, 0x55);
-#endif
-				// No hardware seems to be present.  Or it could be a W5200
-				// that's heard other SPI communication if its chip select
-				// pin wasn't high when a SD card or other SPI chip was used.
 			}
 			else
 			{
-
 				chip = 0;
 				RT_HW_Base.spiEndTransaction(spiBus);
-				return 0; // no known chip is responding :-(
+				return 0;
 			}
 		}
 	}
 	RT_HW_Base.spiEndTransaction(spiBus);
 	initialized = true;
-	return 1; // successful init
+	return 1;
 }
 
 void FLProgWiznetClass::setSsPin(int sspin)
@@ -376,13 +314,10 @@ void FLProgWiznetClass::write16(uint16_t address, uint16_t _data)
 	write(address, buf, 2);
 }
 
-// Soft reset the Wiznet chip, by writing to its MR register reset bit
 uint8_t FLProgWiznetClass::softReset(void)
 {
 	uint16_t count = 0;
-
 	write(FLPROG_MR, 0x80);
-	// then wait for soft reset to complete
 	do
 	{
 		uint8_t mr = read(FLPROG_MR);
@@ -397,19 +332,25 @@ uint8_t FLProgWiznetClass::softReset(void)
 uint8_t FLProgWiznetClass::isW5100(void)
 {
 	chip = 51;
-
 	if (!softReset())
+	{
 		return 0;
+	}
 	write(FLPROG_MR, 0x10);
 	if (read(FLPROG_MR) != 0x10)
+	{
 		return 0;
+	}
 	write(FLPROG_MR, 0x12);
 	if (read(FLPROG_MR) != 0x12)
+	{
 		return 0;
+	}
 	write(FLPROG_MR, 0x00);
 	if (read(FLPROG_MR) != 0x00)
+	{
 		return 0;
-
+	}
 	return 1;
 }
 
@@ -417,50 +358,63 @@ uint8_t FLProgWiznetClass::isW5200(void)
 {
 	chip = 52;
 	if (!softReset())
+	{
 		return 0;
+	}
 	write(FLPROG_MR, 0x08);
 	if (read(FLPROG_MR) != 0x08)
+	{
 		return 0;
+	}
 	write(FLPROG_MR, 0x10);
 	if (read(FLPROG_MR) != 0x10)
+	{
 		return 0;
+	}
 	write(FLPROG_MR, 0x00);
 	if (read(FLPROG_MR) != 0x00)
+	{
 		return 0;
+	}
 	int ver = read(FLPROG_VERSIONR_W5200);
 	if (ver != 3)
+	{
 		return 0;
-
+	}
 	return 1;
 }
 
 uint8_t FLProgWiznetClass::isW5500(void)
 {
 	chip = 55;
-
 	if (!softReset())
+	{
 		return 0;
+	}
 	write(FLPROG_MR, 0x08);
 	if (read(FLPROG_MR) != 0x08)
+	{
 		return 0;
+	}
 	write(FLPROG_MR, 0x10);
 	if (read(FLPROG_MR) != 0x10)
+	{
 		return 0;
+	}
 	write(FLPROG_MR, 0x00);
 	if (read(FLPROG_MR) != 0x00)
 		return 0;
 	int ver = read(FLPROG_VERSIONR_W5500);
-
 	if (ver != 4)
+	{
 		return 0;
-
+	}
 	return 1;
 }
 
 uint8_t FLProgWiznetClass::getLinkStatus()
 {
 	uint8_t phystatus;
-
 	if (!init())
 		return FLPROG_ETHERNET_LINK_UNKNOWN;
 	switch (chip)
@@ -487,7 +441,6 @@ uint8_t FLProgWiznetClass::getLinkStatus()
 uint16_t FLProgWiznetClass::write(uint16_t addr, const uint8_t *buf, uint16_t len)
 {
 	uint8_t cmd[8];
-
 	if (chip == 51)
 	{
 		for (uint16_t i = 0; i < len; i++)
@@ -523,48 +476,27 @@ uint16_t FLProgWiznetClass::write(uint16_t addr, const uint8_t *buf, uint16_t le
 		setSS();
 		if (addr < 0x100)
 		{
-			// common registers 00nn
 			cmd[0] = 0;
 			cmd[1] = addr & 0xFF;
 			cmd[2] = 0x04;
 		}
 		else if (addr < 0x8000)
 		{
-			// socket registers  10nn, 11nn, 12nn, 13nn, etc
 			cmd[0] = 0;
 			cmd[1] = addr & 0xFF;
 			cmd[2] = ((addr >> 3) & 0xE0) | 0x0C;
 		}
 		else if (addr < 0xC000)
 		{
-			// transmit buffers  8000-87FF, 8800-8FFF, 9000-97FF, etc
-			//  10## #nnn nnnn nnnn
 			cmd[0] = addr >> 8;
 			cmd[1] = addr & 0xFF;
-#if defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
-			cmd[2] = 0x14; // 16K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
-			cmd[2] = ((addr >> 8) & 0x20) | 0x14; // 8K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
-			cmd[2] = ((addr >> 7) & 0x60) | 0x14; // 4K buffers
-#else
 			cmd[2] = ((addr >> 6) & 0xE0) | 0x14; // 2K buffers
-#endif
 		}
 		else
 		{
-			// receive buffers
 			cmd[0] = addr >> 8;
 			cmd[1] = addr & 0xFF;
-#if defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
-			cmd[2] = 0x1C; // 16K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
-			cmd[2] = ((addr >> 8) & 0x20) | 0x1C; // 8K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
-			cmd[2] = ((addr >> 7) & 0x60) | 0x1C; // 4K buffers
-#else
 			cmd[2] = ((addr >> 6) & 0xE0) | 0x1C; // 2K buffers
-#endif
 		}
 		if (len <= 5)
 		{
@@ -596,7 +528,6 @@ uint16_t FLProgWiznetClass::write(uint16_t addr, const uint8_t *buf, uint16_t le
 uint16_t FLProgWiznetClass::read(uint16_t addr, uint8_t *buf, uint16_t len)
 {
 	uint8_t cmd[4];
-
 	if (chip == 51)
 	{
 		for (uint16_t i = 0; i < len; i++)
@@ -632,48 +563,27 @@ uint16_t FLProgWiznetClass::read(uint16_t addr, uint8_t *buf, uint16_t len)
 		setSS();
 		if (addr < 0x100)
 		{
-			// common registers 00nn
 			cmd[0] = 0;
 			cmd[1] = addr & 0xFF;
 			cmd[2] = 0x00;
 		}
 		else if (addr < 0x8000)
 		{
-			// socket registers  10nn, 11nn, 12nn, 13nn, etc
 			cmd[0] = 0;
 			cmd[1] = addr & 0xFF;
 			cmd[2] = ((addr >> 3) & 0xE0) | 0x08;
 		}
 		else if (addr < 0xC000)
 		{
-			// transmit buffers  8000-87FF, 8800-8FFF, 9000-97FF, etc
-			//  10## #nnn nnnn nnnn
 			cmd[0] = addr >> 8;
 			cmd[1] = addr & 0xFF;
-#if defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
-			cmd[2] = 0x10; // 16K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
-			cmd[2] = ((addr >> 8) & 0x20) | 0x10; // 8K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
-			cmd[2] = ((addr >> 7) & 0x60) | 0x10; // 4K buffers
-#else
 			cmd[2] = ((addr >> 6) & 0xE0) | 0x10; // 2K buffers
-#endif
 		}
 		else
 		{
-			// receive buffers
 			cmd[0] = addr >> 8;
 			cmd[1] = addr & 0xFF;
-#if defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 1
-			cmd[2] = 0x18; // 16K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 2
-			cmd[2] = ((addr >> 8) & 0x20) | 0x18; // 8K buffers
-#elif defined(ETHERNET_LARGE_BUFFERS) && FLPROG_ETHERNET_MAX_SOCK_NUM <= 4
-			cmd[2] = ((addr >> 7) & 0x60) | 0x18; // 4K buffers
-#else
 			cmd[2] = ((addr >> 6) & 0xE0) | 0x18; // 2K buffers
-#endif
 		}
 		for (uint8_t i = 0; i < 3; i++)
 		{
@@ -709,7 +619,9 @@ uint8_t FLProgWiznetClass::socketBegin(uint8_t protocol, uint16_t port)
 {
 	uint8_t s, status[FLPROG_ETHERNET_MAX_SOCK_NUM], maxindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	if (!chip)
+	{
 		return FLPROG_ETHERNET_MAX_SOCK_NUM; // immediate error if no hardware detected
+	}
 #if FLPROG_ETHERNET_MAX_SOCK_NUM > 4
 	if (chip == 51)
 		maxindex = 4; // W5100 chip never supports more than 4 sockets
@@ -1023,7 +935,6 @@ void FLProgWiznetClass::write_data(uint8_t s, uint16_t data_offset, const uint8_
 	}
 	else
 	{
-		// Wrap around circular buffer
 		uint16_t size = SSIZE - offset;
 		write(dstAddr, data, size);
 		write(SBASE(s), data + size, len - size);
