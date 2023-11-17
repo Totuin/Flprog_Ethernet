@@ -6,11 +6,9 @@ uint8_t FLProgWiznetClass::init(void)
 	if (initialized)
 		return 1;
 	delay(560);
-	_spi->begin();
+	RT_HW_Base.spiBegin(spiBus);
 	initSS();
-	resetSS();
-
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	if (isW5200())
 	{
 		CH_BASE_MSB = 0x40;
@@ -100,14 +98,14 @@ uint8_t FLProgWiznetClass::init(void)
 			}
 			else
 			{
-				
+
 				chip = 0;
-				_spi->endTransaction();
+				RT_HW_Base.spiEndTransaction(spiBus);
 				return 0; // no known chip is responding :-(
 			}
 		}
 	}
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	initialized = true;
 	return 1; // successful init
 }
@@ -129,92 +127,92 @@ void FLProgWiznetClass::setSsPin(int sspin)
 
 void FLProgWiznetClass::setNetSettings(uint8_t *mac, IPAddress ip)
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	setMACAddress(mac);
 	setIPAddress(ip);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 }
 
 void FLProgWiznetClass::setNetSettings(IPAddress ip, IPAddress gateway, IPAddress subnet)
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	setIPAddress(ip);
 	setGatewayIp(gateway);
 	setSubnetMask(subnet);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 }
 
 void FLProgWiznetClass::setNetSettings(uint8_t *mac, IPAddress ip, IPAddress gateway, IPAddress subnet)
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	setMACAddress(mac);
 	setIPAddress(ip);
 	setGatewayIp(gateway);
 	setSubnetMask(subnet);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 }
 
 IPAddress FLProgWiznetClass::localIP()
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	IPAddress result = getIPAddress();
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return result;
 }
 
 IPAddress FLProgWiznetClass::subnetMask()
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	IPAddress result = getSubnetMask();
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return result;
 }
 
 IPAddress FLProgWiznetClass::gatewayIP()
 {
 	IPAddress ret;
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	IPAddress result = getGatewayIp();
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return result;
 }
 
 void FLProgWiznetClass::setOnlyMACAddress(const uint8_t *mac_address)
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	setMACAddress(mac_address);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 }
 
 void FLProgWiznetClass::setOnlyLocalIP(const IPAddress local_ip)
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	IPAddress ip = local_ip;
 	setIPAddress(ip);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 }
 
 void FLProgWiznetClass::setOnlySubnetMask(const IPAddress subnet)
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	IPAddress ip = subnet;
 	setSubnetMask(ip);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 }
 
 void FLProgWiznetClass::setOnlyGatewayIP(const IPAddress gateway)
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	IPAddress ip = gateway;
 	setGatewayIp(ip);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 }
 
 void FLProgWiznetClass::MACAddress(uint8_t *mac_address)
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	getMACAddress(mac_address);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 }
 
 uint16_t FLProgWiznetClass::localPort(uint8_t soc)
@@ -222,9 +220,9 @@ uint16_t FLProgWiznetClass::localPort(uint8_t soc)
 	if (soc >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
 	uint16_t port;
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	port = readSn16(soc, FLPROG_SN_PORT);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return port;
 }
 
@@ -233,9 +231,9 @@ IPAddress FLProgWiznetClass::remoteIP(uint8_t soc)
 	if (soc >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return IPAddress((uint32_t)0);
 	uint8_t remoteIParray[4];
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	readSn(soc, FLPROG_SN_DIPR, remoteIParray, 4);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return IPAddress(remoteIParray);
 }
 
@@ -244,9 +242,9 @@ uint16_t FLProgWiznetClass::remotePort(uint8_t soc)
 	if (soc >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 		return 0;
 	uint16_t port;
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	port = readSn16(soc, FLPROG_SN_DPORT);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return port;
 }
 
@@ -336,16 +334,16 @@ void FLProgWiznetClass::setRetransmissionTime(uint16_t timeout)
 {
 	if (timeout > 6553)
 		timeout = 6553;
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	write16(FLPROG_RTR, (timeout * 10));
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 }
 
 void FLProgWiznetClass::setRetransmissionCount(uint8_t retry)
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	write(FLPROG_RCR, retry);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 }
 
 uint8_t FLProgWiznetClass::read(uint16_t addr)
@@ -383,13 +381,12 @@ uint8_t FLProgWiznetClass::softReset(void)
 {
 	uint16_t count = 0;
 
-	
 	write(FLPROG_MR, 0x80);
 	// then wait for soft reset to complete
 	do
 	{
 		uint8_t mr = read(FLPROG_MR);
-		
+
 		if (mr == 0)
 			return 1;
 		delay(1);
@@ -469,16 +466,16 @@ uint8_t FLProgWiznetClass::getLinkStatus()
 	switch (chip)
 	{
 	case 52:
-		_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+		RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 		phystatus = read(FLPROG_PSTATUS_W5200);
-		_spi->endTransaction();
+		RT_HW_Base.spiEndTransaction(spiBus);
 		if (phystatus & 0x20)
 			return FLPROG_ETHERNET_LINK_ON;
 		return FLPROG_ETHERNET_LINK_OFF;
 	case 55:
-		_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+		RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 		phystatus = read(FLPROG_PHYCFGR_W5500);
-		_spi->endTransaction();
+		RT_HW_Base.spiEndTransaction(spiBus);
 		if (phystatus & 0x01)
 			return FLPROG_ETHERNET_LINK_ON;
 		return FLPROG_ETHERNET_LINK_OFF;
@@ -496,11 +493,11 @@ uint16_t FLProgWiznetClass::write(uint16_t addr, const uint8_t *buf, uint16_t le
 		for (uint16_t i = 0; i < len; i++)
 		{
 			setSS();
-			_spi->transfer(0xF0);
-			_spi->transfer(addr >> 8);
-			_spi->transfer(addr & 0xFF);
+			RT_HW_Base.spiTransfer(0xF0, spiBus);
+			RT_HW_Base.spiTransfer((addr >> 8), spiBus);
+			RT_HW_Base.spiTransfer((addr & 0xFF), spiBus);
 			addr++;
-			_spi->transfer(buf[i]);
+			RT_HW_Base.spiTransfer((buf[i]), spiBus);
 			resetSS();
 		}
 	}
@@ -511,16 +508,14 @@ uint16_t FLProgWiznetClass::write(uint16_t addr, const uint8_t *buf, uint16_t le
 		cmd[1] = addr & 0xFF;
 		cmd[2] = ((len >> 8) & 0x7F) | 0x80;
 		cmd[3] = len & 0xFF;
-		_spi->transfer(cmd, 4);
-#ifdef SPI_HAS_TRANSFER_BUF
-		_spi->transfer(buf, NULL, len);
-#else
-		// TODO: copy 8 bytes at a time to cmd[] and block transfer
+		for (uint8_t i = 0; i < 4; i++)
+		{
+			RT_HW_Base.spiTransfer(cmd[i], spiBus);
+		}
 		for (uint16_t i = 0; i < len; i++)
 		{
-			_spi->transfer(buf[i]);
+			RT_HW_Base.spiTransfer((buf[i]), spiBus);
 		}
-#endif
 		resetSS();
 	}
 	else
@@ -577,19 +572,21 @@ uint16_t FLProgWiznetClass::write(uint16_t addr, const uint8_t *buf, uint16_t le
 			{
 				cmd[i + 3] = buf[i];
 			}
-			_spi->transfer(cmd, len + 3);
+			for (uint16_t i = 0; i < (len + 3); i++)
+			{
+				RT_HW_Base.spiTransfer(cmd[i], spiBus);
+			}
 		}
 		else
 		{
-			_spi->transfer(cmd, 3);
-#ifdef SPI_HAS_TRANSFER_BUF
-			_spi->transfer(buf, NULL, len);
-#else
+			for (uint8_t i = 0; i < 3; i++)
+			{
+				RT_HW_Base.spiTransfer(cmd[i], spiBus);
+			}
 			for (uint16_t i = 0; i < len; i++)
 			{
-				_spi->transfer(buf[i]);
+				RT_HW_Base.spiTransfer(buf[i], spiBus);
 			}
-#endif
 		}
 		resetSS();
 	}
@@ -605,21 +602,11 @@ uint16_t FLProgWiznetClass::read(uint16_t addr, uint8_t *buf, uint16_t len)
 		for (uint16_t i = 0; i < len; i++)
 		{
 			setSS();
-#if 1
-			_spi->transfer(0x0F);
-			_spi->transfer(addr >> 8);
-			_spi->transfer(addr & 0xFF);
+			RT_HW_Base.spiTransfer(0x0F, spiBus);
+			RT_HW_Base.spiTransfer((addr >> 8), spiBus);
+			RT_HW_Base.spiTransfer((addr & 0xFF), spiBus);
 			addr++;
-			buf[i] = _spi->transfer(0);
-#else
-			cmd[0] = 0x0F;
-			cmd[1] = addr >> 8;
-			cmd[2] = addr & 0xFF;
-			cmd[3] = 0;
-			_spi->transfer(cmd, 4); // TODO: why doesn't this work?
-			buf[i] = cmd[3];
-			addr++;
-#endif
+			buf[i] = RT_HW_Base.spiTransfer(0, spiBus);
 			resetSS();
 		}
 	}
@@ -630,9 +617,14 @@ uint16_t FLProgWiznetClass::read(uint16_t addr, uint8_t *buf, uint16_t len)
 		cmd[1] = addr & 0xFF;
 		cmd[2] = (len >> 8) & 0x7F;
 		cmd[3] = len & 0xFF;
-		_spi->transfer(cmd, 4);
-		memset(buf, 0, len);
-		_spi->transfer(buf, len);
+		for (uint8_t i = 0; i < 4; i++)
+		{
+			RT_HW_Base.spiTransfer(cmd[i], spiBus);
+		}
+		for (uint16_t i = 0; i < len; i++)
+		{
+			buf[i] = RT_HW_Base.spiTransfer(0, spiBus);
+		}
 		resetSS();
 	}
 	else
@@ -683,9 +675,14 @@ uint16_t FLProgWiznetClass::read(uint16_t addr, uint8_t *buf, uint16_t len)
 			cmd[2] = ((addr >> 6) & 0xE0) | 0x18; // 2K buffers
 #endif
 		}
-		_spi->transfer(cmd, 3);
-		memset(buf, 0, len);
-		_spi->transfer(buf, len);
+		for (uint8_t i = 0; i < 3; i++)
+		{
+			RT_HW_Base.spiTransfer(cmd[i], spiBus);
+		}
+		for (uint16_t i = 0; i < len; i++)
+		{
+			buf[i] = RT_HW_Base.spiTransfer(0, spiBus);
+		}
 		resetSS();
 	}
 	return len;
@@ -717,14 +714,14 @@ uint8_t FLProgWiznetClass::socketBegin(uint8_t protocol, uint16_t port)
 	if (chip == 51)
 		maxindex = 4; // W5100 chip never supports more than 4 sockets
 #endif
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	for (s = 0; s < maxindex; s++)
 	{
 		status[s] = readSn(s, FLPROG_SN_SR);
 		if (status[s] == FLPROG_SN_SR_CLOSED)
 		{
 			privateMaceSocet(s, protocol, port);
-			_spi->endTransaction();
+			RT_HW_Base.spiEndTransaction(spiBus);
 			return s;
 		}
 	}
@@ -734,11 +731,11 @@ uint8_t FLProgWiznetClass::socketBegin(uint8_t protocol, uint16_t port)
 		{
 			execCmdSn(s, FLPROG_SOCK_CMD_CLOSE);
 			privateMaceSocet(s, protocol, port);
-			_spi->endTransaction();
+			RT_HW_Base.spiEndTransaction(spiBus);
 			return s;
 		}
 	}
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return FLPROG_ETHERNET_MAX_SOCK_NUM; // all sockets are in use
 }
 
@@ -773,14 +770,14 @@ uint8_t FLProgWiznetClass::socketBeginMulticast(uint8_t protocol, IPAddress ip, 
 	if (chip == 51)
 		maxindex = 4;
 #endif
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	for (s = 0; s < maxindex; s++)
 	{
 		status[s] = readSn(s, FLPROG_SN_SR);
 		if (status[s] == FLPROG_SN_SR_CLOSED)
 		{
 			privateMaceSocetMulticast(s, protocol, ip, port);
-			_spi->endTransaction();
+			RT_HW_Base.spiEndTransaction(spiBus);
 			return s;
 		}
 	}
@@ -790,11 +787,11 @@ uint8_t FLProgWiznetClass::socketBeginMulticast(uint8_t protocol, IPAddress ip, 
 		{
 			execCmdSn(s, FLPROG_SOCK_CMD_CLOSE);
 			privateMaceSocetMulticast(s, protocol, ip, port);
-			_spi->endTransaction();
+			RT_HW_Base.spiEndTransaction(spiBus);
 			return s;
 		}
 	}
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return FLPROG_ETHERNET_MAX_SOCK_NUM;
 }
 
@@ -834,29 +831,29 @@ void FLProgWiznetClass::privateMaceSocetMulticast(uint8_t soc, uint8_t protocol,
 
 uint8_t FLProgWiznetClass::socketStatus(uint8_t s)
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	uint8_t status = readSn(s, FLPROG_SN_SR);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return status;
 }
 
 void FLProgWiznetClass::socketClose(uint8_t s)
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	execCmdSn(s, FLPROG_SOCK_CMD_CLOSE);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 }
 
 uint8_t FLProgWiznetClass::socketListen(uint8_t s)
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	if (readSn(s, FLPROG_SN_SR) != FLPROG_SN_SR_INIT)
 	{
-		_spi->endTransaction();
+		RT_HW_Base.spiEndTransaction(spiBus);
 		return 0;
 	}
 	execCmdSn(s, FLPROG_SOCK_CMD_LISTEN);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return 1;
 }
 
@@ -867,18 +864,18 @@ void FLProgWiznetClass::socketConnect(uint8_t s, IPAddress ip, uint16_t port)
 	buffer[1] = ip[1];
 	buffer[2] = ip[2];
 	buffer[3] = ip[3];
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	writeSn(s, FLPROG_SN_DIPR, buffer, 4);
 	writeSn16(s, FLPROG_SN_DPORT, port);
 	execCmdSn(s, FLPROG_SOCK_CMD_CONNECT);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 }
 
 void FLProgWiznetClass::socketDisconnect(uint8_t s)
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	execCmdSn(s, FLPROG_SOCK_CMD_DISCON);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 }
 
 /*****************************************/
@@ -923,7 +920,7 @@ void FLProgWiznetClass::read_data(uint8_t s, uint16_t src, uint8_t *dst, uint16_
 int FLProgWiznetClass::socketRecv(uint8_t s, uint8_t *buf, int16_t len)
 {
 	int ret = state[s].RX_RSR;
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	if (ret < len)
 	{
 		uint16_t rsr = getSnRX_RSR(s);
@@ -965,7 +962,7 @@ int FLProgWiznetClass::socketRecv(uint8_t s, uint8_t *buf, int16_t len)
 			state[s].RX_inc = inc;
 		}
 	}
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return ret;
 }
 
@@ -974,9 +971,9 @@ uint16_t FLProgWiznetClass::socketRecvAvailable(uint8_t s)
 	uint16_t ret = state[s].RX_RSR;
 	if (ret == 0)
 	{
-		_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+		RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 		uint16_t rsr = getSnRX_RSR(s);
-		_spi->endTransaction();
+		RT_HW_Base.spiEndTransaction(spiBus);
 		ret = rsr - state[s].RX_inc;
 		state[s].RX_RSR = ret;
 	}
@@ -986,10 +983,10 @@ uint16_t FLProgWiznetClass::socketRecvAvailable(uint8_t s)
 uint8_t FLProgWiznetClass::socketPeek(uint8_t s)
 {
 	uint8_t b;
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	uint16_t ptr = state[s].RX_RD;
 	read((ptr & SMASK) + RBASE(s), &b, 1);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return b;
 }
 
@@ -1050,10 +1047,10 @@ uint16_t FLProgWiznetClass::socketSend(uint8_t s, const uint8_t *buf, uint16_t l
 	}
 	do
 	{
-		_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+		RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 		freesize = getSnTX_FSR(s);
 		status = readSn(s, FLPROG_SN_SR);
-		_spi->endTransaction();
+		RT_HW_Base.spiEndTransaction(spiBus);
 		if ((status != FLPROG_SN_SR_ESTABLISHED) && (status != FLPROG_SN_SR_CLOSE_WAIT))
 		{
 			ret = 0;
@@ -1061,23 +1058,23 @@ uint16_t FLProgWiznetClass::socketSend(uint8_t s, const uint8_t *buf, uint16_t l
 		}
 		yield();
 	} while (freesize < ret);
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	write_data(s, 0, (uint8_t *)buf, ret);
 	execCmdSn(s, FLPROG_SOCK_CMD_SEND);
 	while ((readSn(s, FLPROG_SN_IR) & FLPROG_SN_IR_SEND_OK) != FLPROG_SN_IR_SEND_OK)
 	{
 		if (readSn(s, FLPROG_SN_SR) == FLPROG_SN_SR_CLOSED)
 		{
-			_spi->endTransaction();
+			RT_HW_Base.spiEndTransaction(spiBus);
 			return 0;
 		}
-		_spi->endTransaction();
+		RT_HW_Base.spiEndTransaction(spiBus);
 		yield();
-		_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+		RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	}
 	/* +2008.01 bj */
 	writeSn(s, FLPROG_SN_IR, FLPROG_SN_IR_SEND_OK);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return ret;
 }
 
@@ -1085,10 +1082,10 @@ uint16_t FLProgWiznetClass::socketSendAvailable(uint8_t s)
 {
 	uint8_t status = 0;
 	uint16_t freesize = 0;
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	freesize = getSnTX_FSR(s);
 	status = readSn(s, FLPROG_SN_SR);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	if ((status == FLPROG_SN_SR_ESTABLISHED) || (status == FLPROG_SN_SR_CLOSE_WAIT))
 	{
 		return freesize;
@@ -1099,7 +1096,7 @@ uint16_t FLProgWiznetClass::socketSendAvailable(uint8_t s)
 uint16_t FLProgWiznetClass::socketBufferData(uint8_t s, uint16_t offset, const uint8_t *buf, uint16_t len)
 {
 	uint16_t ret = 0;
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	uint16_t txfree = getSnTX_FSR(s);
 	if (len > txfree)
 	{
@@ -1110,7 +1107,7 @@ uint16_t FLProgWiznetClass::socketBufferData(uint8_t s, uint16_t offset, const u
 		ret = len;
 	}
 	write_data(s, offset, buf, ret);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return ret;
 }
 
@@ -1121,30 +1118,30 @@ bool FLProgWiznetClass::socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port)
 	{
 		return false;
 	}
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	writeSn(s, FLPROG_SN_DIPR, addr, 4);
 	writeSn16(s, FLPROG_SN_DPORT, port);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return true;
 }
 
 bool FLProgWiznetClass::socketSendUDP(uint8_t s)
 {
-	_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	execCmdSn(s, FLPROG_SOCK_CMD_SEND);
 	while ((readSn(s, FLPROG_SN_IR) & FLPROG_SN_IR_SEND_OK) != FLPROG_SN_IR_SEND_OK)
 	{
 		if (readSn(s, FLPROG_SN_IR) & FLPROG_SN_IR_TIMEOUT)
 		{
 			writeSn(s, FLPROG_SN_IR, (FLPROG_SN_IR_SEND_OK | FLPROG_SN_IR_TIMEOUT));
-			_spi->endTransaction();
+			RT_HW_Base.spiEndTransaction(spiBus);
 			return false;
 		}
-		_spi->endTransaction();
+		RT_HW_Base.spiEndTransaction(spiBus);
 		yield();
-		_spi->beginTransaction(SPI_ETHERNET_SETTINGS);
+		RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	}
 	writeSn(s, FLPROG_SN_IR, FLPROG_SN_IR_SEND_OK);
-	_spi->endTransaction();
+	RT_HW_Base.spiEndTransaction(spiBus);
 	return true;
 }

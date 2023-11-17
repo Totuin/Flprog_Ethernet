@@ -180,30 +180,34 @@ int FlprogEthernetClass::maintain()
 
 //----------------------------FlprogW5100Ethernet-----------------------------
 
-FLProgWiznetInterface::FLProgWiznetInterface()
+FLProgWiznetInterface::FLProgWiznetInterface(int pin, uint8_t bus)
 {
-	_hardware.setSsPin(10);
-	_hardware.setSPI(new FLProgSPI(0));
+	if (pin == -1)
+	{
+		_hardware.setSsPin(RT_HW_Base.device.spi.cs0);
+	}
+	else
+	{
+		_hardware.setSsPin(pin);
+	}
+	_hardware.setSpiBus(bus);
 	_udp.setHatdware(&_hardware);
 	_udp.setDNS(&_dns);
 	_dhcp.setUDP(&_udp);
 	_dns.setUDP(&_udp);
 }
 
-FLProgWiznetInterface::FLProgWiznetInterface(FLProgSPI *spi, int pin)
+void FLProgWiznetInterface::init(int pin, uint8_t bus)
 {
-	_hardware.setSsPin(pin);
-	_hardware.setSPI(spi);
-	_udp.setHatdware(&_hardware);
-	_udp.setDNS(&_dns);
-	_dhcp.setUDP(&_udp);
-	_dns.setUDP(&_udp);
-}
-
-void FLProgWiznetInterface::init(FLProgSPI *spi, int sspin)
-{
-	_hardware.setSsPin(sspin);
-	_hardware.setSPI(spi);
+	if (pin == -1)
+	{
+		_hardware.setSsPin(RT_HW_Base.device.spi.cs0);
+	}
+	else
+	{
+		_hardware.setSsPin(pin);
+	}
+	_hardware.setSpiBus(bus);
 	_udp.setHatdware(&_hardware);
 	_udp.setDNS(&_dns);
 	_dhcp.setUDP(&_udp);

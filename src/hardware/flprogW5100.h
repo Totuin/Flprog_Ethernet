@@ -1,5 +1,5 @@
 #pragma once
-#include "flprogSPI.h"
+// #include "flprogSPI.h"
 #include "flprogAbstractEthernet.h"
 #include "flprogAbstractEthernetHardware.h"
 
@@ -9,7 +9,7 @@ public:
   virtual uint8_t init(void);
   void setSsPin(int sspin);
   virtual uint8_t getLinkStatus();
-  virtual void setSPI(FLProgSPI *spi) { _spi = spi; };
+  virtual void setSpiBus(uint8_t bus) { spiBus = bus; };
   virtual void setGatewayIp(IPAddress addr);
   virtual IPAddress getGatewayIp();
   virtual void setSubnetMask(IPAddress addr);
@@ -41,7 +41,6 @@ public:
   virtual uint16_t writeSn(SOCKET s, uint16_t addr, uint8_t *buf, uint16_t len) { return write(CH_BASE() + s * CH_SIZE + addr, buf, len); };
   virtual uint16_t readSn16(SOCKET _s, uint16_t address);
   virtual void writeSn16(SOCKET _s, uint16_t address, uint16_t _data);
-  int _pinSS;
 
 #ifdef ETHERNET_LARGE_BUFFERS
   uint16_t SSIZE;
@@ -100,7 +99,8 @@ private:
   bool initialized = false;
   const uint16_t CH_SIZE = 0x0100;
   socketstate_t state[FLPROG_ETHERNET_MAX_SOCK_NUM];
-  FLProgSPI *_spi;
+  uint8_t spiBus = 0;
+  int _pinSS;
   uint8_t softReset(void);
   uint8_t isW5100(void);
   uint8_t isW5200(void);

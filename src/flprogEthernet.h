@@ -1,5 +1,4 @@
 #pragma once
-#include "flprogSPI.h"
 #include "hardware/flprogAbstractEthernetHardware.h"
 #include "flprogAbstractEthernet.h"
 #include "flprogEthernetUdp.h"
@@ -53,10 +52,9 @@ private:
 class FLProgWiznetInterface : public FlprogEthernetClass
 {
 public:
-	FLProgWiznetInterface();
-	FLProgWiznetInterface(FLProgSPI *spi, int pin = 10);
+	FLProgWiznetInterface(int pin = -1, uint8_t bus = 0 );
 	virtual FLProgAbstractEthernetHardware *hardware() { return &_hardware; };
-	void init(FLProgSPI *spi, int sspin = 10);
+	void init(int pin = -1, uint8_t bus = 0);
 	void setSsPin(int sspin) { _hardware.setSsPin(sspin); };
 	virtual bool isImitation() { return false; }
 
