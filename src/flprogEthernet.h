@@ -29,10 +29,10 @@ public:
 
 	virtual FLProgDNSClient *dnsClient() { return &_dns; };
 
-	uint32_t checkLinePeriod() { return checkLineStatusPeriod; };
-	void checkLinePeriod(uint32_t period) { checkLineStatusPeriod = period; };
-	uint32_t reconnectPeriod() { return reconnectLinePeriod; };
-	void reconnectPeriod(uint32_t period) { reconnectLinePeriod = period; };
+	uint32_t checkLinePeriod() { return checkEthernetStatusPeriod; };
+	void checkLinePeriod(uint32_t period) { checkEthernetStatusPeriod = period; };
+	uint32_t reconnectPeriod() { return reconnectEthernetPeriod; };
+	void reconnectPeriod(uint32_t period) { reconnectEthernetPeriod = period; };
 	virtual FLProgAbstractTcpServer *getServer(int port) { return new FLProgEthernetServer(this, port); };
 	virtual Client *getClient() { return new FLProgEthernetClient(this); };
 
@@ -42,11 +42,11 @@ protected:
 	FLProgDNSClient _dns;
 
 private:
-	uint8_t checkLineStatus();
-	uint32_t checkLineStatusPeriod = 1000;
-	uint32_t lastCheckLineStatusTime = flprog::timeBack(checkLineStatusPeriod);
-	uint32_t reconnectLinePeriod = 5000;
-	uint32_t lastReconnectTime = flprog::timeBack(reconnectLinePeriod);
+	void updateEthernetStatus();
+	uint32_t checkEthernetStatusPeriod = 1000;
+	uint32_t lastCheckEthernetStatusTime = flprog::timeBack(checkEthernetStatusPeriod);
+	uint32_t reconnectEthernetPeriod = 5000;
+	uint32_t lastReconnectTime = flprog::timeBack(reconnectEthernetPeriod);
 };
 
 class FLProgWiznetInterface : public FlprogEthernetClass

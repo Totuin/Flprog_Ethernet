@@ -3,10 +3,15 @@
 #include "flprogAbstractEthernet.h"
 #include "flprogAbstractEthernetHardware.h"
 
+#define FLPROG_W5100_NOT_INIT_STATUS 0
+#define FLPROG_W5100_WHITE_INIT_STATUS 1
+#define FLPROG_W5100_INIT_STATUS 2
+
 class FLProgWiznetClass : public FLProgAbstractEthernetHardware
 {
 public:
-  virtual uint8_t init(void);
+  virtual uint8_t init();
+  uint8_t checkInit();
   void setSsPin(int sspin);
   virtual uint8_t getLinkStatus();
   virtual void setSpiBus(uint8_t bus) { spiBus = bus; };
@@ -95,8 +100,9 @@ public:
 
 private:
   uint8_t chip = 0;
+  uint32_t startWhiteInitTime;
+  uint8_t hardwareSratus = FLPROG_W5100_NOT_INIT_STATUS;
   uint16_t local_port = 49152; // 49152 to 65535 TODO: randomize this when not using DHCP, but how?
-  bool initialized = false;
   const uint16_t CH_SIZE = 0x0100;
   socketstate_t state[FLPROG_ETHERNET_MAX_SOCK_NUM];
   uint8_t spiBus = 0;

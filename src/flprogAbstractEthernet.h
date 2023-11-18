@@ -22,7 +22,8 @@
 
 #define FLPROG_ETHERNET_STATUS_NOTREADY 0
 #define FLPROG_ETHERNET_STATUS_READY 1
-#define FLPROG_ETHERNET_STATUS_WHITE_DHCP 2
+#define FLPROG_ETHERNET_STATUS_HARDWARE_INIT 2
+#define FLPROG_ETHERNET_STATUS_WHITE_DHCP 3
 
 class FLProgAbstractEthernetHardware;
 class FLProgDNSClient;
@@ -32,10 +33,11 @@ class FlprogAbstractEthernet : public FLProgAbstractTcpInterface
 public:
     virtual FLProgAbstractEthernetHardware *hardware() = 0;
     virtual FLProgDNSClient *dnsClient() = 0;
-    virtual bool isReady() { return lineStatus == FLPROG_ETHERNET_STATUS_READY; };
+    uint8_t getStatus() { return ethernetStatus; }
+    virtual bool isReady() { return ethernetStatus == FLPROG_ETHERNET_STATUS_READY; };
     virtual uint8_t type() { return FLPROG_ETHERNET_INTERFACE; }
 
 protected:
-    uint8_t lineStatus = FLPROG_ETHERNET_STATUS_NOTREADY;
+    uint8_t ethernetStatus = FLPROG_ETHERNET_STATUS_NOTREADY;
     bool needUpdateData = false;
 };

@@ -3,28 +3,41 @@
 void FlprogEthernetClass::pool()
 {
 
-	lineStatus = checkLineStatus();
+	updateEthernetStatus();
+
 	if (isNeedReconect)
 	{
-		lineStatus = FLPROG_ETHERNET_STATUS_NOTREADY;
+		ethernetStatus = FLPROG_ETHERNET_STATUS_NOTREADY;
 	}
-	if (lineStatus == FLPROG_ETHERNET_STATUS_READY)
+	if (ethernetStatus == FLPROG_ETHERNET_STATUS_READY)
 	{
 		return;
 	}
-	if (!flprog::isTimer(lastReconnectTime, reconnectLinePeriod))
+	if (!flprog::isTimer(lastReconnectTime, reconnectEthernetPeriod))
 	{
+		return;
+	}
+	uint8_t hardStatus = hardware()->init();
+
+	if (hardStatus == 0)
+	{
+		ethernetStatus = FLPROG_ETHERNET_STATUS_NOTREADY;
+		return;
+	}
+	if (hardStatus == 2)
+	{
+		ethernetStatus = FLPROG_ETHERNET_STATUS_HARDWARE_INIT;
 		return;
 	}
 	if (isDhcp)
 	{
 		if (begin(macAddress))
 		{
-			lineStatus = FLPROG_ETHERNET_STATUS_READY;
+			ethernetStatus = FLPROG_ETHERNET_STATUS_READY;
 		}
 		else
 		{
-			lineStatus = FLPROG_ETHERNET_STATUS_NOTREADY;
+			ethernetStatus = FLPROG_ETHERNET_STATUS_NOTREADY;
 		}
 	}
 	else
@@ -33,11 +46,11 @@ void FlprogEthernetClass::pool()
 		{
 			if (begin(macAddress))
 			{
-				lineStatus = FLPROG_ETHERNET_STATUS_READY;
+				ethernetStatus = FLPROG_ETHERNET_STATUS_READY;
 			}
 			else
 			{
-				lineStatus = FLPROG_ETHERNET_STATUS_NOTREADY;
+				ethernetStatus = FLPROG_ETHERNET_STATUS_NOTREADY;
 			}
 		}
 		else
@@ -54,50 +67,51 @@ void FlprogEthernetClass::pool()
 			}
 			if (begin(macAddress, ip, dnsIp, gatewayIp, subnetIp))
 			{
-				lineStatus = FLPROG_ETHERNET_STATUS_READY;
+				ethernetStatus = FLPROG_ETHERNET_STATUS_READY;
 			}
 			else
 			{
-				lineStatus = FLPROG_ETHERNET_STATUS_NOTREADY;
+				ethernetStatus = FLPROG_ETHERNET_STATUS_NOTREADY;
 			}
 		}
 	}
-	if (lineStatus == FLPROG_ETHERNET_STATUS_READY)
+	if (ethernetStatus == FLPROG_ETHERNET_STATUS_READY)
 	{
 		isNeedReconect = false;
 	}
 	lastReconnectTime = millis();
-	lastCheckLineStatusTime = millis();
+	lastCheckEthernetStatusTime = millis();
 }
 
-uint8_t FlprogEthernetClass::checkLineStatus()
+void FlprogEthernetClass::updateEthernetStatus()
 {
-	if (lineStatus == FLPROG_ETHERNET_STATUS_WHITE_DHCP)
+	if (ethernetStatus == FLPROG_ETHERNET_STATUS_WHITE_DHCP)
 	{
-		return lineStatus;
+		return;
 	}
-	if (flprog::isTimer(lastCheckLineStatusTime, checkLineStatusPeriod))
+
+	if (ethernetStatus == FLPROG_ETHERNET_STATUS_HARDWARE_INIT)
+	{
+		return;
+	}
+
+	if (flprog::isTimer(lastCheckEthernetStatusTime, checkEthernetStatusPeriod))
 	{
 		if ((hardwareStatus() == FLPROG_ETHERNET_NO_HARDWARE) || (linkStatus() == FLPROG_ETHERNET_LINK_OFF))
 		{
-			lineStatus = FLPROG_ETHERNET_STATUS_NOTREADY;
+			ethernetStatus = FLPROG_ETHERNET_STATUS_NOTREADY;
 		}
 		else
 		{
-			lineStatus = FLPROG_ETHERNET_STATUS_READY;
+			ethernetStatus = FLPROG_ETHERNET_STATUS_READY;
 		}
 
-		lastCheckLineStatusTime = millis();
+		lastCheckEthernetStatusTime = millis();
 	}
-	return lineStatus;
 }
 
 uint8_t FlprogEthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned long responseTimeout)
 {
-	if (hardware()->init() == 0)
-	{
-		return 0;
-	}
 	hardware()->setNetSettings(mac, IPAddress(0, 0, 0, 0));
 	int ret = _dhcp.beginWithDHCP(mac, timeout, responseTimeout);
 	if (ret == 1)
@@ -135,10 +149,9 @@ uint8_t FlprogEthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IP
 
 uint8_t FlprogEthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet)
 {
-	(void)dns;
-	if (hardware()->init() == 0)
-		return 0;
+	_dns.begin(dns);
 	hardware()->setNetSettings(mac, ip, gateway, subnet);
+	hardware()->socketPortRand(micros());
 	return 1;
 }
 

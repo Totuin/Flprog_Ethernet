@@ -1,26 +1,45 @@
 #include "flprogW5100.h"
 
-uint8_t FLProgWiznetClass::init(void)
+uint8_t FLProgWiznetClass::init()
 {
-	uint8_t i;
-	if (initialized)
+	if (hardwareSratus == FLPROG_W5100_INIT_STATUS)
+	{
 		return 1;
-	delay(560);
+	}
+	if (hardwareSratus == FLPROG_W5100_WHITE_INIT_STATUS)
+	{
+		return checkInit();
+	}
+	hardwareSratus = FLPROG_W5100_WHITE_INIT_STATUS;
+	startWhiteInitTime = millis();
+	return 2;
+}
+
+uint8_t FLProgWiznetClass::checkInit()
+{
+	if (!(flprog::isTimer(startWhiteInitTime, 600)))
+	{
+		hardwareSratus = FLPROG_W5100_WHITE_INIT_STATUS;
+		return 2;
+	}
 	RT_HW_Base.spiBegin(spiBus);
 	initSS();
 	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus);
 	if (isW5200())
 	{
 		CH_BASE_MSB = 0x40;
-		for (i = 0; i < FLPROG_ETHERNET_MAX_SOCK_NUM; i++)
+		for (uint8_t i = 0; i < 8; i++)
 		{
-			writeSn(i, FLPROG_SN_RX_SIZE, SSIZE >> 10);
-			writeSn(i, FLPROG_SN_TX_SIZE, SSIZE >> 10);
-		}
-		for (; i < 8; i++)
-		{
-			writeSn(i, FLPROG_SN_RX_SIZE, 0);
-			writeSn(i, FLPROG_SN_TX_SIZE, 0);
+			if (i < FLPROG_ETHERNET_MAX_SOCK_NUM)
+			{
+				writeSn(i, FLPROG_SN_RX_SIZE, SSIZE >> 10);
+				writeSn(i, FLPROG_SN_TX_SIZE, SSIZE >> 10);
+			}
+			else
+			{
+				writeSn(i, FLPROG_SN_RX_SIZE, 0);
+				writeSn(i, FLPROG_SN_TX_SIZE, 0);
+			}
 		}
 	}
 	else
@@ -39,12 +58,13 @@ uint8_t FLProgWiznetClass::init(void)
 			{
 				chip = 0;
 				RT_HW_Base.spiEndTransaction(spiBus);
+				hardwareSratus = FLPROG_W5100_NOT_INIT_STATUS;
 				return 0;
 			}
 		}
 	}
 	RT_HW_Base.spiEndTransaction(spiBus);
-	initialized = true;
+	hardwareSratus = FLPROG_W5100_INIT_STATUS;
 	return 1;
 }
 
