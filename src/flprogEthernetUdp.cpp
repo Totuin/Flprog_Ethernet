@@ -18,10 +18,14 @@ void FLProgEthernetUDP::setHatdware(FLProgAbstractEthernetHardware *hardware)
 uint8_t FLProgEthernetUDP::begin(uint16_t port)
 {
 	if (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
 		_hardware->socketClose(sockindex);
+	}
 	sockindex = _hardware->socketBegin(FLPROG_SN_MR_UDP, port);
 	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
 		return 0;
+	}
 	_port = port;
 	_remaining = 0;
 	return 1;
@@ -50,7 +54,9 @@ int FLProgEthernetUDP::beginPacket(const char *host, uint16_t port)
 	uint8_t remote_addr[4] = {0, 0, 0, 0};
 	ret = _dns->getHostByName(host, remote_addr);
 	if (ret != 1)
+	{
 		return ret;
+	}
 	return beginPacket(IPAddress(remote_addr[0], remote_addr[1], remote_addr[2], remote_addr[3]), port);
 }
 
@@ -77,7 +83,7 @@ size_t FLProgEthernetUDP::write(uint8_t byte)
 
 size_t FLProgEthernetUDP::write(const uint8_t *buffer, size_t size)
 {
-	
+
 	uint16_t bytes_written = _hardware->socketBufferData(sockindex, _offset, buffer, size);
 	_offset += bytes_written;
 	return bytes_written;
@@ -165,7 +171,9 @@ int FLProgEthernetUDP::peek()
 	// If the user hasn't called parsePacket yet then return nothing otherwise they
 	// may get the UDP header
 	if (sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM || _remaining == 0)
+	{
 		return -1;
+	}
 	return _hardware->socketPeek(sockindex);
 }
 

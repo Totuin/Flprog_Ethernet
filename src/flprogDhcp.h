@@ -175,7 +175,7 @@ private:
 
 	int request_DHCP_lease();
 	void reset_DHCP_lease();
-	void presend_DHCP();
+	//void presend_DHCP();
 	void send_DHCP_MESSAGE(uint8_t, uint16_t);
 	void printByte(char *, uint8_t);
 

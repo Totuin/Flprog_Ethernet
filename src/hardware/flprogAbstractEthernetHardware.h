@@ -11,7 +11,6 @@ extern void yield(void);
 #endif
 
 // Safe for all chips
-#define SPI_ETHERNET_SETTINGS SPISettings(14000000, MSBFIRST, SPI_MODE0)
 #define SPI_ETHERNET_SPEED 14000000
 
 // Safe for W5200 and W5500, but too fast for W5100
@@ -23,9 +22,7 @@ extern void yield(void);
 
 // Arduino 101's SPI can not run faster than 8 MHz.
 #if defined(ARDUINO_ARCH_ARC32)
-#undef SPI_ETHERNET_SETTINGS
 #undef SPI_ETHERNET_SPEED
-#define SPI_ETHERNET_SETTINGS SPISettings(8000000, MSBFIRST, SPI_MODE0)
 #define SPI_ETHERNET_SPEED 8000000
 #endif
 
@@ -33,9 +30,7 @@ extern void yield(void);
 // https://github.com/arduino-libraries/Ethernet/issues/37#issuecomment-408036848
 // W5500 does seem to work at 12 MHz.  Delete this if only using W5500
 #if defined(__SAMD21G18A__)
-#undef SPI_ETHERNET_SETTINGS
 #undef SPI_ETHERNET_SPEED
-#define SPI_ETHERNET_SETTINGS SPISettings(8000000, MSBFIRST, SPI_MODE0)
 #define SPI_ETHERNET_SPEED 8000000
 #endif
 

@@ -34,7 +34,7 @@ int FLProgDhcpClass::request_DHCP_lease()
 	{
 		return 0;
 	}
-	presend_DHCP();
+	//presend_DHCP();
 	int result = 0;
 	unsigned long startTime = millis();
 	while (_dhcp_state != FLPROG_STATE_DHCP_LEASED)
@@ -113,10 +113,11 @@ int FLProgDhcpClass::request_DHCP_lease()
 	_lastCheckLeaseMillis = millis();
 	return result;
 }
-
+/*
 void FLProgDhcpClass::presend_DHCP()
 {
 }
+*/
 
 void FLProgDhcpClass::send_DHCP_MESSAGE(uint8_t messageType, uint16_t secondsElapsed)
 {
