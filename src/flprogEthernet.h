@@ -12,17 +12,17 @@ class FlprogEthernetClass : public FlprogAbstractEthernet
 public:
 	virtual void pool();
 
-	uint8_t begin(uint8_t *mac, unsigned long timeout = 20000, unsigned long responseTimeout = 4000);
+	void begin(uint8_t *mac, unsigned long timeout = 20000, unsigned long responseTimeout = 4000);
 
 	int maintain();
 
 	uint8_t linkStatus() { return hardware()->getLinkStatus(); };
 	uint8_t hardwareStatus();
 
-	uint8_t begin(uint8_t *mac, IPAddress ip);
-	uint8_t begin(uint8_t *mac, IPAddress ip, IPAddress dns);
-	uint8_t begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway);
-	uint8_t begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet);
+	void begin(uint8_t *mac, IPAddress ip);
+	void begin(uint8_t *mac, IPAddress ip, IPAddress dns);
+	void begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway);
+	void begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet);
 
 	void setRetransmissionTimeout(uint16_t milliseconds) { hardware()->setRetransmissionTime(milliseconds); };
 	void setRetransmissionCount(uint8_t num) { hardware()->setRetransmissionCount(num); };

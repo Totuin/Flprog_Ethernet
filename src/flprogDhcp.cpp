@@ -7,15 +7,18 @@ void FLProgDhcpClass::setUDP(FLProgEthernetUDP *udp)
 
 int FLProgDhcpClass::beginWithDHCP(uint8_t *mac, unsigned long timeout, unsigned long responseTimeout)
 {
-	_dhcpLeaseTime = 0;
-	_dhcpT1 = 0;
-	_dhcpT2 = 0;
-	_timeout = timeout;
-	_responseTimeout = responseTimeout;
-	memset(_dhcpMacAddr, 0, 6);
-	reset_DHCP_lease();
-	memcpy((void *)_dhcpMacAddr, (void *)mac, 6);
-	_dhcp_state = FLPROG_STATE_DHCP_START;
+	if (status == FLPROG_DHCP_STATUS_REDI)
+	{
+		_dhcpLeaseTime = 0;
+		_dhcpT1 = 0;
+		_dhcpT2 = 0;
+		_timeout = timeout;
+		_responseTimeout = responseTimeout;
+		memset(_dhcpMacAddr, 0, 6);
+		reset_DHCP_lease();
+		memcpy((void *)_dhcpMacAddr, (void *)mac, 6);
+		_dhcp_state = FLPROG_STATE_DHCP_START;
+	}
 	return request_DHCP_lease();
 }
 
@@ -26,105 +29,134 @@ void FLProgDhcpClass::reset_DHCP_lease()
 
 int FLProgDhcpClass::request_DHCP_lease()
 {
-	uint8_t messageType = 0;
-	_dhcpTransactionId = random(1UL, 2000UL);
-	_dhcpInitialTransactionId = _dhcpTransactionId;
-	_udp->stop();
-	if (_udp->begin(FLPROG_DHCP_CLIENT_PORT) == 0)
+	if (status == FLPROG_DHCP_STATUS_REDI)
 	{
-		return 0;
+		startTime = millis();
+		messageType = 0;
+		result = 0;
+		status = FLPROG_DHCP_STATUS_WHAIT_REQEST;
+		_dhcpTransactionId = random(1UL, 2000UL);
+		_dhcpInitialTransactionId = _dhcpTransactionId;
+		_udp->stop();
+		if (_udp->begin(FLPROG_DHCP_CLIENT_PORT) == 0)
+		{
+			status = FLPROG_DHCP_STATUS_REDI;
+			return FLPROG_DHCP_STATUS_ERROR;
+		}
 	}
-	//presend_DHCP();
-	int result = 0;
-	unsigned long startTime = millis();
-	while (_dhcp_state != FLPROG_STATE_DHCP_LEASED)
+	cheskStateMashine();
+	if (messageType == 255)
 	{
-		if (_dhcp_state == FLPROG_STATE_DHCP_START)
-		{
-			_dhcpTransactionId++;
-			send_DHCP_MESSAGE(FLPROG_DHCP_DISCOVER, ((millis() - startTime) / 1000));
-			_dhcp_state = FLPROG_STATE_DHCP_DISCOVER;
-		}
-		else if (_dhcp_state == FLPROG_STATE_DHCP_REREQUEST)
-		{
-			_dhcpTransactionId++;
-			send_DHCP_MESSAGE(FLPROG_DHCP_REQUEST, ((millis() - startTime) / 1000));
-			_dhcp_state = FLPROG_STATE_DHCP_REQUEST;
-		}
-		else if (_dhcp_state == FLPROG_STATE_DHCP_DISCOVER)
-		{
-			uint32_t respId;
-			messageType = parseDHCPResponse(_responseTimeout, respId);
-			if (messageType == FLPROG_DHCP_OFFER)
-			{
-				// We'll use the transaction ID that the offer came with,
-				// rather than the one we were up to
-				_dhcpTransactionId = respId;
-				send_DHCP_MESSAGE(FLPROG_DHCP_REQUEST, ((millis() - startTime) / 1000));
-				_dhcp_state = FLPROG_STATE_DHCP_REQUEST;
-			}
-		}
-		else if (_dhcp_state == FLPROG_STATE_DHCP_REQUEST)
-		{
-			uint32_t respId;
-			messageType = parseDHCPResponse(_responseTimeout, respId);
-			if (messageType == FLPROG_DHCP_ACK)
-			{
-				_dhcp_state = FLPROG_STATE_DHCP_LEASED;
-				result = 1;
-				// use default lease time if we didn't get it
-				if (_dhcpLeaseTime == 0)
-				{
-					_dhcpLeaseTime = FLPROG_DEFAULT_LEASE;
-				}
-				// Calculate T1 & T2 if we didn't get it
-				if (_dhcpT1 == 0)
-				{
-					// T1 should be 50% of _dhcpLeaseTime
-					_dhcpT1 = _dhcpLeaseTime >> 1;
-				}
-				if (_dhcpT2 == 0)
-				{
-					// T2 should be 87.5% (7/8ths) of _dhcpLeaseTime
-					_dhcpT2 = _dhcpLeaseTime - (_dhcpLeaseTime >> 3);
-				}
-				_renewInSec = _dhcpT1;
-				_rebindInSec = _dhcpT2;
-			}
-			else if (messageType == FLPROG_DHCP_NAK)
-			{
-				_dhcp_state = FLPROG_STATE_DHCP_START;
-			}
-		}
-
-		if (messageType == 255)
-		{
-			messageType = 0;
-			_dhcp_state = FLPROG_STATE_DHCP_START;
-		}
-
-		if (result != 1 && ((millis() - startTime) > _timeout))
-			break;
+		messageType = 0;
+		_dhcp_state = FLPROG_STATE_DHCP_START;
 	}
 
-	// We're done with the socket now
+	if (_dhcp_state == FLPROG_STATE_DHCP_LEASED)
+	{
+		status = FLPROG_DHCP_STATUS_REDI;
+	}
+	if (result != 1 && ((millis() - startTime) > _timeout))
+	{
+		status = FLPROG_DHCP_STATUS_ERROR;
+	}
+	if (status == FLPROG_DHCP_STATUS_WHAIT_REQEST)
+	{
+		return FLPROG_DHCP_STATUS_WHAIT_REQEST;
+	}
 	_udp->stop();
 	_dhcpTransactionId++;
 	_lastCheckLeaseMillis = millis();
+	if (status == FLPROG_DHCP_STATUS_ERROR)
+	{
+		status = FLPROG_DHCP_STATUS_REDI;
+		return FLPROG_DHCP_STATUS_ERROR;
+	}
+	status = FLPROG_DHCP_STATUS_REDI;
 	return result;
 }
-/*
-void FLProgDhcpClass::presend_DHCP()
+
+void FLProgDhcpClass::cheskStateMashine()
 {
+	if (_dhcp_state == FLPROG_STATE_DHCP_START)
+	{
+		_dhcpTransactionId++;
+		send_DHCP_MESSAGE(FLPROG_DHCP_DISCOVER, ((millis() - startTime) / 1000));
+		_dhcp_state = FLPROG_STATE_DHCP_DISCOVER;
+		// return;
+	}
+	if (_dhcp_state == FLPROG_STATE_DHCP_DISCOVER)
+	{
+		messageType = parseDHCPResponse();
+		if (messageType == 254)
+		{
+			return;
+		}
+		if (messageType == FLPROG_DHCP_OFFER)
+		{
+
+			_dhcpTransactionId = respId;
+			send_DHCP_MESSAGE(FLPROG_DHCP_REQUEST, ((millis() - startTime) / 1000));
+			_dhcp_state = FLPROG_STATE_DHCP_REQUEST;
+		}
+		return;
+	}
+
+	if (_dhcp_state == FLPROG_STATE_DHCP_REREQUEST)
+	{
+		_dhcpTransactionId++;
+		send_DHCP_MESSAGE(FLPROG_DHCP_REQUEST, ((millis() - startTime) / 1000));
+		_dhcp_state = FLPROG_STATE_DHCP_REQUEST;
+		return;
+	}
+
+	if (_dhcp_state == FLPROG_STATE_DHCP_REQUEST)
+	{
+		messageType = parseDHCPResponse();
+		if (messageType == 254)
+		{
+			return;
+		}
+		if (messageType == FLPROG_DHCP_ACK)
+		{
+			_dhcp_state = FLPROG_STATE_DHCP_LEASED;
+			status = FLPROG_DHCP_STATUS_REDI;
+			result = 1;
+			// use default lease time if we didn't get it
+			if (_dhcpLeaseTime == 0)
+			{
+				_dhcpLeaseTime = FLPROG_DEFAULT_LEASE;
+			}
+			// Calculate T1 & T2 if we didn't get it
+			if (_dhcpT1 == 0)
+			{
+				// T1 should be 50% of _dhcpLeaseTime
+				_dhcpT1 = _dhcpLeaseTime >> 1;
+			}
+			if (_dhcpT2 == 0)
+			{
+				// T2 should be 87.5% (7/8ths) of _dhcpLeaseTime
+				_dhcpT2 = _dhcpLeaseTime - (_dhcpLeaseTime >> 3);
+			}
+			_renewInSec = _dhcpT1;
+			_rebindInSec = _dhcpT2;
+		}
+		else
+		{
+			if (messageType == FLPROG_DHCP_NAK)
+			{
+				_dhcp_state = FLPROG_STATE_DHCP_START;
+				status = FLPROG_DHCP_STATUS_ERROR;
+			}
+		}
+	}
 }
-*/
 
 void FLProgDhcpClass::send_DHCP_MESSAGE(uint8_t messageType, uint16_t secondsElapsed)
 {
 	uint8_t buffer[32];
 	memset(buffer, 0, 32);
 	IPAddress dest_addr(255, 255, 255, 255); // Broadcast address
-	if (_udp->beginPacket(dest_addr, FLPROG_DHCP_SERVER_PORT) == -1)
+	if (!(_udp->beginPacket(dest_addr, FLPROG_DHCP_SERVER_PORT)))
 	{
 		return;
 	}
@@ -134,8 +166,10 @@ void FLProgDhcpClass::send_DHCP_MESSAGE(uint8_t messageType, uint16_t secondsEla
 	buffer[3] = FLPROG_DHCP_HOPS;		  // hops
 	unsigned long xid = flprogW5100Htonl(_dhcpTransactionId);
 	memcpy(buffer + 4, &(xid), 4);
+	/*
 	buffer[8] = ((secondsElapsed & 0xff00) >> 8);
 	buffer[9] = (secondsElapsed & 0x00ff);
+	*/
 	unsigned short flags = flprogW5100Htons(FLPROG_DHCP_FLAGSBROADCAST);
 	memcpy(buffer + 10, &(flags), 2);
 	_udp->write(buffer, 28);
@@ -196,33 +230,43 @@ void FLProgDhcpClass::send_DHCP_MESSAGE(uint8_t messageType, uint16_t secondsEla
 	_udp->endPacket();
 }
 
-uint8_t FLProgDhcpClass::parseDHCPResponse(unsigned long responseTimeout, uint32_t &transactionId)
+uint8_t FLProgDhcpClass::parseDHCPResponse()
 {
+	if (!isWaitDhcpReqest)
+	{
+		startDhcpReqestTime = millis();
+		isWaitDhcpReqest = true;
+		lastCheckDhcpReqestTime = flprog::timeBack(100);
+	}
+	if (flprog::isTimer(startDhcpReqestTime, _responseTimeout))
+	{
+		isWaitDhcpReqest = false;
+		return 255;
+	}
+	if (!(flprog::isTimer(lastCheckDhcpReqestTime, 50)))
+	{
+		return 254;
+	}
+	if (_udp->parsePacket() <= 0)
+	{
+		lastCheckDhcpReqestTime = millis();
+		return 254;
+	}
 	uint8_t type = 0;
 	uint8_t opt_len = 0;
-	unsigned long startTime = millis();
-
-	while (_udp->parsePacket() <= 0)
-	{
-		if ((millis() - startTime) > responseTimeout)
-		{
-			return 255;
-		}
-		delay(50);
-	}
 	FLPROG_RIP_MSG_FIXED fixedMsg;
 	_udp->read((uint8_t *)&fixedMsg, sizeof(FLPROG_RIP_MSG_FIXED));
 	if (fixedMsg.op == FLPROG_DHCP_BOOTREPLY && _udp->remotePort() == FLPROG_DHCP_SERVER_PORT)
 	{
-		transactionId = flporgW5100Ntohl(fixedMsg.xid);
+		respId = flporgW5100Ntohl(fixedMsg.xid);
 		if (memcmp(fixedMsg.chaddr, _dhcpMacAddr, 6) != 0 ||
-			(transactionId < _dhcpInitialTransactionId) ||
-			(transactionId > _dhcpTransactionId))
+			(respId < _dhcpInitialTransactionId) ||
+			(respId > _dhcpTransactionId))
 		{
 			_udp->flush(); // FIXME
+			isWaitDhcpReqest = false;
 			return 0;
 		}
-
 		memcpy(_dhcpLocalIp, fixedMsg.yiaddr, 4);
 		_udp->read((uint8_t *)NULL, 240 - (int)sizeof(FLPROG_RIP_MSG_FIXED));
 		while (_udp->available() > 0)
@@ -299,6 +343,7 @@ uint8_t FLProgDhcpClass::parseDHCPResponse(unsigned long responseTimeout, uint32
 		}
 	}
 	_udp->flush(); // FIXME
+	isWaitDhcpReqest = false;
 	return type;
 }
 

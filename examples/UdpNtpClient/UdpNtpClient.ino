@@ -28,13 +28,13 @@
 //         Вариант с  шиной (SPI0) и пином(10) по умолчаниюю. Пин потом можно поменять.
 //         Но если на этой шине висит ещё какое то устройство лучше применять второй вариант
 //-------------------------------------------------------------------------------------------------
-FLProgWiznetInterface WiznetInterface; //--Создание интерфейса для работы с чипом W5100(W5200,W5500) (по умолчанию CS pin - 10,  Шина SPI - 0);
+//FLProgWiznetInterface WiznetInterface; //--Создание интерфейса для работы с чипом W5100(W5200,W5500) (по умолчанию CS pin - 10,  Шина SPI - 0);
 
 //-------------------------------------------------------------------------------------------------
 //        Второй вариант с непосредственной привязкой к шине и пину.
 //-------------------------------------------------------------------------------------------------
- //FLProgWiznetInterface WiznetInterface(10, 0); //--Создание интерфейса для работы с чипом W5100(W5200,W5500) CS pin - 10, Шина SPI - 0;
- //FLProgWiznetInterface WiznetInterface(10); //--Создание интерфейса для работы с чипом W5100(W5200,W5500) CS pin - 10, (по умолчанию Шина SPI - 0);
+//FLProgWiznetInterface WiznetInterface(10, 0); //--Создание интерфейса для работы с чипом W5100(W5200,W5500) CS pin - 10, Шина SPI - 0;
+FLProgWiznetInterface WiznetInterface(10); //--Создание интерфейса для работы с чипом W5100(W5200,W5500) CS pin - 10, (по умолчанию Шина SPI - 0);
 
 
 //-------------------------------------------------------------------------------------------------
@@ -53,7 +53,7 @@ bool isNeedSendDisconnectMessage = true;
 //          1.2.Создание объекта UDP для отправки и получения пакетов по UDP с привязкой к интерфейсу
 //-------------------------------------------------------------------------------------------------
 FLProgEthernetUDP Udp(&WiznetInterface); //--Создание UDP клиента;
- 
+
 //-----------------------------------------------------------------------------------------
 //          1.3.Определение рабочих параметров и функций
 //-----------------------------------------------------------------------------------------
@@ -63,6 +63,9 @@ bool isReplyInProcess = false;        // Флаг ожидания ответа
 
 void sendNTPpacket(const char *nameSever); //--Предопределение функции;
 void processingResponse();                 //--Предопределение функции;
+
+uint8_t ethernetStatus = 100;
+uint32_t blinkStartTime = 0;
 
 //=================================================================================================
 void setup()
@@ -74,15 +77,50 @@ void setup()
   Serial.print(String(F("\n-----Тест UdpNtpClient для платы ")));
   Serial.print(String(F(TEST_BOARD)));
   Serial.println(String(F("-----")));
-  
-  WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x28); //--Установка MAC-адрес контроллера (лучше адрес прошитый производителем);
-  
+
+  WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40); //--Установка MAC-адрес контроллера (лучше адрес прошитый производителем);
+  //WiznetInterface.localIP(192, 168, 0, 52);
+  //WiznetInterface.resetDhcp();
+
+
   sendPacadeTime = flprog::timeBack(reqestPeriod);
+
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN, HIGH);
 }
 //=================================================================================================
 void loop()
 {
+
+  if (flprog::isTimer(blinkStartTime, 200))
+  {
+    blinkStartTime = millis();
+    digitalWrite(LED_BUILTIN, !( digitalRead(LED_BUILTIN)));
+  }
+
   WiznetInterface.pool(); // Цикл работы интерфейса
+
+  if ( WiznetInterface.getStatus() != ethernetStatus)
+  {
+    ethernetStatus = WiznetInterface.getStatus();
+    if (ethernetStatus == FLPROG_ETHERNET_STATUS_NOTREADY)
+    {
+      Serial.println("Ethernet не готов!");
+    }
+    if (ethernetStatus == FLPROG_ETHERNET_STATUS_READY)
+    {
+      Serial.println("Ethernet  готов!");
+    }
+    if (ethernetStatus == FLPROG_ETHERNET_STATUS_HARDWARE_INIT)
+    {
+      Serial.println("Ethernet  инициализируется!");
+    }
+
+    if (ethernetStatus == FLPROG_ETHERNET_STATUS_WHITE_DHCP)
+    {
+      Serial.println("Ethernet  ждёт DHCP!");
+    }
+  }
   //-------------------------------------------------------------------------------------------------
   //                                           Основная логика
   //-------------------------------------------------------------------------------------------------
@@ -96,6 +134,12 @@ void loop()
       Serial.println("Ethernet подключён!");
       Serial.print("Ip - ");
       Serial.println(WiznetInterface.localIP());
+      Serial.print("DNS - ");
+      Serial.println(WiznetInterface.dns());
+      Serial.print("Subnet - ");
+      Serial.println(WiznetInterface.subnet());
+      Serial.print("Gateway - ");
+      Serial.println(WiznetInterface.gateway());
       isNeedSendConnectMessage = false;
       isNeedSendDisconnectMessage = true;
     }
@@ -165,7 +209,15 @@ void sendNTPpacket(const char *nameServer)
   //-------------------------------------------------------------------------------------------------
   //   1.2.Отправка подготовленного  пакет с запросом метки времени
   //-------------------------------------------------------------------------------------------------
-  Udp.beginPacket(nameServer, 123);         //--Инициализация NTP запроса к порту 123
+  Serial.print("SendUDPReqest - ");
+
+  if (Udp.beginPacket(nameServer, 123) == 1) {
+    Serial.println("Ok"); //--Инициализация NTP запроса к порту 123
+  }
+  else
+  {
+    Serial.println("Error");
+  }
   Udp.write(packetBuffer, NTP_PACKET_SIZE); //--Отправка запроса;
   Udp.endPacket();                          //--Завершение запроса;
   WiznetInterface.setBusy(); //--Занимаем интерфейс

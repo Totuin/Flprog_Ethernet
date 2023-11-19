@@ -97,6 +97,7 @@ public:
   virtual uint16_t socketBufferData(uint8_t s, uint16_t offset, const uint8_t *buf, uint16_t len);
   virtual bool socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port);
   virtual bool socketSendUDP(uint8_t s);
+  virtual bool isInit() { return hardwareSratus == FLPROG_W5100_INIT_STATUS; }
 
 private:
   uint8_t chip = 0;

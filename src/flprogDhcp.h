@@ -49,6 +49,10 @@
 #define FLPROG_DHCP_CHECK_REBIND_FAIL 3
 #define FLPROG_DHCP_CHECK_REBIND_OK 4
 
+#define FLPROG_DHCP_STATUS_ERROR 0
+#define FLPROG_DHCP_STATUS_REDI 1
+#define FLPROG_DHCP_STATUS_WHAIT_REQEST 2
+
 enum
 {
 	padOption = 0,
@@ -132,8 +136,6 @@ typedef struct _FLPROG_RIP_MSG_FIXED
 	uint8_t chaddr[6];
 } FLPROG_RIP_MSG_FIXED;
 
-
-
 class FLProgDhcpClass
 {
 public:
@@ -143,7 +145,7 @@ public:
 	IPAddress getGatewayIp();
 	IPAddress getDhcpServerIp();
 	IPAddress getDnsServerIp();
-	int beginWithDHCP(uint8_t *, unsigned long timeout = 60000, unsigned long responseTimeout = 4000);
+	int beginWithDHCP(uint8_t *, unsigned long timeout = 20000, unsigned long responseTimeout = 4000);
 	int checkLease();
 
 private:
@@ -168,16 +170,25 @@ private:
 	uint32_t _dhcpT1, _dhcpT2;
 	uint32_t _renewInSec;
 	uint32_t _rebindInSec;
-	unsigned long _timeout;
-	unsigned long _responseTimeout;
-	unsigned long _lastCheckLeaseMillis;
+	uint32_t _timeout;
+	uint32_t _responseTimeout;
+	uint32_t _lastCheckLeaseMillis;
 	uint8_t _dhcp_state;
+	uint8_t status = FLPROG_DHCP_STATUS_REDI;
+	uint32_t startTime;
+	uint32_t startDhcpReqestTime;
+	uint32_t lastCheckDhcpReqestTime;
+	bool isWaitDhcpReqest = false;
+	uint8_t messageType;
+	int result;
+	uint32_t respId;
 
 	int request_DHCP_lease();
 	void reset_DHCP_lease();
-	//void presend_DHCP();
+
+	void cheskStateMashine();
 	void send_DHCP_MESSAGE(uint8_t, uint16_t);
 	void printByte(char *, uint8_t);
 
-	uint8_t parseDHCPResponse(unsigned long responseTimeout, uint32_t &transactionId);
+	uint8_t parseDHCPResponse();
 };

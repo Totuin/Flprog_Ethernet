@@ -130,6 +130,7 @@ public:
   virtual uint8_t getChip() = 0;
   virtual uint16_t _CH_SIZE() = 0;
   virtual uint16_t _SSIZE() = 0;
+  virtual bool isInit(){return true;}
 
   // утилиты
   virtual void setNetSettings(uint8_t *mac, IPAddress ip) = 0;

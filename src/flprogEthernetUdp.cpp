@@ -83,7 +83,6 @@ size_t FLProgEthernetUDP::write(uint8_t byte)
 
 size_t FLProgEthernetUDP::write(const uint8_t *buffer, size_t size)
 {
-
 	uint16_t bytes_written = _hardware->socketBufferData(sockindex, _offset, buffer, size);
 	_offset += bytes_written;
 	return bytes_written;
