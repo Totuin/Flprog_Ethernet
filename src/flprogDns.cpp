@@ -1,39 +1,6 @@
 #include <Arduino.h>
 #include "flprogDns.h"
 
-#define FLPROG_SOCKET_NONE 255
-#define FLPROG_UDP_HEADER_SIZE 8
-#define FLPROG_DNS_HEADER_SIZE 12
-#define FLPROG_TTL_SIZE 4
-#define FLPROG_QUERY_FLAG (0)
-#define FLPROG_RESPONSE_FLAG (1 << 15)
-#define FLPROG_QUERY_RESPONSE_MASK (1 << 15)
-#define FLPROG_OPCODE_STANDARD_QUERY (0)
-#define FLPROG_OPCODE_INVERSE_QUERY (1 << 11)
-#define FLPROG_OPCODE_STATUS_REQUEST (2 << 11)
-#define FLPROG_OPCODE_MASK (15 << 11)
-#define FLPROG_AUTHORITATIVE_FLAG (1 << 10)
-#define FLPROG_TRUNCATION_FLAG (1 << 9)
-#define FLPROG_RECURSION_DESIRED_FLAG (1 << 8)
-#define FLPROG_RECURSION_AVAILABLE_FLAG (1 << 7)
-#define FLPROG_RESP_NO_ERROR (0)
-#define FLPROG_RESP_FORMAT_ERROR (1)
-#define FLPROG_RESP_SERVER_FAILURE (2)
-#define FLPROG_RESP_NAME_ERROR (3)
-#define FLPROG_RESP_NOT_IMPLEMENTED (4)
-#define FLPROG_RESP_REFUSED (5)
-#define FLPROG_RESP_MASK (15)
-#define FLPROG_TYPE_A (0x0001)
-#define FLPROG_CLASS_IN (0x0001)
-#define FLPROG_LABEL_COMPRESSION_MASK (0xC0)
-#define FLPROG_DNS_PORT 53
-
-#define FLPROG_SUCCESS 1
-#define FLPROG_TIMED_OUT -1
-#define FLPROG_INVALID_SERVER -2
-#define FLPROG_TRUNCATED -3
-#define FLPROG_INVALID_RESPONSE -4
-
 void FLProgDNSClient::setUDP(FLProgEthernetUDP *udp)
 {
 	_udp = udp;
@@ -47,7 +14,7 @@ void FLProgDNSClient::begin(const IPAddress aDNSServer)
 
 int FLProgDNSClient::inet_aton(const char *address, IPAddress &result)
 {
-	uint16_t acc = 0; // Accumulator
+	uint16_t acc = 0; 
 	uint8_t dots = 0;
 	while (*address)
 	{
@@ -82,8 +49,6 @@ int FLProgDNSClient::inet_aton(const char *address, IPAddress &result)
 	return 1;
 }
 
-
-
 int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint16_t timeout)
 {
 	int ret = 0;
@@ -92,20 +57,18 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 	temp[1] = aResult[1];
 	temp[2] = aResult[2];
 	temp[3] = aResult[3];
-	
-		if (inet_aton(aHostname, temp))
-		{
-			return 1;
-		}
-
-	
+	if (inet_aton(aHostname, temp))
+	{
+		return 1;
+	}
 	if (iDNSServer == INADDR_NONE)
 	{
-		return FLPROG_INVALID_SERVER;
+		return FLPROG_DNS_INVALID_SERVER;
 	}
 	if (_udp->begin(1024 + (millis() & 0xF)) == 1)
 	{
 		ret = _udp->beginPacket(iDNSServer, FLPROG_DNS_PORT);
+
 		if (ret != 0)
 		{
 			ret = BuildRequest(aHostname);
@@ -115,8 +78,8 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 				if (ret != 0)
 				{
 					int wait_retries = 0;
-					ret = FLPROG_TIMED_OUT;
-					while ((wait_retries < 3) && (ret == FLPROG_TIMED_OUT))
+					ret = FLPROG_DNS_TIMED_OUT;
+					while ((wait_retries < 3) && (ret == FLPROG_DNS_TIMED_OUT))
 					{
 						ret = ProcessResponse(timeout, aResult);
 						wait_retries++;
@@ -131,14 +94,12 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 
 uint16_t FLProgDNSClient::BuildRequest(const char *aName)
 {
-	iRequestId = millis(); // generate a random ID
+	iRequestId = millis();
 	uint16_t twoByteBuffer;
-	// FIXME We should also check that there's enough space available to write to, rather
-	// FIXME than assume there's enough space (as the code does at present)
 	_udp->write((uint8_t *)&iRequestId, sizeof(iRequestId));
-	twoByteBuffer = flprogW5100Htons((int32_t)(FLPROG_QUERY_FLAG | FLPROG_OPCODE_STANDARD_QUERY | FLPROG_RECURSION_DESIRED_FLAG));
+	twoByteBuffer = flprogW5100Htons((int32_t)(FLPROG_DNS_QUERY_FLAG | FLPROG_DNS_OPCODE_STANDARD_QUERY | FLPROG_DNS_RECURSION_DESIRED_FLAG));
 	_udp->write((uint8_t *)&twoByteBuffer, sizeof(twoByteBuffer));
-	twoByteBuffer = flprogW5100Htons(1); // One question record
+	twoByteBuffer = flprogW5100Htons(1);
 	_udp->write((uint8_t *)&twoByteBuffer, sizeof(twoByteBuffer));
 	twoByteBuffer = 0;
 	_udp->write((uint8_t *)&twoByteBuffer, sizeof(twoByteBuffer));
@@ -164,9 +125,9 @@ uint16_t FLProgDNSClient::BuildRequest(const char *aName)
 	}
 	len = 0;
 	_udp->write(&len, sizeof(len));
-	twoByteBuffer = flprogW5100Htons(FLPROG_TYPE_A);
+	twoByteBuffer = flprogW5100Htons(FLPROG_DNS_TYPE_A);
 	_udp->write((uint8_t *)&twoByteBuffer, sizeof(twoByteBuffer));
-	twoByteBuffer = flprogW5100Htons(FLPROG_CLASS_IN); // Internet class of question
+	twoByteBuffer = flprogW5100Htons(FLPROG_DNS_CLASS_IN);
 	_udp->write((uint8_t *)&twoByteBuffer, sizeof(twoByteBuffer));
 	return 1;
 }
@@ -178,34 +139,34 @@ uint16_t FLProgDNSClient::ProcessResponse(uint16_t aTimeout, uint8_t *aAddress)
 	{
 		if ((millis() - startTime) > aTimeout)
 		{
-			return FLPROG_TIMED_OUT;
+			return FLPROG_DNS_TIMED_OUT;
 		}
 		delay(50);
 	}
 	union
 	{
-		uint8_t byte[FLPROG_DNS_HEADER_SIZE]; // Enough space to reuse for the DNS header
+		uint8_t byte[FLPROG_DNS_HEADER_SIZE];
 		uint16_t word[FLPROG_DNS_HEADER_SIZE / 2];
 	} header;
 
 	if ((iDNSServer != _udp->remoteIP()) || (_udp->remotePort() != FLPROG_DNS_PORT))
 	{
-		return FLPROG_INVALID_SERVER;
+		return FLPROG_DNS_INVALID_SERVER;
 	}
 
 	if (_udp->available() < FLPROG_DNS_HEADER_SIZE)
 	{
-		return FLPROG_TRUNCATED;
+		return FLPROG_DNS_TRUNCATED;
 	}
 	_udp->read(header.byte, FLPROG_DNS_HEADER_SIZE);
 	uint16_t header_flags = flprogW5100Htons(header.word[1]);
 	if ((iRequestId != (header.word[0])) ||
-		((header_flags & FLPROG_QUERY_RESPONSE_MASK) != (uint16_t)FLPROG_RESPONSE_FLAG))
+		((header_flags & FLPROG_DNS_QUERY_RESPONSE_MASK) != (uint16_t)FLPROG_DNS_RESPONSE_FLAG))
 	{
 		_udp->flush(); // FIXME
-		return FLPROG_INVALID_RESPONSE;
+		return FLPROG_DNS_INVALID_RESPONSE;
 	}
-	if ((header_flags & FLPROG_TRUNCATION_FLAG) || (header_flags & FLPROG_RESP_MASK))
+	if ((header_flags & FLPROG_DNS_TRUNCATION_FLAG) || (header_flags & FLPROG_DNS_RESP_MASK))
 	{
 		_udp->flush(); // FIXME
 		return -5;	   // INVALID_RESPONSE;
@@ -235,7 +196,7 @@ uint16_t FLProgDNSClient::ProcessResponse(uint16_t aTimeout, uint8_t *aAddress)
 		do
 		{
 			_udp->read(&len, sizeof(len));
-			if ((len & FLPROG_LABEL_COMPRESSION_MASK) == 0)
+			if ((len & FLPROG_DNS_LABEL_COMPRESSION_MASK) == 0)
 			{
 				if (len > 0)
 				{
@@ -252,9 +213,9 @@ uint16_t FLProgDNSClient::ProcessResponse(uint16_t aTimeout, uint8_t *aAddress)
 		uint16_t answerClass;
 		_udp->read((uint8_t *)&answerType, sizeof(answerType));
 		_udp->read((uint8_t *)&answerClass, sizeof(answerClass));
-		_udp->read((uint8_t *)NULL, FLPROG_TTL_SIZE); // don't care about the returned bytes
+		_udp->read((uint8_t *)NULL, FLPROG_DNS_TTL_SIZE); // don't care about the returned bytes
 		_udp->read((uint8_t *)&header_flags, sizeof(header_flags));
-		if ((flprogW5100Htons(answerType) == FLPROG_TYPE_A) && (flprogW5100Htons(answerClass) == FLPROG_CLASS_IN))
+		if ((flprogW5100Htons(answerType) == FLPROG_DNS_TYPE_A) && (flprogW5100Htons(answerClass) == FLPROG_DNS_CLASS_IN))
 		{
 			if (flprogW5100Htons(header_flags) != 4)
 			{
@@ -262,7 +223,7 @@ uint16_t FLProgDNSClient::ProcessResponse(uint16_t aTimeout, uint8_t *aAddress)
 				return -9;	   // INVALID_RESPONSE;
 			}
 			_udp->read(aAddress, 4);
-			return FLPROG_SUCCESS;
+			return FLPROG_DNS_SUCCESS;
 		}
 		else
 		{

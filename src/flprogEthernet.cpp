@@ -144,10 +144,15 @@ void FlprogEthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAdd
 	begin(mac, ip, dns, gateway, subnet);
 }
 
-void FlprogEthernetClass::begin(uint8_t *mac, IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet)
+void FlprogEthernetClass::begin(uint8_t *_mac, IPAddress _ip, IPAddress dns, IPAddress gateway, IPAddress subnet)
 {
-	_dns.begin(dns);
-	hardware()->setNetSettings(mac, ip, gateway, subnet);
+	ip = _ip;
+	dnsIp = dns;
+	subnetIp = subnet;
+	gatewayIp = gateway;
+	mac(_mac[0], _mac[1], _mac[2], _mac[3], _mac[4], _mac[5]);
+	_dns.begin(dnsIp);
+	hardware()->setNetSettings(macAddress, ip, gatewayIp, subnetIp);
 	hardware()->socketPortRand(micros());
 	ethernetStatus = FLPROG_ETHERNET_STATUS_READY;
 	isNeedReconect = false;
@@ -204,7 +209,7 @@ FLProgWiznetInterface::FLProgWiznetInterface(int pin, uint8_t bus)
 		_hardware.setSsPin(pin);
 	}
 	_hardware.setSpiBus(bus);
-	_udp.setHatdware(&_hardware);
+	_udp.setSourse(this);
 	_udp.setDNS(&_dns);
 	_dhcp.setUDP(&_udp);
 	_dns.setUDP(&_udp);
@@ -221,7 +226,7 @@ void FLProgWiznetInterface::init(int pin, uint8_t bus)
 		_hardware.setSsPin(pin);
 	}
 	_hardware.setSpiBus(bus);
-	_udp.setHatdware(&_hardware);
+	_udp.setSourse(this);
 	_udp.setDNS(&_dns);
 	_dhcp.setUDP(&_udp);
 	_dns.setUDP(&_udp);
