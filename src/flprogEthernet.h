@@ -52,7 +52,7 @@ private:
 class FLProgWiznetInterface : public FlprogEthernetClass
 {
 public:
-	FLProgWiznetInterface(int pin = -1, uint8_t bus = 0 );
+	FLProgWiznetInterface(int pin = -1, uint8_t bus = 0);
 	virtual FLProgAbstractEthernetHardware *hardware() { return &_hardware; };
 	void init(int pin = -1, uint8_t bus = 0);
 	void setSsPin(int sspin) { _hardware.setSsPin(sspin); };

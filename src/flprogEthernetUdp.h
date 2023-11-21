@@ -15,6 +15,8 @@
 
 #define FLPROG_UDP_TX_PACKET_MAX_SIZE 24
 
+
+
 class FLProgDNSClient;
 
 class FLProgEthernetUDP : public UDP
@@ -54,6 +56,7 @@ private:
 	IPAddress _remoteIP;
 	uint16_t _remotePort;
 	uint16_t _offset;
+	uint8_t status = FLPROG_READY_STATUS;
 	FlprogAbstractEthernet *_sourse;
 	FLProgDNSClient *_dns;
 };

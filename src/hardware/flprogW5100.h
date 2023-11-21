@@ -3,9 +3,6 @@
 #include "flprogAbstractEthernet.h"
 #include "flprogAbstractEthernetHardware.h"
 
-#define FLPROG_W5100_NOT_INIT_STATUS 0
-#define FLPROG_W5100_WHITE_INIT_STATUS 1
-#define FLPROG_W5100_INIT_STATUS 2
 
 class FLProgWiznetClass : public FLProgAbstractEthernetHardware
 {

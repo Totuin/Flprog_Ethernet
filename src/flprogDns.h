@@ -1,6 +1,7 @@
 
 #pragma once
 #include <Arduino.h>
+#include "flprogUtilites.h"
 #include "flprogEthernetUdp.h"
 
 #define FLPROG_DNS_SOCKET_NONE 255
@@ -30,11 +31,7 @@
 #define FLPROG_DNS_LABEL_COMPRESSION_MASK (0xC0)
 #define FLPROG_DNS_PORT 53
 
-#define FLPROG_DNS_SUCCESS 1
-#define FLPROG_DNS_TIMED_OUT -1
-#define FLPROG_DNS_INVALID_SERVER -2
-#define FLPROG_DNS_TRUNCATED -3
-#define FLPROG_DNS_INVALID_RESPONSE -4
+
 
 class FLProgEthernetUDP;
 
@@ -43,7 +40,6 @@ class FLProgDNSClient
 public:
 	void setUDP(FLProgEthernetUDP *udp);
 	void begin(const IPAddress aDNSServer);
-	int inet_aton(const char *aIPAddrString, IPAddress &aResult);
 	int getHostByName(const char *aHostname, uint8_t *aResult, uint16_t timeout = 5000);
 	FLProgEthernetUDP *udp() { return _udp; }
 
@@ -53,4 +49,8 @@ protected:
 	FLProgEthernetUDP *_udp;
 	IPAddress iDNSServer;
 	uint16_t iRequestId;
+	uint8_t status = FLPROG_NOT_REDY_STATUS;
+	uint8_t _wait_retries = 0;
+	uint32_t _startTime;
+	uint32_t _reqestStartTime;
 };

@@ -49,10 +49,6 @@
 #define FLPROG_DHCP_CHECK_REBIND_FAIL 3
 #define FLPROG_DHCP_CHECK_REBIND_OK 4
 
-#define FLPROG_DHCP_STATUS_ERROR 0
-#define FLPROG_DHCP_STATUS_REDI 1
-#define FLPROG_DHCP_STATUS_WHAIT_REQEST 2
-
 enum
 {
 	padOption = 0,
@@ -174,7 +170,7 @@ private:
 	uint32_t _responseTimeout;
 	uint32_t _lastCheckLeaseMillis;
 	uint8_t _dhcp_state;
-	uint8_t status = FLPROG_DHCP_STATUS_REDI;
+	uint8_t status = FLPROG_READY_STATUS;
 	uint32_t startTime;
 	uint32_t startDhcpReqestTime;
 	uint32_t lastCheckDhcpReqestTime;

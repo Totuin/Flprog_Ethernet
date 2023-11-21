@@ -4,7 +4,7 @@ uint8_t FLProgWiznetClass::init()
 {
 	if (hardwareSratus == FLPROG_W5100_INIT_STATUS)
 	{
-		return 1;
+		return FLPROG_READY_STATUS;
 	}
 	if (hardwareSratus == FLPROG_W5100_WHITE_INIT_STATUS)
 	{
@@ -20,7 +20,7 @@ uint8_t FLProgWiznetClass::checkInit()
 	if (!(flprog::isTimer(startWhiteInitTime, 600)))
 	{
 		hardwareSratus = FLPROG_W5100_WHITE_INIT_STATUS;
-		return 2;
+		return FLPROG_WAIT_STATUS;
 	}
 	RT_HW_Base.spiBegin(spiBus);
 	initSS();
@@ -59,7 +59,7 @@ uint8_t FLProgWiznetClass::checkInit()
 				chip = 0;
 				RT_HW_Base.spiEndTransaction(spiBus);
 				hardwareSratus = FLPROG_W5100_NOT_INIT_STATUS;
-				return 0;
+				return FLPROG_EHERNET_ERROR;
 			}
 		}
 	}

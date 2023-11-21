@@ -47,15 +47,20 @@ void FLProgEthernetUDP::stop()
 
 int FLProgEthernetUDP::beginPacket(const char *host, uint16_t port)
 {
-	int ret = 0;
 	uint8_t remote_addr[4] = {0, 0, 0, 0};
 	_dns->begin(_sourse->dns());
-	ret = _dns->getHostByName(host, remote_addr);
-	if (ret != 1)
+	uint8_t ret = _dns->getHostByName(host, remote_addr);
+	if (ret == FLPROG_WAIT_STATUS)
 	{
-		return ret;
+		status = FLPROG_WAIT_STATUS;
+		return status;
 	}
-	return beginPacket(IPAddress(remote_addr[0], remote_addr[1], remote_addr[2], remote_addr[3]), port);
+	if (ret == FLPROG_SUCCESS)
+	{
+		return beginPacket(IPAddress(remote_addr[0], remote_addr[1], remote_addr[2], remote_addr[3]), port);
+	}
+	status = FLPROG_READY_STATUS;
+	return ret;
 }
 
 int FLProgEthernetUDP::beginPacket(IPAddress ip, uint16_t port)
@@ -66,7 +71,11 @@ int FLProgEthernetUDP::beginPacket(IPAddress ip, uint16_t port)
 	buffer[1] = ip[1];
 	buffer[2] = ip[2];
 	buffer[3] = ip[3];
-	return _sourse->hardware()->socketStartUDP(sockindex, buffer, port);
+	if (_sourse->hardware()->socketStartUDP(sockindex, buffer, port))
+	{
+		return FLPROG_SUCCESS;
+	}
+	return FLPROG_EHERNET_ERROR;
 }
 
 int FLProgEthernetUDP::endPacket()

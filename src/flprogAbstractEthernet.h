@@ -11,20 +11,6 @@
 #endif
 #endif
 
-#define FLPROG_ETHERNET_LINK_UNKNOWN 0
-#define FLPROG_ETHERNET_LINK_ON 1
-#define FLPROG_ETHERNET_LINK_OFF 2
-
-#define FLPROG_ETHERNET_NO_HARDWARE 0
-#define FLPROG_ETHERNET_W5100 1
-#define FLPROG_ETHERNET_W5200 2
-#define FLPROG_ETHERNET_W5500 3
-
-#define FLPROG_ETHERNET_STATUS_NOTREADY 0
-#define FLPROG_ETHERNET_STATUS_READY 1
-#define FLPROG_ETHERNET_STATUS_HARDWARE_INIT 2
-#define FLPROG_ETHERNET_STATUS_WHITE_DHCP 3
-
 class FLProgAbstractEthernetHardware;
 class FLProgDNSClient;
 
@@ -34,10 +20,10 @@ public:
     virtual FLProgAbstractEthernetHardware *hardware() = 0;
     virtual FLProgDNSClient *dnsClient() = 0;
     uint8_t getStatus() { return ethernetStatus; }
-    virtual bool isReady() { return ethernetStatus == FLPROG_ETHERNET_STATUS_READY; };
+    virtual bool isReady() { return ethernetStatus == FLPROG_READY_STATUS; };
     virtual uint8_t type() { return FLPROG_ETHERNET_INTERFACE; }
 
 protected:
-    uint8_t ethernetStatus = FLPROG_ETHERNET_STATUS_NOTREADY;
+    uint8_t ethernetStatus = FLPROG_NOT_REDY_STATUS;
     bool needUpdateData = false;
 };
