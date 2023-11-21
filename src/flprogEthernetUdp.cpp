@@ -17,6 +17,14 @@ void FLProgEthernetUDP::setSourse(FlprogAbstractEthernet *sourse)
 
 uint8_t FLProgEthernetUDP::begin(uint16_t port)
 {
+
+	if (_port == port)
+	{
+		if (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
+		{
+			return;
+		}
+	}
 	if (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
 		_sourse->hardware()->socketClose(sockindex);

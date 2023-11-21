@@ -8,19 +8,25 @@ void FLProgDNSClient::setUDP(FLProgEthernetUDP *udp)
 
 void FLProgDNSClient::begin(const IPAddress aDNSServer)
 {
-	iDNSServer = aDNSServer;
-	iRequestId = 0;
-	status = FLPROG_READY_STATUS;
+	if (_iDNSServer == INADDR_NONE)
+	{
+		if (aDNSServer != INADDR_NONE)
+		{
+			_status = FLPROG_READY_STATUS;
+		}
+	}
+	_iDNSServer = aDNSServer;
 }
 
 int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint16_t timeout)
 {
 
-	if (status == FLPROG_NOT_REDY_STATUS)
+	if (_status == FLPROG_NOT_REDY_STATUS)
 	{
-		return status;
+		return FLPROG_NOT_REDY_STATUS;
 	}
-	if (status == FLPROG_READY_STATUS)
+
+	if (_status == FLPROG_READY_STATUS)
 	{
 
 		Serial.println("Start1");
@@ -42,10 +48,11 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 		}
 		Serial.println("Start2");
 
-		if (iDNSServer == INADDR_NONE)
+		if (_iDNSServer == INADDR_NONE)
 		{
 			_wait_retries = 0;
-			status = FLPROG_NOT_REDY_STATUS;
+			Serial.println("FLPROG_DNS_INVALID_SERVER");
+			_status = FLPROG_NOT_REDY_STATUS;
 			return FLPROG_DNS_INVALID_SERVER;
 		}
 
@@ -60,7 +67,7 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 
 		Serial.println("Start4");
 
-		if ((_udp->beginPacket(iDNSServer, FLPROG_DNS_PORT)) == FLPROG_EHERNET_ERROR)
+		if ((_udp->beginPacket(_iDNSServer, FLPROG_DNS_PORT)) == FLPROG_EHERNET_ERROR)
 		{
 			_udp->stop();
 			_wait_retries = 0;
@@ -84,8 +91,8 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 
 		_startTime = millis();
 		_reqestStartTime = millis();
-		status = FLPROG_WAIT_STATUS;
-		return status;
+		_status = FLPROG_WAIT_STATUS;
+		return FLPROG_WAIT_STATUS;
 	}
 	uint8_t ret = ProcessResponse(timeout, aResult);
 	if (ret == FLPROG_WAIT_STATUS)
@@ -99,27 +106,27 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 		{
 			_udp->stop();
 			_wait_retries = 0;
-			status = FLPROG_READY_STATUS;
+			_status = FLPROG_READY_STATUS;
 			return FLPROG_TIMED_OUT;
 		}
 		_wait_retries++;
 		_startTime = millis();
 		_udp->stop();
-		status = FLPROG_READY_STATUS;
+		_status = FLPROG_READY_STATUS;
 		return FLPROG_WAIT_STATUS;
 	}
 	Serial.println("WAIT2");
 	_udp->stop();
 	_wait_retries = 0;
-	status = FLPROG_READY_STATUS;
+	_status = FLPROG_READY_STATUS;
 	return ret;
 }
 
 uint16_t FLProgDNSClient::BuildRequest(const char *aName)
 {
-	iRequestId = millis();
+	_iRequestId = millis();
 	uint16_t twoByteBuffer;
-	_udp->write((uint8_t *)&iRequestId, sizeof(iRequestId));
+	_udp->write((uint8_t *)&_iRequestId, sizeof(_iRequestId));
 	twoByteBuffer = flprogW5100Htons((int32_t)(FLPROG_DNS_QUERY_FLAG | FLPROG_DNS_OPCODE_STANDARD_QUERY | FLPROG_DNS_RECURSION_DESIRED_FLAG));
 	_udp->write((uint8_t *)&twoByteBuffer, sizeof(twoByteBuffer));
 	twoByteBuffer = flprogW5100Htons(1);
@@ -177,7 +184,7 @@ uint16_t FLProgDNSClient::ProcessResponse(uint16_t aTimeout, uint8_t *aAddress)
 		uint16_t word[FLPROG_DNS_HEADER_SIZE / 2];
 	} header;
 
-	if ((iDNSServer != _udp->remoteIP()) || (_udp->remotePort() != FLPROG_DNS_PORT))
+	if ((_iDNSServer != _udp->remoteIP()) || (_udp->remotePort() != FLPROG_DNS_PORT))
 	{
 		return FLPROG_DNS_INVALID_SERVER;
 	}
@@ -188,7 +195,7 @@ uint16_t FLProgDNSClient::ProcessResponse(uint16_t aTimeout, uint8_t *aAddress)
 	}
 	_udp->read(header.byte, FLPROG_DNS_HEADER_SIZE);
 	uint16_t header_flags = flprogW5100Htons(header.word[1]);
-	if ((iRequestId != (header.word[0])) ||
+	if ((_iRequestId != (header.word[0])) ||
 		((header_flags & FLPROG_DNS_QUERY_RESPONSE_MASK) != (uint16_t)FLPROG_DNS_RESPONSE_FLAG))
 	{
 		_udp->flush(); // FIXME

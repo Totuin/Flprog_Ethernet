@@ -47,9 +47,9 @@ protected:
 	uint16_t BuildRequest(const char *aName);
 	uint16_t ProcessResponse(uint16_t aTimeout, uint8_t *aAddress);
 	FLProgEthernetUDP *_udp;
-	IPAddress iDNSServer;
-	uint16_t iRequestId;
-	uint8_t status = FLPROG_NOT_REDY_STATUS;
+	IPAddress _iDNSServer;
+	uint16_t _iRequestId;
+	uint8_t _status = FLPROG_NOT_REDY_STATUS;
 	uint8_t _wait_retries = 0;
 	uint32_t _startTime;
 	uint32_t _reqestStartTime;

@@ -76,22 +76,20 @@ void FlprogEthernetClass::pool()
 
 void FlprogEthernetClass::updateEthernetStatus()
 {
-	if (ethernetStatus == FLPROG_READY_STATUS)
+	if (ethernetStatus != FLPROG_READY_STATUS)
 	{
-
-		if (flprog::isTimer(lastCheckEthernetStatusTime, checkEthernetStatusPeriod))
-		{
-			if ((hardwareStatus() == FLPROG_ETHERNET_NO_HARDWARE) || (linkStatus() == FLPROG_ETHERNET_LINK_OFF))
-			{
-				ethernetStatus = FLPROG_NOT_REDY_STATUS;
-			}
-			else
-			{
-				ethernetStatus = FLPROG_READY_STATUS;
-			}
-			lastCheckEthernetStatusTime = millis();
-		}
+		return;
 	}
+	if (!(flprog::isTimer(lastCheckEthernetStatusTime, checkEthernetStatusPeriod)))
+	{
+		return;
+	}
+	if ((hardwareStatus() == FLPROG_ETHERNET_NO_HARDWARE) || (linkStatus() == FLPROG_ETHERNET_LINK_OFF))
+	{
+		ethernetStatus = FLPROG_NOT_REDY_STATUS;
+		isNeedReconect = true;
+	}
+	lastCheckEthernetStatusTime = millis();
 }
 
 void FlprogEthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned long responseTimeout)
@@ -111,6 +109,13 @@ void FlprogEthernetClass::begin(uint8_t *mac, unsigned long timeout, unsigned lo
 	if (ret == 2)
 	{
 		ethernetStatus = FLPROG_ETHERNET_STATUS_WHITE_DHCP;
+		return;
+	}
+
+	if ((_dhcp.getLocalIp()) == INADDR_NONE)
+	{
+		ethernetStatus = FLPROG_NOT_REDY_STATUS;
+		isNeedReconect - true;
 		return;
 	}
 	ip = _dhcp.getLocalIp();
