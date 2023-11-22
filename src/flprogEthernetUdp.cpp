@@ -65,6 +65,33 @@ void FLProgEthernetUDP::stop()
 
 int FLProgEthernetUDP::beginPacket(const char *host, uint16_t port)
 {
+	if (_status != FLPROG_WAIT_ETHERNET_DNS_STATUS)
+	{
+		if (_dnsCachedHost.equals(String(host)))
+		{
+			if (flprog::isTimer(_dnsStartCachTime, _dnsCacheStorageTime))
+			{
+				_dnsCachedHost = "";
+				_dnsCachedIP = FLPROG_INADDR_NONE;
+			}
+			else
+			{
+				if (_dnsCachedIP == FLPROG_INADDR_NONE)
+				{
+					_dnsCachedHost = "";
+				}
+				else
+				{
+					return beginPacket(_dnsCachedIP, port);
+				}
+			}
+		}
+		else
+		{
+			_dnsCachedHost = "";
+			_dnsCachedIP = FLPROG_INADDR_NONE;
+		}
+	}
 	uint8_t remote_addr[4] = {0, 0, 0, 0};
 	_dns->begin(_sourse->dns());
 	uint8_t result = _dns->getHostByName(host, remote_addr);
@@ -79,7 +106,10 @@ int FLProgEthernetUDP::beginPacket(const char *host, uint16_t port)
 		_errorCode = _dns->getError();
 		return FLPROG_ERROR;
 	}
-	return beginPacket(IPAddress(remote_addr[0], remote_addr[1], remote_addr[2], remote_addr[3]), port);
+	_dnsStartCachTime = millis();
+	_dnsCachedHost = String(host);
+	_dnsCachedIP = IPAddress(remote_addr[0], remote_addr[1], remote_addr[2], remote_addr[3]);
+	return beginPacket(_dnsCachedIP, port);
 }
 
 int FLProgEthernetUDP::beginPacket(IPAddress ip, uint16_t port)

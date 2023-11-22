@@ -49,6 +49,8 @@ public:
 	uint8_t getStatus() { return _status; };
 	uint8_t getError() { return _errorCode; }
 
+	void setDnsCacheStorageTime(uint32_t time) { _dnsCacheStorageTime = time; }
+
 protected:
 	uint8_t _sockindex;
 	uint16_t _remaining;
@@ -62,4 +64,9 @@ private:
 	uint16_t _offset;
 	FlprogAbstractEthernet *_sourse;
 	FLProgDNSClient *_dns;
+
+	String _dnsCachedHost = "";
+	IPAddress _dnsCachedIP = FLPROG_INADDR_NONE;
+	uint32_t _dnsStartCachTime;
+	uint32_t _dnsCacheStorageTime = 60000;
 };
