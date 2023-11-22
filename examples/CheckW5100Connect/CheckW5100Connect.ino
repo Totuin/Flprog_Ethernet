@@ -57,10 +57,10 @@ void setup()
     Serial.println(boarbName);
 
     WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40); //--Установка MAC-адрес контроллера
-    WiznetInterface.localIP(192, 168, 199, 155);
-    WiznetInterface.resetDhcp();
+    // WiznetInterface.localIP(192, 168, 199, 155);
+    // WiznetInterface.resetDhcp();
 
-    pinMode(PC13, OUTPUT);
+    pinMode(LED_BUILTIN, OUTPUT);
 }
 //=================================================================================================
 void loop()
@@ -75,7 +75,7 @@ void blinkLed()
     if (flprog::isTimer(blinkStartTime, 50))
     {
         blinkStartTime = millis();
-        digitalWrite(PC13, !(digitalRead(PC13)));
+        digitalWrite(LED_BUILTIN, !(digitalRead(LED_BUILTIN)));
     }
 }
 
