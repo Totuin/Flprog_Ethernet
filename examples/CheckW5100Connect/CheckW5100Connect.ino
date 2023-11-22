@@ -60,7 +60,7 @@ void setup()
     WiznetInterface.localIP(192, 168, 199, 155);
     WiznetInterface.resetDhcp();
 
-    pinMode(LED_BUILTIN, OUTPUT);
+    pinMode(PC13, OUTPUT);
 }
 //=================================================================================================
 void loop()
@@ -75,7 +75,7 @@ void blinkLed()
     if (flprog::isTimer(blinkStartTime, 50))
     {
         blinkStartTime = millis();
-        digitalWrite(LED_BUILTIN, !(digitalRead(LED_BUILTIN)));
+        digitalWrite(PC13, !(digitalRead(PC13)));
     }
 }
 

@@ -8,9 +8,9 @@ void FLProgDNSClient::setUDP(FLProgEthernetUDP *udp)
 
 void FLProgDNSClient::begin(const IPAddress aDNSServer)
 {
-	if (_iDNSServer == INADDR_NONE)
+	if (_iDNSServer == FLPROG_INADDR_NONE)
 	{
-		if (aDNSServer != INADDR_NONE)
+		if (aDNSServer != FLPROG_INADDR_NONE)
 		{
 			_status = FLPROG_READY_STATUS;
 		}
@@ -40,7 +40,7 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 			_errorCode = FLPROG_NOT_ERROR;
 			return FLPROG_SUCCESS;
 		}
-		if (_iDNSServer == INADDR_NONE)
+		if (_iDNSServer == FLPROG_INADDR_NONE)
 		{
 			_wait_retries = 0;
 			_status = FLPROG_NOT_REDY_STATUS;

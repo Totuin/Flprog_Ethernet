@@ -190,7 +190,7 @@ IPAddress FLProgWiznetClass::remoteIP(uint8_t soc)
 {
 	if (soc >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
-		return INADDR_NONE;
+		return FLPROG_INADDR_NONE;
 	}
 	uint8_t buffer[4];
 	beginTransaction();
@@ -435,26 +435,37 @@ uint8_t FLProgWiznetClass::getLinkStatus()
 {
 	uint8_t phystatus;
 	if (!isInit())
-		return FLPROG_ETHERNET_LINK_UNKNOWN;
-	switch (_chip)
 	{
-	case FLPROG_ETHERNET_W5200:
+		return FLPROG_ETHERNET_LINK_UNKNOWN;
+	}
+	if (_chip == FLPROG_ETHERNET_W5100)
+	{
+		return FLPROG_ETHERNET_LINK_ON;
+	}
+	if (_chip == FLPROG_ETHERNET_W5200)
+	{
 		beginTransaction();
 		phystatus = read(FLPROG_PSTATUS_W5200);
 		endTransaction();
 		if (phystatus & 0x20)
+		{
 			return FLPROG_ETHERNET_LINK_ON;
+		}
 		return FLPROG_ETHERNET_LINK_OFF;
-	case FLPROG_ETHERNET_W5500:
+	}
+
+	if (_chip == FLPROG_ETHERNET_W5500)
+	{
 		beginTransaction();
 		phystatus = read(FLPROG_PHYCFGR_W5500);
 		endTransaction();
 		if (phystatus & 0x01)
+		{
 			return FLPROG_ETHERNET_LINK_ON;
+		}
 		return FLPROG_ETHERNET_LINK_OFF;
-	default:
-		return FLPROG_ETHERNET_LINK_UNKNOWN;
 	}
+	return FLPROG_ETHERNET_LINK_UNKNOWN;
 }
 
 uint16_t FLProgWiznetClass::write(uint16_t addr, const uint8_t *buf, uint16_t len)
@@ -1081,7 +1092,6 @@ uint8_t FLProgWiznetClass::socketSendUDP(uint8_t s)
 			_errorCode = FLPROG_ETHERNET_SOKET_SEND_TIMEOUT_ERROR;
 			return FLPROG_ERROR;
 		}
-	
 	}
 	writeSn(s, FLPROG_SN_IR, FLPROG_SN_IR_SEND_OK);
 	endTransaction();

@@ -15,7 +15,7 @@ void FlprogEthernetClass::pool()
 
 	if (_status == FLPROG_WAIT_ETHERNET_HARDWARE_INIT_STATUS)
 	{
-		
+
 		uint8_t result = hardware()->init();
 		if (result == FLPROG_ERROR)
 		{
@@ -46,24 +46,27 @@ void FlprogEthernetClass::pool()
 	{
 		return;
 	}
-	if (_isDhcp || (_ip == INADDR_NONE))
+	if (_isDhcp || (_ip == FLPROG_INADDR_NONE))
 	{
 		begin();
 		_lastReconnectTime = millis();
 		_lastCheckEthernetStatusTime = millis();
 		return;
 	}
-	if (_dnsIp == INADDR_NONE)
+	else
 	{
-		_dnsIp = _ip;
-		_dnsIp[3] = 1;
+		if (_dnsIp == FLPROG_INADDR_NONE)
+		{
+			_dnsIp = _ip;
+			_dnsIp[3] = 1;
+		}
+		if (_gatewayIp == FLPROG_INADDR_NONE)
+		{
+			_gatewayIp = _ip;
+			_gatewayIp[3] = 1;
+		}
+		begin(_ip, _dnsIp, _gatewayIp, _subnetIp);
 	}
-	if (_gatewayIp == INADDR_NONE)
-	{
-		_gatewayIp = _ip;
-		_gatewayIp[3] = 1;
-	}
-	begin(_ip, _dnsIp, _gatewayIp, _subnetIp);
 	_lastReconnectTime = millis();
 	_lastCheckEthernetStatusTime = millis();
 }
@@ -78,7 +81,7 @@ void FlprogEthernetClass::updateEthernetStatus()
 	{
 		return;
 	}
-	if ((hardwareStatus() == FLPROG_ETHERNET_NO_HARDWARE) || (linkStatus() == FLPROG_ETHERNET_LINK_OFF))
+	if ((hardwareStatus() == FLPROG_ETHERNET_NO_HARDWARE) || (linkStatus() != FLPROG_ETHERNET_LINK_ON))
 	{
 		_status = FLPROG_NOT_REDY_STATUS;
 		_errorCode = FLPROG_ETHERNET_HARDWARE_INIT_ERROR;
@@ -90,11 +93,17 @@ void FlprogEthernetClass::updateEthernetStatus()
 void FlprogEthernetClass::begin(unsigned long timeout, unsigned long responseTimeout)
 {
 
+	if (linkStatus() != FLPROG_ETHERNET_LINK_ON)
+	{
+		_status = FLPROG_NOT_REDY_STATUS;
+		_errorCode = FLPROG_ETHERNET_LINK_OFF_ERROR;
+		_isNeedReconect - true;
+		return;
+	}
 	if (_status != FLPROG_WAIT_ETHERNET_DHCP_STATUS)
 	{
 		_status = FLPROG_WAIT_ETHERNET_DHCP_STATUS;
 	}
-
 	int result = _dhcp.beginWithDHCP(_macAddress, timeout, responseTimeout);
 
 	if (result == FLPROG_ERROR)
@@ -110,7 +119,7 @@ void FlprogEthernetClass::begin(unsigned long timeout, unsigned long responseTim
 		return;
 	}
 
-	if ((_dhcp.getLocalIp()) == INADDR_NONE)
+	if ((_dhcp.getLocalIp()) == FLPROG_INADDR_NONE)
 	{
 		_status = FLPROG_NOT_REDY_STATUS;
 		_errorCode = FLPROG_ETHERNET_DHCP_NOT_CORRECT_RESULT_ERROR;
@@ -151,11 +160,17 @@ void FlprogEthernetClass::begin(IPAddress ip, IPAddress dns, IPAddress gateway)
 
 void FlprogEthernetClass::begin(IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet)
 {
-	_ip = _ip;
+	if (linkStatus() != FLPROG_ETHERNET_LINK_ON)
+	{
+		_status = FLPROG_NOT_REDY_STATUS;
+		_errorCode = FLPROG_ETHERNET_LINK_OFF_ERROR;
+		_isNeedReconect - true;
+		return;
+	}
+	_ip = ip;
 	_dnsIp = dns;
 	_subnetIp = subnet;
 	_gatewayIp = gateway;
-	// mac(_mac[0], _mac[1], _mac[2], _mac[3], _mac[4], _mac[5]);
 	_dns.begin(_dnsIp);
 	hardware()->setNetSettings(_macAddress, _ip, _gatewayIp, _subnetIp);
 	hardware()->socketPortRand(micros());
@@ -166,17 +181,7 @@ void FlprogEthernetClass::begin(IPAddress ip, IPAddress dns, IPAddress gateway, 
 
 uint8_t FlprogEthernetClass::hardwareStatus()
 {
-	switch (hardware()->getChip())
-	{
-	case 51:
-		return FLPROG_ETHERNET_W5100;
-	case 52:
-		return FLPROG_ETHERNET_W5200;
-	case 55:
-		return FLPROG_ETHERNET_W5500;
-	default:
-		return FLPROG_ETHERNET_NO_HARDWARE;
-	}
+	return hardware()->getChip();
 }
 
 int FlprogEthernetClass::maintain()
