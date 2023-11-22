@@ -156,8 +156,8 @@ public:
   virtual uint8_t socketStatus(uint8_t s) = 0;
   virtual void socketClose(uint8_t s) = 0;
   virtual uint8_t socketListen(uint8_t s) = 0;
-  virtual void socketConnect(uint8_t s, IPAddress ip, uint16_t port) = 0;
-  virtual void socketDisconnect(uint8_t s) = 0;
+  virtual uint8_t socketConnect(uint8_t s, IPAddress ip, uint16_t port) = 0;
+  virtual uint8_t socketDisconnect(uint8_t s) = 0;
   virtual uint16_t getSnRX_RSR(uint8_t s) = 0;
   virtual void read_data(uint8_t s, uint16_t src, uint8_t *dst, uint16_t len) = 0;
   virtual int socketRecv(uint8_t s, uint8_t *buf, int16_t len) = 0;
@@ -168,8 +168,8 @@ public:
   virtual uint16_t socketSend(uint8_t s, const uint8_t *buf, uint16_t len) = 0;
   virtual uint16_t socketSendAvailable(uint8_t s) = 0;
   virtual uint16_t socketBufferData(uint8_t s, uint16_t offset, const uint8_t *buf, uint16_t len) = 0;
-  virtual bool socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port) = 0;
-  virtual bool socketSendUDP(uint8_t s) = 0;
+  virtual uint8_t socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port) = 0;
+  virtual uint8_t socketSendUDP(uint8_t s) = 0;
   uint8_t getStatus() { return _status; };
   uint8_t getError() { return _errorCode; }
 

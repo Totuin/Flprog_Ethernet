@@ -781,14 +781,16 @@ uint8_t FLProgWiznetClass::socketListen(uint8_t s)
 	if (readSn(s, FLPROG_SN_SR) != FLPROG_SN_SR_INIT)
 	{
 		endTransaction();
-		return 0;
+		_errorCode = FLPROG_ETHERNET_SOKET_NOT_INIT_ERROR;
+		return FLPROG_ERROR;
 	}
 	execCmdSn(s, FLPROG_SOCK_CMD_LISTEN);
 	endTransaction();
-	return 1;
+	_errorCode = FLPROG_NOT_ERROR;
+	return FLPROG_SUCCESS;
 }
 
-void FLProgWiznetClass::socketConnect(uint8_t s, IPAddress ip, uint16_t port)
+uint8_t FLProgWiznetClass::socketConnect(uint8_t s, IPAddress ip, uint16_t port)
 {
 	uint8_t buffer[4];
 	flprog::ipToArray(ip, buffer);
@@ -797,13 +799,15 @@ void FLProgWiznetClass::socketConnect(uint8_t s, IPAddress ip, uint16_t port)
 	writeSn16(s, FLPROG_SN_DPORT, port);
 	execCmdSn(s, FLPROG_SOCK_CMD_CONNECT);
 	endTransaction();
+	return FLPROG_SUCCESS;
 }
 
-void FLProgWiznetClass::socketDisconnect(uint8_t s)
+uint8_t FLProgWiznetClass::socketDisconnect(uint8_t s)
 {
 	beginTransaction();
 	execCmdSn(s, FLPROG_SOCK_CMD_DISCON);
 	endTransaction();
+	return FLPROG_SUCCESS;
 }
 
 /*****************************************/
@@ -1038,22 +1042,34 @@ uint16_t FLProgWiznetClass::socketBufferData(uint8_t s, uint16_t offset, const u
 	return ret;
 }
 
-bool FLProgWiznetClass::socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port)
+uint8_t FLProgWiznetClass::socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port)
 {
+	if (s >= FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
+		_errorCode = FLPROG_ETHERNET_SOKET_INDEX_ERROR;
+		return FLPROG_ERROR;
+	}
 	if (((addr[0] == 0x00) && (addr[1] == 0x00) && (addr[2] == 0x00) && (addr[3] == 0x00)) ||
 		((port == 0x00)))
 	{
-		return false;
+		_errorCode = FLPROG_ETHERNET_SOKET_UDP_NOT_CORRECT_DATA_ERROR;
+		return FLPROG_ERROR;
 	}
 	beginTransaction();
 	writeSn(s, FLPROG_SN_DIPR, addr, 4);
 	writeSn16(s, FLPROG_SN_DPORT, port);
 	endTransaction();
-	return true;
+	_errorCode = FLPROG_NOT_ERROR;
+	return FLPROG_SUCCESS;
 }
 
-bool FLProgWiznetClass::socketSendUDP(uint8_t s)
+uint8_t FLProgWiznetClass::socketSendUDP(uint8_t s)
 {
+	if (s >= FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
+		_errorCode = FLPROG_ETHERNET_SOKET_INDEX_ERROR;
+		return FLPROG_ERROR;
+	}
 	beginTransaction();
 	execCmdSn(s, FLPROG_SOCK_CMD_SEND);
 	while ((readSn(s, FLPROG_SN_IR) & FLPROG_SN_IR_SEND_OK) != FLPROG_SN_IR_SEND_OK)
@@ -1062,13 +1078,13 @@ bool FLProgWiznetClass::socketSendUDP(uint8_t s)
 		{
 			writeSn(s, FLPROG_SN_IR, (FLPROG_SN_IR_SEND_OK | FLPROG_SN_IR_TIMEOUT));
 			endTransaction();
-			return false;
+			_errorCode = FLPROG_ETHERNET_SOKET_SEND_TIMEOUT_ERROR;
+			return FLPROG_ERROR;
 		}
-		endTransaction();
-		yield();
-		beginTransaction();
+	
 	}
 	writeSn(s, FLPROG_SN_IR, FLPROG_SN_IR_SEND_OK);
 	endTransaction();
-	return true;
+	_errorCode = FLPROG_NOT_ERROR;
+	return FLPROG_SUCCESS;
 }
