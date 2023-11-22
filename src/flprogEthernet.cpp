@@ -2,6 +2,7 @@
 
 void FlprogEthernetClass::pool()
 {
+
 	updateEthernetStatus();
 	if (_status == FLPROG_READY_STATUS)
 	{
@@ -11,16 +12,18 @@ void FlprogEthernetClass::pool()
 		}
 		return;
 	}
+
 	if (_status == FLPROG_WAIT_ETHERNET_HARDWARE_INIT_STATUS)
 	{
-		uint8_t hardStatus = hardware()->init();
-		if (hardStatus == FLPROG_ERROR)
+		
+		uint8_t result = hardware()->init();
+		if (result == FLPROG_ERROR)
 		{
 			_status = FLPROG_NOT_REDY_STATUS;
 			_errorCode = hardware()->getError();
 			return;
 		}
-		if (hardStatus == FLPROG_WITE)
+		if (result == FLPROG_WITE)
 		{
 			_status = FLPROG_WAIT_ETHERNET_HARDWARE_INIT_STATUS;
 			return;
@@ -30,7 +33,6 @@ void FlprogEthernetClass::pool()
 	}
 	if (!hardware()->isInit())
 	{
-
 		_status = FLPROG_WAIT_ETHERNET_HARDWARE_INIT_STATUS;
 		return;
 	}

@@ -29,6 +29,7 @@ void FLProgDhcpClass::reset_DHCP_lease()
 
 int FLProgDhcpClass::request_DHCP_lease()
 {
+	
 	if (_status != FLPROG_WAIT_ETHERNET_DHCP_STATUS)
 	{
 		_status = FLPROG_WAIT_ETHERNET_DHCP_STATUS;

@@ -28,29 +28,28 @@
 //         Вариант с  шиной (SPI0) и пином(10) по умолчаниюю. Пин потом можно поменять.
 //         Но если на этой шине висит ещё какое то устройство лучше применять второй вариант
 //-------------------------------------------------------------------------------------------------
-//FLProgWiznetInterface WiznetInterface; //--Создание интерфейса для работы с чипом W5100(W5200,W5500) (по умолчанию CS pin - 10,  Шина SPI - 0);
+// FLProgWiznetInterface WiznetInterface; //--Создание интерфейса для работы с чипом W5100(W5200,W5500) (по умолчанию CS pin - 10,  Шина SPI - 0);
 
 //-------------------------------------------------------------------------------------------------
 //        Второй вариант с непосредственной привязкой к шине и пину.
 //-------------------------------------------------------------------------------------------------
-//FLProgWiznetInterface WiznetInterface(10, 0); //--Создание интерфейса для работы с чипом W5100(W5200,W5500) CS pin - 10, Шина SPI - 0;
+// FLProgWiznetInterface WiznetInterface(10, 0); //--Создание интерфейса для работы с чипом W5100(W5200,W5500) CS pin - 10, Шина SPI - 0;
 FLProgWiznetInterface WiznetInterface(10); //--Создание интерфейса для работы с чипом W5100(W5200,W5500) CS pin - 10, (по умолчанию Шина SPI - 0);
-
 
 //-------------------------------------------------------------------------------------------------
 //         Задание параметров интернет соеденения и параметров UDP
 //-------------------------------------------------------------------------------------------------
 
-uint32_t localPort = 8888;                            //--Определение порта для UDP пакетов (используется стандартный номер);
-//const char timeServer[] = "time.nist.gov";
-//const char timeServer[] = "128.138.140.44";
-//const char timeServer[] = "192.168.0.101";
+uint32_t localPort = 8888; //--Определение порта для UDP пакетов (используется стандартный номер);
+// const char timeServer[] = "time.nist.gov";
+// const char timeServer[] = "128.138.140.44";
+// const char timeServer[] = "192.168.0.101";
 const char timeServer[] = "ntp1.vniiftri.ru";
 //--Имя NTP сервера - сервер точного времени;
 
-const int NTP_PACKET_SIZE = 48;                       //--Установка размера буфера (отметка времени NTP находится в первых 48 байтах сообщения);
-uint8_t packetBuffer[NTP_PACKET_SIZE];                //--Создание буфера для хранения входящих и исходящих пакетов;
-uint16_t cntGettingNTP = 0;                           //--Cчетчик принятых пакетов;
+const int NTP_PACKET_SIZE = 48;        //--Установка размера буфера (отметка времени NTP находится в первых 48 байтах сообщения);
+uint8_t packetBuffer[NTP_PACKET_SIZE]; //--Создание буфера для хранения входящих и исходящих пакетов;
+uint16_t cntGettingNTP = 0;            //--Cчетчик принятых пакетов;
 bool isNeedSendConnectMessage = true;
 bool isNeedSendDisconnectMessage = true;
 
@@ -62,16 +61,13 @@ FLProgEthernetUDP Udp(&WiznetInterface); //--Создание UDP клиента
 //-----------------------------------------------------------------------------------------
 //          1.3.Определение рабочих параметров и функций
 //-----------------------------------------------------------------------------------------
-uint32_t  sendPacadeTime;   // Время начала ожидания
-uint32_t reqestPeriod = 5000;         // Периодичность запроса времени от сервера
-bool isReplyInProcess = false;        // Флаг ожидания ответа
-
-void sendNTPpacket(const char *nameSever); //--Предопределение функции;
-void processingResponse();                 //--Предопределение функции;
-
+uint32_t reqestPeriod = 5000;                             // Периодичность запроса времени от сервера
+uint32_t sendPacadeTime = flprog::timeBack(reqestPeriod); // Время начала ожидания
+bool isReplyInProcess = false;                            // Флаг ожидания ответа
 uint8_t ethernetStatus = 255;
 uint8_t ethernetError = 255;
-uint8_t oldUdpStatus = 255;
+uint8_t udpStatus = 255;
+uint8_t udpError = 255;
 uint32_t blinkStartTime = 0;
 
 //=================================================================================================
@@ -85,12 +81,9 @@ void setup()
   Serial.print(String(F(TEST_BOARD)));
   Serial.println(String(F("-----")));
 
-  WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40); //--Установка MAC-адрес контроллера (лучше адрес прошитый производителем);
-   //WiznetInterface.localIP(192, 168, 199, 155);
-   //WiznetInterface.resetDhcp();
-
-
-  sendPacadeTime = flprog::timeBack(reqestPeriod);
+  WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40); //--Установка MAC-адрес контроллера
+  // WiznetInterface.localIP(192, 168, 199, 155);
+  // WiznetInterface.resetDhcp();
 
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
@@ -98,87 +91,114 @@ void setup()
 //=================================================================================================
 void loop()
 {
-
-  if (flprog::isTimer(blinkStartTime, 200))
-  {
-    blinkStartTime = millis();
-    digitalWrite(LED_BUILTIN, !( digitalRead(LED_BUILTIN)));
-  }
-
-
   WiznetInterface.pool(); // Цикл работы интерфейса
-  if ( WiznetInterface.getStatus() != ethernetStatus)
+  printStatusMessages();
+  blinkLed();
+  workInUDP();
+}
+
+void printStatusMessages()
+{
+  if (WiznetInterface.getStatus() != ethernetStatus)
   {
     ethernetStatus = WiznetInterface.getStatus();
     Serial.print("Ethernet status -");
     Serial.println(flprog::flprogStatusCodeName(ethernetStatus));
   }
-  if ( WiznetInterface.getError() != ethernetError)
+  if (WiznetInterface.getError() != ethernetError)
   {
     ethernetError = WiznetInterface.getError();
     Serial.print("Ethernet error - ");
     Serial.println(flprog::flprogErrorCodeName(ethernetError));
   }
-
-
-
-  //-------------------------------------------------------------------------------------------------
-  //                                           Основная логика
-  //-------------------------------------------------------------------------------------------------
-  if ( WiznetInterface.isReady())
+  if (Udp.getStatus() != udpStatus)
   {
-    if (isNeedSendConnectMessage)
-    {
-      //-------------------------------------------------------------------------------------------------
-      //                      Если интерфейс готов то вывод сообщения о подключении
-      //-------------------------------------------------------------------------------------------------
-      Serial.println("Ethernet подключён!");
-      Serial.print("Ip - ");
-      Serial.println(WiznetInterface.localIP());
-      Serial.print("DNS - ");
-      Serial.println(WiznetInterface.dns());
-      Serial.print("Subnet - ");
-      Serial.println(WiznetInterface.subnet());
-      Serial.print("Gateway - ");
-      Serial.println(WiznetInterface.gateway());
-      isNeedSendConnectMessage = false;
-      isNeedSendDisconnectMessage = true;
-    }
-    //-------------------------------------------------------------------------------------------------
-    //                          работаем с NTP сервером
-    //-------------------------------------------------------------------------------------------------
-    if (isReplyInProcess)
-    {
-      //--Если  ждём ответа проверяем ответ
-     // processingResponse();
-    }
-    else
-    {
-      //--Если не ждём ответа отправляем запрос
-      //sendNTPpacket(timeServer);
-    }
+    udpStatus = Udp.getStatus();
+    Serial.print("UDP status -");
+    Serial.println(flprog::flprogStatusCodeName(udpStatus));
   }
-  else
+  if (Udp.getError() != udpError)
   {
-    //-------------------------------------------------------------------------------------------------
-    //      Если интерфейс не готов то  выводим один раз сообщение об обрыве связи
-    //-------------------------------------------------------------------------------------------------
-    if (isNeedSendDisconnectMessage)
-    {
-      Serial.println("Ethernet отключён!");
-      isNeedSendConnectMessage = true;
-      isNeedSendDisconnectMessage = false;
-    }
+    udpError = Udp.getError();
+    Serial.print("UDP error - ");
+    Serial.println(flprog::flprogErrorCodeName(udpError));
   }
+  printConnectMessages();
+  printDisconnectMessages();
+}
 
-} //======END loop();
+void printConnectMessages()
+{
+  if (!WiznetInterface.isReady())
+  {
+    return;
+  }
+  if (!isNeedSendConnectMessage)
+  {
+    return;
+  }
+  Serial.println("Ethernet подключён!");
+  Serial.print("Ip - ");
+  Serial.println(WiznetInterface.localIP());
+  Serial.print("DNS - ");
+  Serial.println(WiznetInterface.dns());
+  Serial.print("Subnet - ");
+  Serial.println(WiznetInterface.subnet());
+  Serial.print("Gateway - ");
+  Serial.println(WiznetInterface.gateway());
+  isNeedSendConnectMessage = false;
+  isNeedSendDisconnectMessage = true;
+}
+
+void printDisconnectMessages()
+{
+  if (WiznetInterface.isReady())
+  {
+    return;
+  }
+  if (isNeedSendConnectMessage)
+  {
+    return;
+  }
+  if (!isNeedSendDisconnectMessage)
+  {
+    return;
+  }
+  Serial.println("Ethernet отключён!");
+  isNeedSendConnectMessage = true;
+  isNeedSendDisconnectMessage = false;
+}
+
+void blinkLed()
+{
+  if (flprog::isTimer(blinkStartTime, 50))
+  {
+    blinkStartTime = millis();
+    digitalWrite(LED_BUILTIN, !(digitalRead(LED_BUILTIN)));
+  }
+}
+
+void workInUDP()
+{
+  if (!WiznetInterface.isReady())
+  {
+    isReplyInProcess = false;
+    return;
+  }
+  if (!isReplyInProcess)
+  {
+    sendNTPpacket();
+    return;
+  }
+  processingResponse();
+}
 
 // #################################################################################################
 //=================================================================================================
-//                         1.ФУНКЦИЯ sendNTPpacket(*nameServer)
+//                         1.ФУНКЦИЯ sendNTPpacket()
 //     Формирование запроса в буфере packetBuffer и его отправка в NTP сервер
 //=================================================================================================
-void sendNTPpacket(const char *nameServer)
+void sendNTPpacket()
 {
   //-------------------------------------------------------------------------------------------------
   //                 Отправка запроса на сервер точного времени
@@ -191,23 +211,11 @@ void sendNTPpacket(const char *nameServer)
   //   1.2.Отправка подготовленного  пакет с запросом метки времени
   //-------------------------------------------------------------------------------------------------
   Udp.begin(localPort);
-  uint8_t udpStatus = Udp.beginPacket(nameServer, 123);
-  if (oldUdpStatus != udpStatus)
-  {
-    oldUdpStatus = udpStatus;
-    Serial.print("UDP ");
-    Serial.print(flprog::flprogErrorCodeName(ethernetStatus));
-    Serial.print(" - ");
-    Serial.print(ethernetStatus);
-    Serial.println();
-  }
+  uint8_t udpStatus = Udp.beginPacket(timeServer, 123);
   if (udpStatus == FLPROG_WITE)
   {
     return;
   }
-
-
-
   //-------------------------------------------------------------------------------------------------
   //  1.1.Инициализация буфера для отправки запросра требуемой формы в  NTP сервер
   //    (see URL above for details on the packets)
@@ -224,7 +232,6 @@ void sendNTPpacket(const char *nameServer)
   packetBuffer[14] = 49;
   packetBuffer[15] = 52;
 
-
   if (udpStatus == FLPROG_SUCCESS)
   {
     if (!Udp.write(packetBuffer, NTP_PACKET_SIZE)) //--Отправка запроса
@@ -239,11 +246,9 @@ void sendNTPpacket(const char *nameServer)
       sendPacadeTime = millis();
       return;
     }
-
-    isReplyInProcess = true;   //--Вешаем флаг ожидания ответа
+    isReplyInProcess = true; //--Вешаем флаг ожидания ответа
   }
   sendPacadeTime = millis(); // --Запоминаем время отправки запроса
-  oldUdpStatus = 255;
 };                           //======END sendNTPpacket();
 
 // #################################################################################################
@@ -271,7 +276,7 @@ void processingResponse()
   }
   Udp.read(packetBuffer, NTP_PACKET_SIZE); //--Чтение пакета в буфер.read. В байтах 40-43 находятся сведения о времени;
   Udp.stop();
-  cntGettingNTP++;                         //--Считаем пакеты
+  cntGettingNTP++; //--Считаем пакеты
 
   //--Вывод текущего, абсолютного и UNIX времени;
   uint16_t highWord = word(packetBuffer[40], packetBuffer[41]);
