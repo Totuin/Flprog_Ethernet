@@ -3,7 +3,6 @@
 #include "flprogAbstractEthernet.h"
 #include "flprogAbstractEthernetHardware.h"
 
-
 class FLProgWiznetClass : public FLProgAbstractEthernetHardware
 {
 public:
@@ -11,7 +10,7 @@ public:
   uint8_t checkInit();
   void setSsPin(int sspin);
   virtual uint8_t getLinkStatus();
-  virtual void setSpiBus(uint8_t bus) { spiBus = bus; };
+  virtual void setSpiBus(uint8_t bus) { _spiBus = bus; };
   virtual void setGatewayIp(IPAddress addr);
   virtual IPAddress getGatewayIp();
   virtual void setSubnetMask(IPAddress addr);
@@ -23,7 +22,7 @@ public:
   virtual void setRetransmissionTime(uint16_t timeout);
   virtual void setRetransmissionCount(uint8_t retry);
   virtual void execCmdSn(SOCKET s, uint8_t _cmd);
-  virtual uint8_t getChip(void) { return chip; }
+  virtual uint8_t getChip(void) { return _chip; }
   virtual uint16_t _CH_SIZE() { return CH_SIZE; };
   virtual uint16_t _SSIZE() { return SSIZE; };
 
@@ -33,8 +32,8 @@ public:
   virtual void write16(uint16_t address, uint16_t _data);
   virtual uint16_t read(uint16_t addr, uint8_t *buf, uint16_t len);
   virtual uint8_t read(uint16_t addr);
-  virtual uint16_t CH_BASE() { return CH_BASE_MSB << 8; };
-  uint8_t CH_BASE_MSB; // 1 redundant byte, saves ~80 bytes code on AVR
+  virtual uint16_t CH_BASE() { return _CH_BASE_MSB << 8; };
+  uint8_t _CH_BASE_MSB; // 1 redundant byte, saves ~80 bytes code on AVR
 
   // W5100 Socket registers
   virtual uint8_t readSn(SOCKET s, uint16_t addr) { return read(CH_BASE() + s * CH_SIZE + addr); };
@@ -94,16 +93,16 @@ public:
   virtual uint16_t socketBufferData(uint8_t s, uint16_t offset, const uint8_t *buf, uint16_t len);
   virtual bool socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port);
   virtual bool socketSendUDP(uint8_t s);
-  virtual bool isInit() { return hardwareSratus == FLPROG_W5100_INIT_STATUS; }
+  virtual bool isInit() { return _status == FLPROG_READY_STATUS; }
 
 private:
-  uint8_t chip = 0;
-  uint32_t startWhiteInitTime;
-  uint8_t hardwareSratus = FLPROG_W5100_NOT_INIT_STATUS;
-  uint16_t local_port = 49152; // 49152 to 65535 TODO: randomize this when not using DHCP, but how?
+  uint8_t _chip = 0;
+  uint32_t _startWhiteInitTime;
+
+  uint16_t _local_port = 49152; // 49152 to 65535 TODO: randomize this when not using DHCP, but how?
   const uint16_t CH_SIZE = 0x0100;
-  socketstate_t state[FLPROG_ETHERNET_MAX_SOCK_NUM];
-  uint8_t spiBus = 0;
+  socketstate_t _state[FLPROG_ETHERNET_MAX_SOCK_NUM];
+  uint8_t _spiBus = 0;
   int _pinSS;
   uint8_t softReset(void);
   uint8_t isW5100(void);
@@ -114,4 +113,6 @@ private:
   void resetSS() { digitalWrite(_pinSS, HIGH); };
   void privateMaceSocet(uint8_t soc, uint8_t protocol, uint16_t port);
   void privateMaceSocetMulticast(uint8_t soc, uint8_t protocol, IPAddress ip, uint16_t port);
+  void beginTransaction() { RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, _spiBus); };
+  void endTransaction() { RT_HW_Base.spiEndTransaction(_spiBus); };
 };

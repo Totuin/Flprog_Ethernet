@@ -19,11 +19,7 @@ class FlprogAbstractEthernet : public FLProgAbstractTcpInterface
 public:
     virtual FLProgAbstractEthernetHardware *hardware() = 0;
     virtual FLProgDNSClient *dnsClient() = 0;
-    uint8_t getStatus() { return ethernetStatus; }
-    virtual bool isReady() { return ethernetStatus == FLPROG_READY_STATUS; };
     virtual uint8_t type() { return FLPROG_ETHERNET_INTERFACE; }
 
 protected:
-    uint8_t ethernetStatus = FLPROG_NOT_REDY_STATUS;
-    bool needUpdateData = false;
 };

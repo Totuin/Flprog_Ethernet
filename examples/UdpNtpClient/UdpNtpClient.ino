@@ -42,10 +42,10 @@ FLProgWiznetInterface WiznetInterface(10); //--Создание интерфей
 //-------------------------------------------------------------------------------------------------
 
 uint32_t localPort = 8888;                            //--Определение порта для UDP пакетов (используется стандартный номер);
-const char timeServer[] = "time.nist.gov";
+//const char timeServer[] = "time.nist.gov";
 //const char timeServer[] = "128.138.140.44";
 //const char timeServer[] = "192.168.0.101";
-//const char timeServer[] = "ntp1.vniiftri.ru";
+const char timeServer[] = "ntp1.vniiftri.ru";
 //--Имя NTP сервера - сервер точного времени;
 
 const int NTP_PACKET_SIZE = 48;                       //--Установка размера буфера (отметка времени NTP находится в первых 48 байтах сообщения);
@@ -70,6 +70,7 @@ void sendNTPpacket(const char *nameSever); //--Предопределение ф
 void processingResponse();                 //--Предопределение функции;
 
 uint8_t ethernetStatus = 255;
+uint8_t ethernetError = 255;
 uint8_t oldUdpStatus = 255;
 uint32_t blinkStartTime = 0;
 
@@ -85,8 +86,8 @@ void setup()
   Serial.println(String(F("-----")));
 
   WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40); //--Установка MAC-адрес контроллера (лучше адрес прошитый производителем);
-  // WiznetInterface.localIP(192, 168, 199, 155);
-  // WiznetInterface.resetDhcp();
+   //WiznetInterface.localIP(192, 168, 199, 155);
+   //WiznetInterface.resetDhcp();
 
 
   sendPacadeTime = flprog::timeBack(reqestPeriod);
@@ -104,18 +105,23 @@ void loop()
     digitalWrite(LED_BUILTIN, !( digitalRead(LED_BUILTIN)));
   }
 
-  WiznetInterface.pool(); // Цикл работы интерфейса
 
+  WiznetInterface.pool(); // Цикл работы интерфейса
   if ( WiznetInterface.getStatus() != ethernetStatus)
   {
     ethernetStatus = WiznetInterface.getStatus();
-    Serial.print("Ethernet ");
-    Serial.print(flprog::flprogCodeName(ethernetStatus));
-    Serial.print(" - ");
-    Serial.print(ethernetStatus);
-    Serial.println();
-
+    Serial.print("Ethernet status -");
+    Serial.println(flprog::flprogStatusCodeName(ethernetStatus));
   }
+  if ( WiznetInterface.getError() != ethernetError)
+  {
+    ethernetError = WiznetInterface.getError();
+    Serial.print("Ethernet error - ");
+    Serial.println(flprog::flprogErrorCodeName(ethernetError));
+  }
+
+
+
   //-------------------------------------------------------------------------------------------------
   //                                           Основная логика
   //-------------------------------------------------------------------------------------------------
@@ -144,12 +150,12 @@ void loop()
     if (isReplyInProcess)
     {
       //--Если  ждём ответа проверяем ответ
-      processingResponse();
+     // processingResponse();
     }
     else
     {
       //--Если не ждём ответа отправляем запрос
-      sendNTPpacket(timeServer);
+      //sendNTPpacket(timeServer);
     }
   }
   else
@@ -174,8 +180,6 @@ void loop()
 //=================================================================================================
 void sendNTPpacket(const char *nameServer)
 {
-
-
   //-------------------------------------------------------------------------------------------------
   //                 Отправка запроса на сервер точного времени
   //------------------------------------------------------------------------------------------------ -
@@ -183,6 +187,27 @@ void sendNTPpacket(const char *nameServer)
   {
     return; //-- Если нет - выходим
   }
+  //-------------------------------------------------------------------------------------------------
+  //   1.2.Отправка подготовленного  пакет с запросом метки времени
+  //-------------------------------------------------------------------------------------------------
+  Udp.begin(localPort);
+  uint8_t udpStatus = Udp.beginPacket(nameServer, 123);
+  if (oldUdpStatus != udpStatus)
+  {
+    oldUdpStatus = udpStatus;
+    Serial.print("UDP ");
+    Serial.print(flprog::flprogErrorCodeName(ethernetStatus));
+    Serial.print(" - ");
+    Serial.print(ethernetStatus);
+    Serial.println();
+  }
+  if (udpStatus == FLPROG_WITE)
+  {
+    return;
+  }
+
+
+
   //-------------------------------------------------------------------------------------------------
   //  1.1.Инициализация буфера для отправки запросра требуемой формы в  NTP сервер
   //    (see URL above for details on the packets)
@@ -198,26 +223,7 @@ void sendNTPpacket(const char *nameServer)
   packetBuffer[13] = 0x4E;
   packetBuffer[14] = 49;
   packetBuffer[15] = 52;
-  //-------------------------------------------------------------------------------------------------
-  //   1.2.Отправка подготовленного  пакет с запросом метки времени
-  //-------------------------------------------------------------------------------------------------
 
-  Udp.begin(localPort);
-  uint8_t udpStatus = Udp.beginPacket(nameServer, 123);
-  if (oldUdpStatus != udpStatus)
-  {
-    oldUdpStatus = udpStatus;
-    Serial.print("UDP ");
-    Serial.print(flprog::flprogCodeName(ethernetStatus));
-    Serial.print(" - ");
-    Serial.print(ethernetStatus);
-    Serial.println();
-  }
-
-  if (udpStatus == FLPROG_WAIT_STATUS)
-  {
-    return;
-  }
 
   if (udpStatus == FLPROG_SUCCESS)
   {
@@ -225,14 +231,12 @@ void sendNTPpacket(const char *nameServer)
     {
       Serial.println("UDP Ошибка записи!");
       sendPacadeTime = millis();
-      oldUdpStatus = 255;
       return;
     }
     if (!Udp.endPacket()) //--Завершение запроса;
     {
       Serial.println("UDP Ошибка отправки!");
       sendPacadeTime = millis();
-      oldUdpStatus = 255;
       return;
     }
 

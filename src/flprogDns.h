@@ -41,15 +41,18 @@ public:
 	void setUDP(FLProgEthernetUDP *udp);
 	void begin(const IPAddress aDNSServer);
 	int getHostByName(const char *aHostname, uint8_t *aResult, uint16_t timeout = 5000);
+	uint8_t getStatus() { return _status; };
+  uint8_t getError() { return _errorCode; }
 	FLProgEthernetUDP *udp() { return _udp; }
 
 protected:
-	uint16_t BuildRequest(const char *aName);
-	uint16_t ProcessResponse(uint16_t aTimeout, uint8_t *aAddress);
+	uint16_t buildRequest(const char *aName);
+	uint16_t processResponse(uint16_t aTimeout, uint8_t *aAddress);
 	FLProgEthernetUDP *_udp;
 	IPAddress _iDNSServer;
 	uint16_t _iRequestId;
 	uint8_t _status = FLPROG_NOT_REDY_STATUS;
+	uint8_t _errorCode = FLPROG_ETHERNET_DNS_NOT_READY_ERROR;
 	uint8_t _wait_retries = 0;
 	uint32_t _startTime;
 	uint32_t _reqestStartTime;

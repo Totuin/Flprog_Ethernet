@@ -2,7 +2,7 @@
 #pragma once
 #include <Arduino.h>
 #include <IPAddress.h>
-
+#include "flprogUtilites.h"
 
 #if ARDUINO >= 156 && !defined(ARDUINO_ARCH_PIC32)
 extern void yield(void);
@@ -118,7 +118,7 @@ public:
   virtual uint8_t getLinkStatus() = 0;
   virtual void setGatewayIp(IPAddress addr) = 0;
   virtual IPAddress getGatewayIp() = 0;
-  virtual void setSubnetMask(IPAddress addr);
+  virtual void setSubnetMask(IPAddress addr) = 0;
   virtual IPAddress getSubnetMask() = 0;
   virtual void setMACAddress(const uint8_t *addr) = 0;
   virtual void getMACAddress(uint8_t *addr) = 0;
@@ -130,7 +130,7 @@ public:
   virtual uint8_t getChip() = 0;
   virtual uint16_t _CH_SIZE() = 0;
   virtual uint16_t _SSIZE() = 0;
-  virtual bool isInit(){return true;}
+  virtual bool isInit() { return false; }
 
   // утилиты
   virtual void setNetSettings(uint8_t *mac, IPAddress ip) = 0;
@@ -170,6 +170,12 @@ public:
   virtual uint16_t socketBufferData(uint8_t s, uint16_t offset, const uint8_t *buf, uint16_t len) = 0;
   virtual bool socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port) = 0;
   virtual bool socketSendUDP(uint8_t s) = 0;
+  uint8_t getStatus() { return _status; };
+  uint8_t getError() { return _errorCode; }
+
+protected:
+  uint8_t _status = FLPROG_NOT_REDY_STATUS;
+  uint8_t _errorCode = FLPROG_ETHERNET_HARDWARE_INIT_ERROR;
 };
 
 #ifndef FLPROG_W5100_UTIL_H

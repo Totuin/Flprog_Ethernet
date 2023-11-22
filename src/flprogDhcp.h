@@ -5,10 +5,11 @@
 /* DHCP state machine. */
 #define FLPROG_STATE_DHCP_START 0
 #define FLPROG_STATE_DHCP_DISCOVER 1
-#define FLPROG_STATE_DHCP_REQUEST 2
-#define FLPROG_STATE_DHCP_LEASED 3
-#define FLPROG_STATE_DHCP_REREQUEST 4
-#define FLPROG_STATE_DHCP_RELEASE 5
+
+#define FLPROG_STATE_DHCP_REQUEST 3
+#define FLPROG_STATE_DHCP_LEASED 4
+#define FLPROG_STATE_DHCP_REREQUEST 5
+#define FLPROG_STATE_DHCP_RELEASE 6
 
 #define FLPROG_DHCP_FLAGSBROADCAST 0x8000
 
@@ -19,16 +20,6 @@
 /* DHCP message OP code */
 #define FLPROG_DHCP_BOOTREQUEST 1
 #define FLPROG_DHCP_BOOTREPLY 2
-
-/* DHCP message type */
-#define FLPROG_DHCP_DISCOVER 1
-#define FLPROG_DHCP_OFFER 2
-#define FLPROG_DHCP_REQUEST 3
-#define FLPROG_DHCP_DECLINE 4
-#define FLPROG_DHCP_ACK 5
-#define FLPROG_DHCP_NAK 6
-#define FLPROG_DHCP_RELEASE 7
-#define FLPROG_DHCP_INFORM 8
 
 #define FLPROG_DHCP_HTYPE10MB 1
 #define FLPROG_DHCP_HTYPE100MB 2
@@ -48,6 +39,19 @@
 #define FLPROG_DHCP_CHECK_RENEW_OK 2
 #define FLPROG_DHCP_CHECK_REBIND_FAIL 3
 #define FLPROG_DHCP_CHECK_REBIND_OK 4
+
+// типы сообщений при ответе сервера
+#define FLPROG_DHCP_DISCOVER 1
+#define FLPROG_DHCP_OFFER 2
+#define FLPROG_DHCP_REQUEST 3
+#define FLPROG_DHCP_DECLINE 4
+#define FLPROG_DHCP_ACK 5
+#define FLPROG_DHCP_NAK 6
+#define FLPROG_DHCP_RELEASE 7
+#define FLPROG_DHCP_INFORM 8
+#define FLPROG_DHCP_WITE_CHECK_REQEST_MESSAGE_TYPE 254
+#define FLPROG_DHCP_TIMEOUT_MESSAGE_TYPE 255
+#define FLPROG_DHCP_ERROR_ID_MESSAGE_TYPE 253
 
 enum
 {
@@ -143,12 +147,16 @@ public:
 	IPAddress getDnsServerIp();
 	int beginWithDHCP(uint8_t *, unsigned long timeout = 20000, unsigned long responseTimeout = 4000);
 	int checkLease();
+	uint8_t getStatus() { return _status; };
+	uint8_t getError() { return _errorCode; }
 
 private:
 	uint32_t _dhcpInitialTransactionId;
 	uint32_t _dhcpTransactionId;
 	uint8_t _dhcpMacAddr[6];
 	FLProgEthernetUDP *_udp;
+	uint8_t _errorCode = FLPROG_NOT_ERROR;
+	uint8_t _status = FLPROG_NOT_REDY_STATUS;
 #ifdef __arm__
 	uint8_t _dhcpLocalIp[4] __attribute__((aligned(4)));
 	uint8_t _dhcpSubnetMask[4] __attribute__((aligned(4)));
@@ -170,19 +178,14 @@ private:
 	uint32_t _responseTimeout;
 	uint32_t _lastCheckLeaseMillis;
 	uint8_t _dhcp_state;
-	uint8_t status = FLPROG_READY_STATUS;
-	uint32_t startTime;
-	uint32_t startDhcpReqestTime;
-	uint32_t lastCheckDhcpReqestTime;
-	bool isWaitDhcpReqest = false;
-	uint8_t messageType;
-	int result;
-	uint32_t respId;
+	uint32_t _startDhcpReqestTime;
+	uint32_t _lastCheckDhcpReqestTime;
+	uint32_t _respId;
 
 	int request_DHCP_lease();
 	void reset_DHCP_lease();
 
-	void cheskStateMashine();
+	uint8_t cheskStateMashine();
 	void send_DHCP_MESSAGE(uint8_t, uint16_t);
 	void printByte(char *, uint8_t);
 

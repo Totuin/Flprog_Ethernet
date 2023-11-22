@@ -15,7 +15,7 @@
 
 #define FLPROG_UDP_TX_PACKET_MAX_SIZE 24
 
-
+#define FLPROG_UDP_TIMED_OUT 4
 
 class FLProgDNSClient;
 
@@ -25,7 +25,7 @@ public:
 	FLProgEthernetUDP(){};
 	FLProgEthernetUDP(FlprogAbstractEthernet *sourse);
 	void setSourse(FlprogAbstractEthernet *sourse);
-	void setDNS(FLProgDNSClient *dns) { _dns = dns; };
+	void setDNS(FLProgDNSClient *dns) { _dns = dns; }
 	virtual uint8_t begin(uint16_t);
 	virtual uint8_t beginMulticast(IPAddress, uint16_t);
 	virtual void stop();
@@ -46,17 +46,20 @@ public:
 	virtual IPAddress remoteIP() { return _remoteIP; };
 	virtual uint16_t remotePort() { return _remotePort; };
 	virtual uint16_t localPort() { return _port; }
+	uint8_t getStatus() { return _status; };
+	uint8_t getError() { return _errorCode; }
 
 protected:
-	uint8_t sockindex;
+	uint8_t _sockindex;
 	uint16_t _remaining;
+	uint8_t _status = FLPROG_NOT_REDY_STATUS;
+	uint8_t _errorCode = FLPROG_NOT_ERROR;
 
 private:
 	uint16_t _port;
 	IPAddress _remoteIP;
 	uint16_t _remotePort;
 	uint16_t _offset;
-	uint8_t status = FLPROG_READY_STATUS;
 	FlprogAbstractEthernet *_sourse;
 	FLProgDNSClient *_dns;
 };
