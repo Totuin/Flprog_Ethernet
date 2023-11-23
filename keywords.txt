@@ -85,6 +85,7 @@ remotePort	KEYWORD2
 setClient	KEYWORD2
 setConnectionTimeout	KEYWORD2
 setDNS	KEYWORD2
+setDnsCacheStorageTime	KEYWORD2
 setGatewayIp	KEYWORD2
 setIPAddress	KEYWORD2
 setMACAddress	KEYWORD2
