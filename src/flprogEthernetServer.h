@@ -24,7 +24,7 @@ public:
 
 private:
     uint16_t _port;
-    FLProgAbstractEthernetHardware *_hardware;
+    FlprogAbstractEthernet *_sourse;
     FLProgDNSClient *_dns;
     FLProgEthernetClient cl;
 };
