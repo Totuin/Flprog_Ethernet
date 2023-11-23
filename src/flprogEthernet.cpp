@@ -209,21 +209,14 @@ int FlprogEthernetClass::maintain()
 
 //----------------------------FlprogW5100Ethernet-----------------------------
 
-FLProgWiznetInterface::FLProgWiznetInterface(int pin, uint8_t bus)
+FLProgWiznetInterface::FLProgWiznetInterface(int pinCs, uint8_t bus)
 {
-	init(pin, bus);
+	init(pinCs, bus);
 }
 
-void FLProgWiznetInterface::init(int pin, uint8_t bus)
+void FLProgWiznetInterface::init(int pinCs, uint8_t bus)
 {
-	if (pin == -1)
-	{
-		_hardware.setSsPin(RT_HW_Base.device.spi.cs0);
-	}
-	else
-	{
-		_hardware.setSsPin(pin);
-	}
+	_hardware.setPinCs(pinCs);
 	_hardware.setSpiBus(bus);
 	_udp.setSourse(this);
 	_udp.setDNS(&_dns);

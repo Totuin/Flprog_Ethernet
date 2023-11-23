@@ -8,7 +8,7 @@ class FLProgWiznetClass : public FLProgAbstractEthernetHardware
 public:
   virtual uint8_t init();
   uint8_t checkInit();
-  void setSsPin(int sspin);
+  void setPinCs(int pinCs);
   virtual uint8_t getLinkStatus();
   virtual void setSpiBus(uint8_t bus) { _spiBus = bus; };
   virtual void setGatewayIp(IPAddress addr);
@@ -53,7 +53,7 @@ public:
   virtual uint16_t SBASE(uint8_t socknum);
   virtual uint16_t RBASE(uint8_t socknum);
   virtual bool hasOffsetAddressMapping(void);
-  virtual void setSS(uint8_t pin) { _pinSS = pin; };
+
 
   // утилиты
   virtual void setNetSettings(uint8_t *mac, IPAddress ip);
@@ -93,7 +93,9 @@ public:
   virtual uint16_t socketBufferData(uint8_t s, uint16_t offset, const uint8_t *buf, uint16_t len);
   virtual uint8_t socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port);
   virtual uint8_t socketSendUDP(uint8_t s);
-  virtual bool isInit() { return _status == FLPROG_READY_STATUS; }
+  virtual bool isInit() { return _status == FLPROG_READY_STATUS; };
+  int pinCs();
+  uint8_t spiBus();
 
 private:
   uint8_t _chip = 0;
@@ -102,15 +104,15 @@ private:
   uint16_t _local_port = 49152; // 49152 to 65535 TODO: randomize this when not using DHCP, but how?
   const uint16_t CH_SIZE = 0x0100;
   socketstate_t _state[FLPROG_ETHERNET_MAX_SOCK_NUM];
-  uint8_t _spiBus = 0;
-  int _pinSS;
+  uint8_t _spiBus = 255;
+  int _pinCs = -1;
   uint8_t softReset(void);
   uint8_t isW5100(void);
   uint8_t isW5200(void);
   uint8_t isW5500(void);
-  void initSS() { pinMode(_pinSS, OUTPUT); };
-  void setSS() { digitalWrite(_pinSS, LOW); };
-  void resetSS() { digitalWrite(_pinSS, HIGH); };
+  void initCs() { pinMode(pinCs(), OUTPUT); };
+  void setCs() { digitalWrite(pinCs(), LOW); };
+  void resetCs() { digitalWrite(pinCs(), HIGH); };
   void privateMaceSocet(uint8_t soc, uint8_t protocol, uint16_t port);
   void privateMaceSocetMulticast(uint8_t soc, uint8_t protocol, IPAddress ip, uint16_t port);
   void beginTransaction() { RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, _spiBus); };

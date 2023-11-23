@@ -52,11 +52,13 @@ private:
 class FLProgWiznetInterface : public FlprogEthernetClass
 {
 public:
-	FLProgWiznetInterface(int pin = -1, uint8_t bus = 0);
+	FLProgWiznetInterface(int pinCs = -1, uint8_t bus = 255);
 	virtual FLProgAbstractEthernetHardware *hardware() { return &_hardware; };
-	void init(int pin, uint8_t bus);
-	void setSsPin(int sspin) { _hardware.setSsPin(sspin); };
+	void init(int pinCs, uint8_t bus);
+	void setPinCs(int pinCs) { _hardware.setPinCs(pinCs); };
 	virtual bool isImitation() { return false; }
+	int pinCs() { return _hardware.pinCs(); }
+	uint8_t spiBus() { return _hardware.spiBus(); }
 
 protected:
 	FLProgWiznetClass _hardware;

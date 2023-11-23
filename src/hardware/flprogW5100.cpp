@@ -22,8 +22,8 @@ uint8_t FLProgWiznetClass::checkInit()
 		_status = FLPROG_WAIT_ETHERNET_HARDWARE_INIT_STATUS;
 		return FLPROG_WITE;
 	}
-	RT_HW_Base.spiBegin(_spiBus);
-	initSS();
+	RT_HW_Base.spiBegin(spiBus());
+	initCs();
 	beginTransaction();
 	if (isW5200())
 	{
@@ -70,19 +70,10 @@ uint8_t FLProgWiznetClass::checkInit()
 	return FLPROG_SUCCESS;
 }
 
-void FLProgWiznetClass::setSsPin(int sspin)
+void FLProgWiznetClass::setPinCs(int pinCs)
 {
-
-	if (sspin < 0)
-	{
-		return;
-	}
-	if (_pinSS == sspin)
-	{
-		return;
-	}
-	_pinSS = sspin;
-	initSS();
+	_pinCs = pinCs;
+	initCs();
 }
 
 void FLProgWiznetClass::setNetSettings(uint8_t *mac, IPAddress ip)
@@ -475,35 +466,35 @@ uint16_t FLProgWiznetClass::write(uint16_t addr, const uint8_t *buf, uint16_t le
 	{
 		for (uint16_t i = 0; i < len; i++)
 		{
-			setSS();
-			RT_HW_Base.spiTransfer(0xF0, _spiBus);
-			RT_HW_Base.spiTransfer((addr >> 8), _spiBus);
-			RT_HW_Base.spiTransfer((addr & 0xFF), _spiBus);
+			setCs();
+			RT_HW_Base.spiTransfer(0xF0, spiBus());
+			RT_HW_Base.spiTransfer((addr >> 8), spiBus());
+			RT_HW_Base.spiTransfer((addr & 0xFF), spiBus());
 			addr++;
-			RT_HW_Base.spiTransfer((buf[i]), _spiBus);
-			resetSS();
+			RT_HW_Base.spiTransfer((buf[i]), spiBus());
+			resetCs();
 		}
 	}
 	else if (_chip == FLPROG_ETHERNET_W5200)
 	{
-		setSS();
+		setCs();
 		cmd[0] = addr >> 8;
 		cmd[1] = addr & 0xFF;
 		cmd[2] = ((len >> 8) & 0x7F) | 0x80;
 		cmd[3] = len & 0xFF;
 		for (uint8_t i = 0; i < 4; i++)
 		{
-			RT_HW_Base.spiTransfer(cmd[i], _spiBus);
+			RT_HW_Base.spiTransfer(cmd[i], spiBus());
 		}
 		for (uint16_t i = 0; i < len; i++)
 		{
-			RT_HW_Base.spiTransfer((buf[i]), _spiBus);
+			RT_HW_Base.spiTransfer((buf[i]), spiBus());
 		}
-		resetSS();
+		resetCs();
 	}
 	else
 	{ // _chip == FLPROG_ETHERNET_W5500
-		setSS();
+		setCs();
 		if (addr < 0x100)
 		{
 			cmd[0] = 0;
@@ -536,21 +527,21 @@ uint16_t FLProgWiznetClass::write(uint16_t addr, const uint8_t *buf, uint16_t le
 			}
 			for (uint16_t i = 0; i < (len + 3); i++)
 			{
-				RT_HW_Base.spiTransfer(cmd[i], _spiBus);
+				RT_HW_Base.spiTransfer(cmd[i], spiBus());
 			}
 		}
 		else
 		{
 			for (uint8_t i = 0; i < 3; i++)
 			{
-				RT_HW_Base.spiTransfer(cmd[i], _spiBus);
+				RT_HW_Base.spiTransfer(cmd[i], spiBus());
 			}
 			for (uint16_t i = 0; i < len; i++)
 			{
-				RT_HW_Base.spiTransfer(buf[i], _spiBus);
+				RT_HW_Base.spiTransfer(buf[i], spiBus());
 			}
 		}
-		resetSS();
+		resetCs();
 	}
 	return len;
 }
@@ -562,35 +553,35 @@ uint16_t FLProgWiznetClass::read(uint16_t addr, uint8_t *buf, uint16_t len)
 	{
 		for (uint16_t i = 0; i < len; i++)
 		{
-			setSS();
-			RT_HW_Base.spiTransfer(0x0F, _spiBus);
-			RT_HW_Base.spiTransfer((addr >> 8), _spiBus);
-			RT_HW_Base.spiTransfer((addr & 0xFF), _spiBus);
+			setCs();
+			RT_HW_Base.spiTransfer(0x0F, spiBus());
+			RT_HW_Base.spiTransfer((addr >> 8), spiBus());
+			RT_HW_Base.spiTransfer((addr & 0xFF), spiBus());
 			addr++;
-			buf[i] = RT_HW_Base.spiTransfer(0, _spiBus);
-			resetSS();
+			buf[i] = RT_HW_Base.spiTransfer(0, spiBus());
+			resetCs();
 		}
 	}
 	else if (_chip == FLPROG_ETHERNET_W5200)
 	{
-		setSS();
+		setCs();
 		cmd[0] = addr >> 8;
 		cmd[1] = addr & 0xFF;
 		cmd[2] = (len >> 8) & 0x7F;
 		cmd[3] = len & 0xFF;
 		for (uint8_t i = 0; i < 4; i++)
 		{
-			RT_HW_Base.spiTransfer(cmd[i], _spiBus);
+			RT_HW_Base.spiTransfer(cmd[i], spiBus());
 		}
 		for (uint16_t i = 0; i < len; i++)
 		{
-			buf[i] = RT_HW_Base.spiTransfer(0, _spiBus);
+			buf[i] = RT_HW_Base.spiTransfer(0, spiBus());
 		}
-		resetSS();
+		resetCs();
 	}
 	else
 	{ // _chip == FLPROG_ETHERNET_W5500
-		setSS();
+		setCs();
 		if (addr < 0x100)
 		{
 			cmd[0] = 0;
@@ -617,13 +608,13 @@ uint16_t FLProgWiznetClass::read(uint16_t addr, uint8_t *buf, uint16_t len)
 		}
 		for (uint8_t i = 0; i < 3; i++)
 		{
-			RT_HW_Base.spiTransfer(cmd[i], _spiBus);
+			RT_HW_Base.spiTransfer(cmd[i], spiBus());
 		}
 		for (uint16_t i = 0; i < len; i++)
 		{
-			buf[i] = RT_HW_Base.spiTransfer(0, _spiBus);
+			buf[i] = RT_HW_Base.spiTransfer(0, spiBus());
 		}
-		resetSS();
+		resetCs();
 	}
 	return len;
 }
@@ -1097,4 +1088,21 @@ uint8_t FLProgWiznetClass::socketSendUDP(uint8_t s)
 	endTransaction();
 	_errorCode = FLPROG_NOT_ERROR;
 	return FLPROG_SUCCESS;
+}
+
+int FLProgWiznetClass::pinCs()
+{
+	if (_pinCs == -1)
+	{
+		return RT_HW_Base.device.spi.csETH;
+	}
+	return _pinCs;
+}
+uint8_t FLProgWiznetClass::spiBus()
+{
+	if (_spiBus == 255)
+	{
+		return  RT_HW_Base.device.spi.busETH;
+	}
+	return _spiBus;
 }

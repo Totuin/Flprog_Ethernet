@@ -1,61 +1,56 @@
 
 #include "flprogEthernet.h"
 
-//=================================================================================================
-//  Определяем целевую платформу
-//=================================================================================================
+/*
+-------------------------------------------------------------------------------------------------
+        Создание интерфейса для работы с чипом W5100(W5200,W5500)
+        Шина SPI и пин CS берутся из  RT_HW_Base.device.spi.busETH и RT_HW_Base.device.spi.csETH
+-------------------------------------------------------------------------------------------------
+*/
+FLProgWiznetInterface WiznetInterface;
 
-#if defined(RT_HW_BOARD_NAME)
-String boarbName = RT_HW_BOARD_NAME;
-#else
-String boarbName = "Not Defined";
-#endif
+/*
+-------------------------------------------------------------------------------------------------
+        Второй вариант cоздания интерфейса для работы с чипом W5100(W5200,W5500).
+        С непосредственной привязкой  пину.
+        Пин CS - 10
+        Шина SPI берётся из RT_HW_Base.device.spi.busETH
+-------------------------------------------------------------------------------------------------
+*/
+// FLProgWiznetInterface WiznetInterface(10);
 
-#if defined(RT_HW_ARCH_NAME)
-String archName = RT_HW_ARCH_NAME;
-#else
-String archName = "Not Defined";
-#endif
+/*
+-------------------------------------------------------------------------------------------------
+      Третий вариант cоздания интерфейса для работы с чипом W5100(W5200,W5500).
+      С непосредственной привязкой  пину и шине.
+      Пин CS - 10
+      Шина SPI - 0
+-------------------------------------------------------------------------------------------------
+*/
+// FLProgWiznetInterface WiznetInterface(10, 0);
 
-#ifdef ARDUINO_ARCH_RP2040
-#define CS_PIN 21
-#define SPI_BUS 0
-#elif ARDUINO_ARCH_STM32
-#define CS_PIN PC2
-#define SPI_BUS 0
-#else
-#define CS_PIN 10
-#define SPI_BUS 0
-#endif
-
-//-------------------------------------------------------------------------------------------------
-//         Вариант с  шиной (SPI0) и пином(10) по умолчаниюю. Пин потом можно поменять.
-//         Но если на этой шине висит ещё какое то устройство лучше применять второй вариант
-//-------------------------------------------------------------------------------------------------
-// FLProgWiznetInterface WiznetInterface; //--Создание интерфейса для работы с чипом W5100(W5200,W5500) (по умолчанию CS pin - 10,  Шина SPI - 0);
-//-------------------------------------------------------------------------------------------------
-//        Второй вариант с непосредственной привязкой к шине и пину.
-//-------------------------------------------------------------------------------------------------
-FLProgWiznetInterface WiznetInterface(CS_PIN, SPI_BUS); //--Создание интерфейса для работы с чипом W5100(W5200,W5500)
-// FLProgWiznetInterface WiznetInterface(CS_PIN); //--Создание интерфейса для работы с чипом W5100(W5200,W5500)
-
-//-------------------------------------------------------------------------------------------------
-//         Задание параметров интернет соеденения и параметров клиента
-//-------------------------------------------------------------------------------------------------
+/*
+-------------------------------------------------------------------------------------------------
+        Задание параметров интернет соеденения и параметров клиента
+-------------------------------------------------------------------------------------------------
+*/
 const char *host = "djxmmx.net";
-// const char *host = "flprog1.ru"; // Несуществующий домен для проверки DNS
-// IPAddress  host = IPAddress(104, 230, 16, 86);
+// const char *host = "flprog1.ru"; // Несуществующий домен для проверки  работы DNS при неправильном задании хоста
+// IPAddress  host = IPAddress(104, 230, 16, 86); // IP адрес хоста "djxmmx.net" для работы без DNS
 const uint16_t port = 17;
 
-//-------------------------------------------------------------------------------------------------
-//          1.2.Создание объекта клиента  с привязкой к интерфейсу
-//-------------------------------------------------------------------------------------------------
-
+/*
+-------------------------------------------------------------------------------------------------
+          Создание объекта клиента  с привязкой к интерфейсу
+-------------------------------------------------------------------------------------------------
+*/
 FLProgEthernetClient client(&WiznetInterface);
 
-//-----------------------------------------------------------------------------------------
-//          1.3.Определение рабочих параметров и функций
-//-----------------------------------------------------------------------------------------
+/*
+-----------------------------------------------------------------------------------------
+          Определение рабочих параметров и функций
+-----------------------------------------------------------------------------------------
+*/
 
 uint8_t ethernetStatus = 255;
 uint8_t ethernetError = 255;
@@ -78,7 +73,6 @@ bool isNeedSendDisconnectMessage = true;
 uint32_t printPointTime = 0;
 
 //=================================================================================================
-
 void setup()
 {
   Serial.begin(115200);
@@ -86,9 +80,22 @@ void setup()
   {
   }
   Serial.print("Архитектура - ");
-  Serial.println(archName);
+#if defined(RT_HW_ARCH_NAME)
+  Serial.println(RT_HW_ARCH_NAME);
+#else
+  Serial.println("Архитектура не определенна!");
+#endif
+
   Serial.print("Плата - ");
-  Serial.println(boarbName);
+#if defined(RT_HW_BOARD_NAME)
+  Serial.println(RT_HW_BOARD_NAME);
+#else
+  Serial.println("Плата не определенна!");
+#endif
+  Serial.print("CS - ");
+  Serial.println(WiznetInterface.pinCs());
+  Serial.print("SPI BUS - ");
+  Serial.println(WiznetInterface.spiBus());
 
   WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40); //--Установка MAC-адрес контроллера
   // WiznetInterface.localIP(192, 168, 199, 155);
@@ -99,6 +106,8 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
 }
+
+//=================================================================================================
 void loop()
 {
   WiznetInterface.pool();
@@ -108,6 +117,7 @@ void loop()
   ressiveData();
 }
 
+//=================================================================================================
 void ressiveData()
 {
   if (!isWaitReqest)
@@ -123,7 +133,7 @@ void ressiveData()
   if (flprog::isTimer(startSendReqest, reqestTimeout))
   {
     isWaitReqest = false;
-    Serial.println(">>> Client Timeout !");
+    Serial.println("Нет ответа от сервера!");
     return;
   }
   if (client.available() == 0)
@@ -170,19 +180,19 @@ void sendReqest()
   if (temp == FLPROG_ERROR)
   {
     startSendReqest = millis();
-    Serial.println("connection failed");
+    Serial.println("Клиент не смог подключиться к серверу!");
     return;
   }
   Serial.println();
-  Serial.print("connecting to ");
-  Serial.println();
+  Serial.print("Подключаемся к серверу: ");
   Serial.print(host);
   Serial.print(':');
   Serial.println(port);
-  Serial.println("sending data to server");
-  Serial.println();
+
   if (client.connected())
   {
+    Serial.println("Отправляем запрос на сервер");
+    Serial.println();
     client.println("hello from ESP8266");
   }
   startSendReqest = millis();
@@ -195,30 +205,35 @@ void printStatusMessages()
   {
     ethernetStatus = WiznetInterface.getStatus();
     Serial.println();
-    Serial.print("Ethernet status -");
+    Serial.print("Статус интерфейса - ");
     Serial.println(flprog::flprogStatusCodeName(ethernetStatus));
   }
   if (WiznetInterface.getError() != ethernetError)
   {
     ethernetError = WiznetInterface.getError();
-    Serial.println();
-    Serial.print("Ethernet error - ");
-    Serial.println(flprog::flprogErrorCodeName(ethernetError));
+    if (ethernetError != FLPROG_NOT_ERROR)
+    {
+      Serial.println();
+      Serial.print("Ошибка интерфейса - ");
+      Serial.println(flprog::flprogErrorCodeName(ethernetError));
+    }
   }
-
   if (client.getStatus() != clientStatus)
   {
     clientStatus = client.getStatus();
     Serial.println();
-    Serial.print("Client status -");
+    Serial.print("Статус клиента - ");
     Serial.println(flprog::flprogStatusCodeName(clientStatus));
   }
   if (client.getError() != clientError)
   {
     clientError = client.getError();
-    Serial.println();
-    Serial.print("Client error - ");
-    Serial.println(flprog::flprogErrorCodeName(clientError));
+    if (clientError != FLPROG_NOT_ERROR)
+    {
+      Serial.println();
+      Serial.print("Ошибка клиента - ");
+      Serial.println(flprog::flprogErrorCodeName(clientError));
+    }
   }
   printConnectMessages();
   printDisconnectMessages();
