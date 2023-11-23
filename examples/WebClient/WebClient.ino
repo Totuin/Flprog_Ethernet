@@ -43,6 +43,7 @@ FLProgWiznetInterface WiznetInterface(CS_PIN, SPI_BUS); //--Создание и�
 //         Задание параметров интернет соеденения и параметров клиента
 //-------------------------------------------------------------------------------------------------
 const char *host = "djxmmx.net";
+// const char *host = "flprog1.ru"; // Несуществующий домен для проверки DNS
 // IPAddress  host = IPAddress(104, 230, 16, 86);
 const uint16_t port = 17;
 
@@ -73,6 +74,8 @@ bool isWaitReqest = false;
 
 bool isNeedSendConnectMessage = true;
 bool isNeedSendDisconnectMessage = true;
+
+uint32_t printPointTime = 0;
 
 //=================================================================================================
 
@@ -133,25 +136,31 @@ void ressiveData()
     Serial.print(ch);
   }
   Serial.println();
+  Serial.println();
   isWaitReqest = false;
 }
 
 void sendReqest()
 {
-  if (isWaitReqest)
-  {
-    return;
-  }
-  if (!(flprog::isTimer(startSendReqest, reqestPeriod)))
-  {
-    return;
-  }
   if (!WiznetInterface.isReady())
   {
     client.stop();
     return;
   }
 
+  if (isWaitReqest)
+  {
+    return;
+  }
+  if (!(flprog::isTimer(startSendReqest, reqestPeriod)))
+  {
+    if (flprog::isTimer(printPointTime, 1000))
+    {
+      Serial.print(".");
+      printPointTime = millis();
+    }
+    return;
+  }
   uint8_t temp = client.connect(host, port);
 
   if (temp == FLPROG_WITE)
@@ -185,12 +194,14 @@ void printStatusMessages()
   if (WiznetInterface.getStatus() != ethernetStatus)
   {
     ethernetStatus = WiznetInterface.getStatus();
+    Serial.println();
     Serial.print("Ethernet status -");
     Serial.println(flprog::flprogStatusCodeName(ethernetStatus));
   }
   if (WiznetInterface.getError() != ethernetError)
   {
     ethernetError = WiznetInterface.getError();
+    Serial.println();
     Serial.print("Ethernet error - ");
     Serial.println(flprog::flprogErrorCodeName(ethernetError));
   }
@@ -198,12 +209,14 @@ void printStatusMessages()
   if (client.getStatus() != clientStatus)
   {
     clientStatus = client.getStatus();
+    Serial.println();
     Serial.print("Client status -");
     Serial.println(flprog::flprogStatusCodeName(clientStatus));
   }
   if (client.getError() != clientError)
   {
     clientError = client.getError();
+    Serial.println();
     Serial.print("Client error - ");
     Serial.println(flprog::flprogErrorCodeName(clientError));
   }
