@@ -53,6 +53,15 @@ class FLProgWiznetInterface : public FlprogEthernetClass
 {
 public:
 	FLProgWiznetInterface(int pinCs = -1, uint8_t bus = 255);
+
+	virtual uint8_t socetConnected(uint8_t socet) { return _hardware.socetConnected(socet); };
+	virtual int readFromSocet(uint8_t socet) { return _hardware.readFromSocet(socet); };
+	virtual size_t writeToSocet(const uint8_t *buffer, size_t size, uint8_t socet) { return _hardware.writeToSocet(buffer, size, socet); };
+	virtual int availableSocet(uint8_t socet) { return _hardware.availableSocet(socet); };
+	virtual void disconnecSocet(uint8_t socet) { _hardware.disconnecSocet(socet); };
+	virtual uint8_t getTCPSocet(uint16_t port) { return _hardware.getTCPSocet(port); };
+	virtual bool isListenSocet(uint8_t socet) { return _hardware.isListenSocet(socet); };
+
 	virtual FLProgAbstractEthernetHardware *hardware() { return &_hardware; };
 	void init(int pinCs, uint8_t bus);
 	void setPinCs(int pinCs) { _hardware.setPinCs(pinCs); };

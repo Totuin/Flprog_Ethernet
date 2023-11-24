@@ -15,6 +15,74 @@ uint8_t FLProgWiznetClass::init()
 	return FLPROG_WITE;
 }
 
+uint8_t FLProgWiznetClass::socetConnected(uint8_t socet)
+{
+	if (socet < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
+		uint8_t s = socketStatus(socet);
+		return !((s == FLPROG_SN_SR_LISTEN) || (s == FLPROG_SN_SR_CLOSED) || (s == FLPROG_SN_SR_FIN_WAIT) ||
+				 ((s == FLPROG_SN_SR_CLOSE_WAIT) && !socketRecvAvailable(socet)));
+	}
+	return 0;
+}
+
+int FLProgWiznetClass::readFromSocet(uint8_t socet)
+{
+	uint8_t b;
+	if (socet < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
+		if (socketRecv(socet, &b, 1) > 0)
+		{
+
+			return b;
+		}
+	}
+	return -1;
+}
+
+size_t FLProgWiznetClass::writeToSocet(const uint8_t *buffer, size_t size, uint8_t socet)
+{
+	if (socet < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
+		if (socketStatus(socet) == FLPROG_SN_SR_ESTABLISHED)
+		{
+			socketSend(socet, buffer, size);
+		}
+	}
+	return size;
+}
+
+int FLProgWiznetClass::availableSocet(uint8_t socet)
+{
+	if (socet < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
+		return socketRecvAvailable(socet);
+	}
+	return 0;
+}
+
+void FLProgWiznetClass::disconnecSocet(uint8_t socet)
+{
+	if (socet < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
+		socketDisconnect(socet);
+	}
+}
+
+uint8_t FLProgWiznetClass::getTCPSocet(uint16_t port)
+{
+	return socketBegin(FLPROG_SN_MR_TCP, port);
+}
+
+bool FLProgWiznetClass::isListenSocet(uint8_t socet)
+{
+	if (socet < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
+		return socketListen(socet);
+	}
+	return false;
+}
+
 uint8_t FLProgWiznetClass::checkInit()
 {
 	if (!(flprog::isTimer(_startWhiteInitTime, 600)))
@@ -1102,7 +1170,7 @@ uint8_t FLProgWiznetClass::spiBus()
 {
 	if (_spiBus == 255)
 	{
-		return  RT_HW_Base.device.spi.busETH;
+		return RT_HW_Base.device.spi.busETH;
 	}
 	return _spiBus;
 }

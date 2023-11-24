@@ -35,7 +35,6 @@ FLProgWiznetInterface WiznetInterface;
 */
 FLProgEthernetServer server(&WiznetInterface, 80);
 
-
 /*
   -----------------------------------------------------------------------------------------
           Определение рабочих параметров и функций
@@ -52,7 +51,6 @@ uint32_t blinkStartTime = 0;
 
 bool isNeedSendConnectMessage = true;
 bool isNeedSendDisconnectMessage = true;
-
 
 //=================================================================================================
 void setup()
@@ -100,51 +98,55 @@ void loop()
 //=================================================================================================
 void callBack()
 {
-  bool currentLineIsBlank = false;
-  while (server.available())
+  Serial.println("=====================================================================");
+  Serial.println("Клиент подключился");
+  Serial.println("=====================================================================");
+  bool currentLineIsBlank = true;
+  while (server.connected())
   {
-    char c = server.read();
-    Serial.write(c);
-    // if you've gotten to the end of the line (received a newline
-    // character) and the line is blank, the http request has ended,
-    // so you can send a reply
-    if (c == '\n' && currentLineIsBlank)
+    if (server.available())
     {
-      // send a standard http response header
-      server.println("HTTP/1.1 200 OK");
-      server.println("Content-Type: text/html");
-      server.println("Connection: close"); // the connection will be closed after completion of the response
-      server.println("Refresh: 5");        // refresh the page automatically every 5 sec
-      server.println();
-      server.println("<!DOCTYPE HTML>");
-      server.println("<html>");
-      // output the value of each analog input pin
-      for (int analogChannel = 0; analogChannel < 6; analogChannel++)
+      char c = server.read();
+      Serial.write(c);
+      if (c == '\n' && currentLineIsBlank)
       {
-        int sensorReading = analogRead(analogChannel);
-        server.print("analog input ");
-        server.print(String(analogChannel));
-        server.print(" is ");
-        server.print(String(sensorReading));
-        server.println("<br />");
+        // send a standard http response header
+        server.println("HTTP/1.1 200 OK");
+        server.println("Content-Type: text/html");
+        server.println("Connection: close");
+        server.println("Refresh: 5");
+        server.println();
+        server.println("<!DOCTYPE HTML>");
+        server.println("<html>");
+        // output the value of each analog input pin
+        for (int analogChannel = 0; analogChannel < 6; analogChannel++)
+        {
+          int sensorReading = analogRead(analogChannel);
+          server.print("analog input ");
+          server.print(analogChannel);
+          server.print(" is ");
+          server.print(sensorReading);
+          server.println("<br />");
+        }
+        server.println("</html>");
+        break;
       }
-      server.println("</html>");
-      break;
-    }
-    if (c == '\n')
-    {
-      // you're starting a new line
-      currentLineIsBlank = true;
-    }
-    else if (c != '\r')
-    {
-      // you've gotten a character on the current line
-      currentLineIsBlank = false;
+      if (c == '\n')
+      {
+        // you're starting a new line
+        currentLineIsBlank = true;
+      }
+      else if (c != '\r')
+      {
+        currentLineIsBlank = false;
+      }
     }
   }
+  server.stopConnection();
+  Serial.println("=====================================================================");
+  Serial.println("Клиент отключён");
+  Serial.println("=====================================================================");
 }
-
-
 
 void blinkLed()
 {

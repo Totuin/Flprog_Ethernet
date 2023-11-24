@@ -10,6 +10,15 @@ public:
   uint8_t checkInit();
   void setPinCs(int pinCs);
   virtual uint8_t getLinkStatus();
+
+  virtual uint8_t socetConnected(uint8_t socet);
+  virtual int readFromSocet(uint8_t socet);
+  virtual size_t writeToSocet(const uint8_t *buffer, size_t size, uint8_t socet);
+  virtual int availableSocet(uint8_t socet);
+  virtual void disconnecSocet(uint8_t socet);
+  virtual uint8_t getTCPSocet(uint16_t port);
+  virtual bool isListenSocet(uint8_t socet);
+
   virtual void setSpiBus(uint8_t bus) { _spiBus = bus; };
   virtual void setGatewayIp(IPAddress addr);
   virtual IPAddress getGatewayIp();
@@ -53,7 +62,6 @@ public:
   virtual uint16_t SBASE(uint8_t socknum);
   virtual uint16_t RBASE(uint8_t socknum);
   virtual bool hasOffsetAddressMapping(void);
-
 
   // утилиты
   virtual void setNetSettings(uint8_t *mac, IPAddress ip);
