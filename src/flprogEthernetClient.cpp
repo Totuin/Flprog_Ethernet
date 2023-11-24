@@ -11,6 +11,11 @@ FLProgEthernetClient::FLProgEthernetClient(FlprogAbstractEthernet *sourse, uint8
 	_sockindex = s;
 }
 
+void FLProgEthernetClient::setServerData(uint8_t s)
+{
+	_sockindex = s;
+}
+
 void FLProgEthernetClient::init(FlprogAbstractEthernet *sourse)
 {
 	if (isInit)
@@ -163,7 +168,9 @@ size_t FLProgEthernetClient::write(const uint8_t *buf, size_t size)
 int FLProgEthernetClient::available()
 {
 	if (_sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
 		return 0;
+	}
 	return _sourse->hardware()->socketRecvAvailable(_sockindex);
 }
 
@@ -187,7 +194,9 @@ int FLProgEthernetClient::read()
 {
 	uint8_t b;
 	if (_sourse->hardware()->socketRecv(_sockindex, &b, 1) > 0)
+	{
 		return b;
+	}
 	return -1;
 }
 
@@ -216,8 +225,11 @@ void FLProgEthernetClient::stop()
 uint8_t FLProgEthernetClient::connected()
 {
 	if (_sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
 		return 0;
+	}
 	uint8_t s = _sourse->hardware()->socketStatus(_sockindex);
+
 	return !((s == FLPROG_SN_SR_LISTEN) || (s == FLPROG_SN_SR_CLOSED) || (s == FLPROG_SN_SR_FIN_WAIT) ||
 			 ((s == FLPROG_SN_SR_CLOSE_WAIT) && !available()));
 }
@@ -225,7 +237,9 @@ uint8_t FLProgEthernetClient::connected()
 uint8_t FLProgEthernetClient::status()
 {
 	if (_sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
 		return FLPROG_SN_SR_CLOSED;
+	}
 	return _sourse->hardware()->socketStatus(_sockindex);
 }
 

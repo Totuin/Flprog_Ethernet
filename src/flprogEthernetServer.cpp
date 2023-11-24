@@ -6,85 +6,65 @@ FLProgEthernetServer::FLProgEthernetServer(FlprogAbstractEthernet *sourse, uint1
 	_port = port;
 }
 
-void FLProgEthernetServer::begin(uint16_t port)
+uint8_t FLProgEthernetServer::setPort(uint16_t port)
 {
+	if (_port == port)
+	{
+		return;
+	}
 	_port = port;
-	begin();
+	_status = FLPROG_NOT_REDY_STATUS;
+	return FLPROG_SUCCESS;
 }
 
-void FLProgEthernetServer::begin()
+uint8_t FLProgEthernetServer::pool()
 {
-	uint8_t sockindex = _sourse->hardware()->socketBegin(FLPROG_SN_MR_TCP, _port);
-	if (sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	if (_callbackFunction == 0)
 	{
-		if (_sourse->hardware()->socketListen(sockindex))
-		{
-			server_port[sockindex] = _port;
-		}
-		else
-		{
-			_sourse->hardware()->socketDisconnect(sockindex);
-		}
+		_status = FLPROG_NOT_REDY_STATUS;
+		_errorCode = FLPROG_ETHERNET_SERVER_NOT_CALLBACK_ERROR;
+		return FLPROG_ERROR;
 	}
+	if (!_sourse->isReady())
+	{
+		_status = FLPROG_NOT_REDY_STATUS;
+		return FLPROG_SUCCESS;
+	}
+	if (_status == FLPROG_NOT_REDY_STATUS)
+	{
+		return begin();
+	}
+	if (!available())
+	{
+		return FLPROG_SUCCESS;
+	}
+	_callbackFunction();
+	return FLPROG_SUCCESS;
 }
 
-FLProgEthernetClient FLProgEthernetServer::accept()
+uint8_t FLProgEthernetServer::begin()
 {
-	bool listening = false;
-	uint8_t sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
-	uint8_t chip, maxindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
-
-	chip = _sourse->hardware()->getChip();
-	if (!chip)
-		return FLProgEthernetClient(_sourse, FLPROG_ETHERNET_MAX_SOCK_NUM);
-#if FLPROG_ETHERNET_MAX_SOCK_NUM > 4
-	if (chip == 51)
-		maxindex = 4; // W5100 chip never supports more than 4 sockets
-#endif
-	for (uint8_t i = 0; i < maxindex; i++)
+	if (_sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
-		if (server_port[i] == _port)
-		{
-			uint8_t stat = _sourse->hardware()->socketStatus(i);
-			if (sockindex == FLPROG_ETHERNET_MAX_SOCK_NUM &&
-				((stat == FLPROG_SN_SR_ESTABLISHED) || (stat == FLPROG_SN_SR_CLOSE_WAIT)))
-			{
-				sockindex = i;
-				server_port[i] = 0; // only return the client once
-			}
-			else if (stat == FLPROG_SN_SR_LISTEN)
-			{
-				listening = true;
-			}
-			else if (stat == FLPROG_SN_SR_CLOSED)
-			{
-				server_port[i] = 0;
-			}
-		}
+		_sourse->hardware()->socketDisconnect(_sockindex);
 	}
-	if (!listening)
-		begin();
-	return FLProgEthernetClient(_sourse, sockindex);
-}
-
-FLProgEthernetServer::operator bool()
-{
-	uint8_t maxindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
-#if FLPROG_ETHERNET_MAX_SOCK_NUM > 4
-	if (_sourse->hardware()->getChip() == 51)
-		maxindex = 4; // W5100 chip never supports more than 4 sockets
-#endif
-	for (uint8_t i = 0; i < maxindex; i++)
+	_sockindex = _sourse->hardware()->socketBegin(FLPROG_SN_MR_TCP, _port);
+	if (_sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
-		if (server_port[i] == _port)
-		{
-			if (_sourse->hardware()->socketStatus(i) == FLPROG_SN_SR_LISTEN)
-			{
-				return true; // server is listening for incoming clients
-			}
-		}
+		_status = FLPROG_NOT_REDY_STATUS;
+		_errorCode = FLPROG_ETHERNET_SOKET_INDEX_ERROR;
+		return FLPROG_ERROR;
 	}
-	return false;
+	if (_sourse->hardware()->socketListen(_sockindex))
+	{
+		_status = FLPROG_READY_STATUS;
+		_errorCode = FLPROG_NOT_ERROR;
+		return FLPROG_SUCCESS;
+	}
+	_sourse->hardware()->socketDisconnect(_sockindex);
+	_status = FLPROG_NOT_REDY_STATUS;
+	_errorCode = FLPROG_ETHERNET_SOKET_NOT_INIT_ERROR;
+	return FLPROG_ERROR;
 }
 
 size_t FLProgEthernetServer::write(uint8_t b)
@@ -93,25 +73,30 @@ size_t FLProgEthernetServer::write(uint8_t b)
 }
 size_t FLProgEthernetServer::write(const uint8_t *buffer, size_t size)
 {
-	uint8_t chip, maxindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
-
-	chip = _sourse->hardware()->getChip();
-	if (!chip)
-		return 0;
-#if FLPROG_ETHERNET_MAX_SOCK_NUM > 4
-	if (chip == 51)
-		maxindex = 4; // W5100 chip never supports more than 4 sockets
-#endif
-	available();
-	for (uint8_t i = 0; i < maxindex; i++)
+	if (_sourse->hardware()->socketStatus(_sockindex) == FLPROG_SN_SR_ESTABLISHED)
 	{
-		if (server_port[i] == _port)
-		{
-			if (_sourse->hardware()->socketStatus(i) == FLPROG_SN_SR_ESTABLISHED)
-			{
-				_sourse->hardware()->socketSend(i, buffer, size);
-			}
-		}
+		_sourse->hardware()->socketSend(_sockindex, buffer, size);
 	}
 	return size;
+}
+
+int FLProgEthernetServer::available()
+{
+	return _sourse->hardware()->socketRecvAvailable(_sockindex);
+}
+
+int FLProgEthernetServer::read()
+{
+	uint8_t b;
+	if (_sourse->hardware()->socketRecv(_sockindex, &b, 1) > 0)
+	{
+		return b;
+	}
+	return -1;
+}
+
+void FLProgEthernetServer::println(String s)
+{
+	print(s);
+	print("\n");
 }

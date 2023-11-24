@@ -12,6 +12,8 @@ public:
     FLProgEthernetClient(FlprogAbstractEthernet *sourse);
     FLProgEthernetClient(FlprogAbstractEthernet *sourse, uint8_t s);
 
+    void setServerData(uint8_t s);
+
     virtual void init(FlprogAbstractEthernet *sourse);
     uint8_t status();
     virtual int connect(IPAddress ip, uint16_t port);
