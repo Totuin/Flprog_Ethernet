@@ -1,9 +1,10 @@
 #pragma once
 #include <Arduino.h>
-
+#include "flprogUtilites.h"
+#include "flprogAbstactEthernetClasses.h"
 #include "flprogDns.h"
 
-class FLProgEthernetClient : public Print
+class FLProgEthernetClient : public FLProgAbstactEthernetTCPChanel
 {
 public:
     FLProgEthernetClient(){};
@@ -14,10 +15,9 @@ public:
     uint8_t status();
     int connect(IPAddress ip, uint16_t port);
     int connect(const char *host, uint16_t port);
-    virtual size_t write(uint8_t);
-    virtual size_t write(const uint8_t *buf, size_t size);
+   
     int available();
-    int read();
+ 
     int read(uint8_t *buf, size_t size);
     int peek();
     void flush();
@@ -29,20 +29,15 @@ public:
     uint16_t remotePort();
     void setConnectionTimeout(uint16_t timeout) { _timeout = timeout; }
     void setDnsCacheStorageTime(uint32_t time) { _dnsCacheStorageTime = time; }
-    uint8_t getStatus() { return _status; };
-    uint8_t getError() { return _errorCode; }
+
 
 private:
-    FLProgAbstractTcpInterface *_sourse;
     FLProgDNSClient _dns;
 
     uint8_t _sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM; 
     uint32_t _timeout = 1000;
     uint32_t _startConnectTime;
     bool isInit = false;
-
-    uint8_t _status = FLPROG_NOT_REDY_STATUS;
-    uint8_t _errorCode = FLPROG_NOT_ERROR;
 
     String _dnsCachedHost = "";
     IPAddress _dnsCachedIP = FLPROG_INADDR_NONE;

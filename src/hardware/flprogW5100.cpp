@@ -20,8 +20,8 @@ uint8_t FLProgWiznetClass::socetConnected(uint8_t soket)
 	if (soket < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
 		uint8_t s = socketStatus(soket);
-		return !((s == FLPROG_SN_SR_LISTEN) || (s == FLPROG_SN_SR_CLOSED) || (s == FLPROG_SN_SR_FIN_WAIT) ||
-				 ((s == FLPROG_SN_SR_CLOSE_WAIT) && !socketRecvAvailable(soket)));
+		return !((s == FLPROG_WIZNET_SN_SR_LISTEN) || (s == FLPROG_WIZNET_SN_SR_CLOSED) || (s == FLPROG_WIZNET_SN_SR_FIN_WAIT) ||
+				 ((s == FLPROG_WIZNET_SN_SR_CLOSE_WAIT) && !socketRecvAvailable(soket)));
 	}
 	return 0;
 }
@@ -54,7 +54,7 @@ size_t FLProgWiznetClass::writeToSoket(const uint8_t *buffer, size_t size, uint8
 {
 	if (soket < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
-		if (socketStatus(soket) == FLPROG_SN_SR_ESTABLISHED)
+		if (socketStatus(soket) == FLPROG_WIZNET_SN_SR_ESTABLISHED)
 		{
 			return socketSend(soket, buffer, size);
 		}
@@ -67,7 +67,7 @@ uint8_t FLProgWiznetClass::isConnectStatusSoket(uint8_t soket)
 	if (soket < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
 		uint8_t stat = socketStatus(soket);
-		return ((stat == FLPROG_SN_SR_ESTABLISHED) || (stat == FLPROG_SN_SR_CLOSE_WAIT));
+		return ((stat == FLPROG_WIZNET_SN_SR_ESTABLISHED) || (stat == FLPROG_WIZNET_SN_SR_CLOSE_WAIT));
 	}
 	return 0;
 }
@@ -76,7 +76,7 @@ uint8_t FLProgWiznetClass::isCosedStatusSoket(uint8_t soket)
 {
 	if (soket < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
-		return (socketStatus(soket) == FLPROG_SN_SR_CLOSED);
+		return (socketStatus(soket) == FLPROG_WIZNET_SN_SR_CLOSED);
 	}
 	return 0;
 }
@@ -98,13 +98,13 @@ uint8_t FLProgWiznetClass::checkInit()
 		{
 			if (i < FLPROG_ETHERNET_MAX_SOCK_NUM)
 			{
-				writeSn(i, FLPROG_SN_RX_SIZE, SSIZE >> 10);
-				writeSn(i, FLPROG_SN_TX_SIZE, SSIZE >> 10);
+				writeSn(i, FLPROG_WIZNET_SN_RX_SIZE, SSIZE >> 10);
+				writeSn(i, FLPROG_WIZNET_SN_TX_SIZE, SSIZE >> 10);
 			}
 			else
 			{
-				writeSn(i, FLPROG_SN_RX_SIZE, 0);
-				writeSn(i, FLPROG_SN_TX_SIZE, 0);
+				writeSn(i, FLPROG_WIZNET_SN_RX_SIZE, 0);
+				writeSn(i, FLPROG_WIZNET_SN_TX_SIZE, 0);
 			}
 		}
 	}
@@ -240,7 +240,7 @@ uint16_t FLProgWiznetClass::localPort(uint8_t soc)
 	}
 	uint16_t port;
 	beginTransaction();
-	port = readSn16(soc, FLPROG_SN_PORT);
+	port = readSn16(soc, FLPROG_WIZNET_SN_PORT);
 	endTransaction();
 	return port;
 }
@@ -253,7 +253,7 @@ IPAddress FLProgWiznetClass::remoteIP(uint8_t soc)
 	}
 	uint8_t buffer[4];
 	beginTransaction();
-	readSn(soc, FLPROG_SN_DIPR, buffer, 4);
+	readSn(soc, FLPROG_WIZNET_SN_DIPR, buffer, 4);
 	endTransaction();
 	return IPAddress(buffer);
 }
@@ -266,7 +266,7 @@ uint16_t FLProgWiznetClass::remotePort(uint8_t soc)
 	}
 	uint16_t port;
 	beginTransaction();
-	port = readSn16(soc, FLPROG_SN_DPORT);
+	port = readSn16(soc, FLPROG_WIZNET_SN_DPORT);
 	endTransaction();
 	return port;
 }
@@ -308,13 +308,13 @@ void FLProgWiznetClass::setIPAddress(IPAddress addr)
 {
 	uint8_t buffer[4];
 	flprog::ipToArray(addr, buffer);
-	write(FLPROG_SIPR, buffer, 4);
+	write(FLPROG_WIZNET_SIPR, buffer, 4);
 }
 
 IPAddress FLProgWiznetClass::getIPAddress()
 {
 	uint8_t buffer[4];
-	read(FLPROG_SIPR, buffer, 4);
+	read(FLPROG_WIZNET_SIPR, buffer, 4);
 	return IPAddress(buffer[0], buffer[1], buffer[2], buffer[3]);
 }
 
@@ -322,13 +322,13 @@ void FLProgWiznetClass::setGatewayIp(IPAddress addr)
 {
 	uint8_t buffer[4];
 	flprog::ipToArray(addr, buffer);
-	write(FLPROG_GAR, buffer, 4);
+	write(FLPROG_WIZNET_GAR, buffer, 4);
 }
 
 IPAddress FLProgWiznetClass::getGatewayIp()
 {
 	uint8_t buffer[4] = {0, 0, 0, 0};
-	read(FLPROG_GAR, buffer, 4);
+	read(FLPROG_WIZNET_GAR, buffer, 4);
 	return IPAddress(buffer[0], buffer[1], buffer[2], buffer[3]);
 }
 
@@ -336,13 +336,13 @@ void FLProgWiznetClass::setSubnetMask(IPAddress addr)
 {
 	uint8_t buffer[4];
 	flprog::ipToArray(addr, buffer);
-	write(FLPROG_SUBR, buffer, 4);
+	write(FLPROG_WIZNET_SUBR, buffer, 4);
 }
 
 IPAddress FLProgWiznetClass::getSubnetMask()
 {
 	uint8_t buffer[4] = {0, 0, 0, 0};
-	read(FLPROG_SUBR, buffer, 4);
+	read(FLPROG_WIZNET_SUBR, buffer, 4);
 	return IPAddress(buffer[0], buffer[1], buffer[2], buffer[3]);
 }
 
@@ -358,7 +358,7 @@ void FLProgWiznetClass::setRetransmissionTime(uint16_t timeout)
 void FLProgWiznetClass::setRetransmissionCount(uint8_t retry)
 {
 	beginTransaction();
-	write(FLPROG_RCR, retry);
+	write(FLPROG_WIZNET_RCR, retry);
 	endTransaction();
 }
 
@@ -395,10 +395,10 @@ void FLProgWiznetClass::write16(uint16_t address, uint16_t _data)
 uint8_t FLProgWiznetClass::softReset(void)
 {
 	uint16_t count = 0;
-	write(FLPROG_MR, 0x80);
+	write(FLPROG_WIZNET_MR, 0x80);
 	do
 	{
-		uint8_t mr = read(FLPROG_MR);
+		uint8_t mr = read(FLPROG_WIZNET_MR);
 
 		if (mr == 0)
 			return 1;
@@ -414,18 +414,18 @@ uint8_t FLProgWiznetClass::isW5100(void)
 	{
 		return 0;
 	}
-	write(FLPROG_MR, 0x10);
-	if (read(FLPROG_MR) != 0x10)
+	write(FLPROG_WIZNET_MR, 0x10);
+	if (read(FLPROG_WIZNET_MR) != 0x10)
 	{
 		return 0;
 	}
-	write(FLPROG_MR, 0x12);
-	if (read(FLPROG_MR) != 0x12)
+	write(FLPROG_WIZNET_MR, 0x12);
+	if (read(FLPROG_WIZNET_MR) != 0x12)
 	{
 		return 0;
 	}
-	write(FLPROG_MR, 0x00);
-	if (read(FLPROG_MR) != 0x00)
+	write(FLPROG_WIZNET_MR, 0x00);
+	if (read(FLPROG_WIZNET_MR) != 0x00)
 	{
 		return 0;
 	}
@@ -439,22 +439,22 @@ uint8_t FLProgWiznetClass::isW5200(void)
 	{
 		return 0;
 	}
-	write(FLPROG_MR, 0x08);
-	if (read(FLPROG_MR) != 0x08)
+	write(FLPROG_WIZNET_MR, 0x08);
+	if (read(FLPROG_WIZNET_MR) != 0x08)
 	{
 		return 0;
 	}
-	write(FLPROG_MR, 0x10);
-	if (read(FLPROG_MR) != 0x10)
+	write(FLPROG_WIZNET_MR, 0x10);
+	if (read(FLPROG_WIZNET_MR) != 0x10)
 	{
 		return 0;
 	}
-	write(FLPROG_MR, 0x00);
-	if (read(FLPROG_MR) != 0x00)
+	write(FLPROG_WIZNET_MR, 0x00);
+	if (read(FLPROG_WIZNET_MR) != 0x00)
 	{
 		return 0;
 	}
-	int ver = read(FLPROG_VERSIONR_W5200);
+	int ver = read(FLPROG_WIZNET_VERSIONR_W5200);
 	if (ver != 3)
 	{
 		return 0;
@@ -469,20 +469,20 @@ uint8_t FLProgWiznetClass::isW5500(void)
 	{
 		return 0;
 	}
-	write(FLPROG_MR, 0x08);
-	if (read(FLPROG_MR) != 0x08)
+	write(FLPROG_WIZNET_MR, 0x08);
+	if (read(FLPROG_WIZNET_MR) != 0x08)
 	{
 		return 0;
 	}
-	write(FLPROG_MR, 0x10);
-	if (read(FLPROG_MR) != 0x10)
+	write(FLPROG_WIZNET_MR, 0x10);
+	if (read(FLPROG_WIZNET_MR) != 0x10)
 	{
 		return 0;
 	}
-	write(FLPROG_MR, 0x00);
-	if (read(FLPROG_MR) != 0x00)
+	write(FLPROG_WIZNET_MR, 0x00);
+	if (read(FLPROG_WIZNET_MR) != 0x00)
 		return 0;
-	int ver = read(FLPROG_VERSIONR_W5500);
+	int ver = read(FLPROG_WIZNET_VERSIONR_W5500);
 	if (ver != 4)
 	{
 		return 0;
@@ -504,7 +504,7 @@ uint8_t FLProgWiznetClass::getLinkStatus()
 	if (_chip == FLPROG_ETHERNET_W5200)
 	{
 		beginTransaction();
-		phystatus = read(FLPROG_PSTATUS_W5200);
+		phystatus = read(FLPROG_WIZNET_PSTATUS_W5200);
 		endTransaction();
 		if (phystatus & 0x20)
 		{
@@ -516,7 +516,7 @@ uint8_t FLProgWiznetClass::getLinkStatus()
 	if (_chip == FLPROG_ETHERNET_W5500)
 	{
 		beginTransaction();
-		phystatus = read(FLPROG_PHYCFGR_W5500);
+		phystatus = read(FLPROG_WIZNET_PHYCFGR_W5500);
 		endTransaction();
 		if (phystatus & 0x01)
 		{
@@ -689,8 +689,8 @@ uint16_t FLProgWiznetClass::read(uint16_t addr, uint8_t *buf, uint16_t len)
 
 void FLProgWiznetClass::execCmdSn(SOCKET s, uint8_t _cmd)
 {
-	writeSn(s, FLPROG_SN_CR, _cmd);
-	while (readSn(s, FLPROG_SN_CR))
+	writeSn(s, FLPROG_WIZNET_SN_CR, _cmd);
+	while (readSn(s, FLPROG_WIZNET_SN_CR))
 		;
 }
 
@@ -718,8 +718,8 @@ uint8_t FLProgWiznetClass::socketBegin(uint8_t protocol, uint16_t port)
 	beginTransaction();
 	for (s = 0; s < maxindex; s++)
 	{
-		status[s] = readSn(s, FLPROG_SN_SR);
-		if (status[s] == FLPROG_SN_SR_CLOSED)
+		status[s] = readSn(s, FLPROG_WIZNET_SN_SR);
+		if (status[s] == FLPROG_WIZNET_SN_SR_CLOSED)
 		{
 			privateMaceSoket(s, protocol, port);
 			endTransaction();
@@ -728,9 +728,9 @@ uint8_t FLProgWiznetClass::socketBegin(uint8_t protocol, uint16_t port)
 	}
 	for (s = 0; s < maxindex; s++)
 	{
-		if ((status[s] == FLPROG_SN_SR_LAST_ACK) || (status[s] == FLPROG_SN_SR_TIME_WAIT) || (status[s] == FLPROG_SN_SR_CLOSING))
+		if ((status[s] == FLPROG_WIZNET_SN_SR_LAST_ACK) || (status[s] == FLPROG_WIZNET_SN_SR_TIME_WAIT) || (status[s] == FLPROG_WIZNET_SN_SR_CLOSING))
 		{
-			execCmdSn(s, FLPROG_SOCK_CMD_CLOSE);
+			execCmdSn(s, FLPROG_WIZNET_SOCK_CMD_CLOSE);
 			privateMaceSoket(s, protocol, port);
 			endTransaction();
 			return s;
@@ -743,21 +743,21 @@ uint8_t FLProgWiznetClass::socketBegin(uint8_t protocol, uint16_t port)
 void FLProgWiznetClass::privateMaceSoket(uint8_t soc, uint8_t protocol, uint16_t port)
 {
 	delayMicroseconds(250); // TODO: is this needed??
-	writeSn(soc, FLPROG_SN_MR, protocol);
-	writeSn(soc, FLPROG_SN_IR, 0xFF);
+	writeSn(soc, FLPROG_WIZNET_SN_MR, protocol);
+	writeSn(soc, FLPROG_WIZNET_SN_IR, 0xFF);
 	if (port > 0)
 	{
-		writeSn16(soc, FLPROG_SN_PORT, port);
+		writeSn16(soc, FLPROG_WIZNET_SN_PORT, port);
 	}
 	else
 	{
 		if (++_local_port < 49152)
 			_local_port = 49152;
-		writeSn16(soc, FLPROG_SN_PORT, _local_port);
+		writeSn16(soc, FLPROG_WIZNET_SN_PORT, _local_port);
 	}
-	execCmdSn(soc, FLPROG_SOCK_CMD_OPEN);
+	execCmdSn(soc, FLPROG_WIZNET_SOCK_CMD_OPEN);
 	_state[soc].RX_RSR = 0;
-	_state[soc].RX_RD = readSn16(soc, FLPROG_SN_RX_RD); // always zero?
+	_state[soc].RX_RD = readSn16(soc, FLPROG_WIZNET_SN_RX_RD); // always zero?
 	_state[soc].RX_inc = 0;
 	_state[soc].TX_FSR = 0;
 }
@@ -774,8 +774,8 @@ uint8_t FLProgWiznetClass::socketBeginMulticast(uint8_t protocol, IPAddress ip, 
 	beginTransaction();
 	for (s = 0; s < maxindex; s++)
 	{
-		status[s] = readSn(s, FLPROG_SN_SR);
-		if (status[s] == FLPROG_SN_SR_CLOSED)
+		status[s] = readSn(s, FLPROG_WIZNET_SN_SR);
+		if (status[s] == FLPROG_WIZNET_SN_SR_CLOSED)
 		{
 			privateMaceSoketMulticast(s, protocol, ip, port);
 			endTransaction();
@@ -784,9 +784,9 @@ uint8_t FLProgWiznetClass::socketBeginMulticast(uint8_t protocol, IPAddress ip, 
 	}
 	for (s = 0; s < maxindex; s++)
 	{
-		if ((status[s] == FLPROG_SN_SR_LAST_ACK) || (status[s] == FLPROG_SN_SR_TIME_WAIT) || (status[s] == FLPROG_SN_SR_CLOSING))
+		if ((status[s] == FLPROG_WIZNET_SN_SR_LAST_ACK) || (status[s] == FLPROG_WIZNET_SN_SR_TIME_WAIT) || (status[s] == FLPROG_WIZNET_SN_SR_CLOSING))
 		{
-			execCmdSn(s, FLPROG_SOCK_CMD_CLOSE);
+			execCmdSn(s, FLPROG_WIZNET_SOCK_CMD_CLOSE);
 			privateMaceSoketMulticast(s, protocol, ip, port);
 			endTransaction();
 			return s;
@@ -799,17 +799,17 @@ uint8_t FLProgWiznetClass::socketBeginMulticast(uint8_t protocol, IPAddress ip, 
 void FLProgWiznetClass::privateMaceSoketMulticast(uint8_t soc, uint8_t protocol, IPAddress ip, uint16_t port)
 {
 	delayMicroseconds(250); // TODO: is this needed??
-	writeSn(soc, FLPROG_SN_MR, protocol);
-	writeSn(soc, FLPROG_SN_IR, 0xFF);
+	writeSn(soc, FLPROG_WIZNET_SN_MR, protocol);
+	writeSn(soc, FLPROG_WIZNET_SN_IR, 0xFF);
 	if (port > 0)
 	{
-		writeSn16(soc, FLPROG_SN_PORT, port);
+		writeSn16(soc, FLPROG_WIZNET_SN_PORT, port);
 	}
 	else
 	{
 		if (++_local_port < 49152)
 			_local_port = 49152;
-		writeSn16(soc, FLPROG_SN_PORT, _local_port);
+		writeSn16(soc, FLPROG_WIZNET_SN_PORT, _local_port);
 	}
 	byte mac[] = {0x01, 0x00, 0x5E, 0x00, 0x00, 0x00};
 	mac[3] = ip[1] & 0x7F;
@@ -820,12 +820,12 @@ void FLProgWiznetClass::privateMaceSoketMulticast(uint8_t soc, uint8_t protocol,
 	buf1[1] = ip[1];
 	buf1[2] = ip[2];
 	buf1[3] = ip[3];
-	writeSn(soc, FLPROG_SN_DIPR, buf1, 4); // 239.255.0.1
-	writeSn16(soc, FLPROG_SN_DPORT, port);
-	writeSn(soc, FLPROG_SN_DHAR, mac, 6);
-	execCmdSn(soc, FLPROG_SOCK_CMD_OPEN);
+	writeSn(soc, FLPROG_WIZNET_SN_DIPR, buf1, 4); // 239.255.0.1
+	writeSn16(soc, FLPROG_WIZNET_SN_DPORT, port);
+	writeSn(soc, FLPROG_WIZNET_SN_DHAR, mac, 6);
+	execCmdSn(soc, FLPROG_WIZNET_SOCK_CMD_OPEN);
 	_state[soc].RX_RSR = 0;
-	_state[soc].RX_RD = readSn16(soc, FLPROG_SN_RX_RD); // always zero?
+	_state[soc].RX_RD = readSn16(soc, FLPROG_WIZNET_SN_RX_RD); // always zero?
 	_state[soc].RX_inc = 0;
 	_state[soc].TX_FSR = 0;
 }
@@ -837,7 +837,7 @@ uint8_t FLProgWiznetClass::socketStatus(uint8_t s)
 		return 0;
 	}
 	beginTransaction();
-	uint8_t status = readSn(s, FLPROG_SN_SR);
+	uint8_t status = readSn(s, FLPROG_WIZNET_SN_SR);
 	endTransaction();
 	return status;
 }
@@ -845,20 +845,20 @@ uint8_t FLProgWiznetClass::socketStatus(uint8_t s)
 void FLProgWiznetClass::socketClose(uint8_t s)
 {
 	beginTransaction();
-	execCmdSn(s, FLPROG_SOCK_CMD_CLOSE);
+	execCmdSn(s, FLPROG_WIZNET_SOCK_CMD_CLOSE);
 	endTransaction();
 }
 
 uint8_t FLProgWiznetClass::socketListen(uint8_t s)
 {
 	beginTransaction();
-	if (readSn(s, FLPROG_SN_SR) != FLPROG_SN_SR_INIT)
+	if (readSn(s, FLPROG_WIZNET_SN_SR) != FLPROG_WIZNET_SN_SR_INIT)
 	{
 		endTransaction();
 		_errorCode = FLPROG_ETHERNET_SOKET_NOT_INIT_ERROR;
 		return FLPROG_ERROR;
 	}
-	execCmdSn(s, FLPROG_SOCK_CMD_LISTEN);
+	execCmdSn(s, FLPROG_WIZNET_SOCK_CMD_LISTEN);
 	endTransaction();
 	_errorCode = FLPROG_NOT_ERROR;
 	return FLPROG_SUCCESS;
@@ -869,9 +869,9 @@ uint8_t FLProgWiznetClass::socketConnect(uint8_t s, IPAddress ip, uint16_t port)
 	uint8_t buffer[4];
 	flprog::ipToArray(ip, buffer);
 	beginTransaction();
-	writeSn(s, FLPROG_SN_DIPR, buffer, 4);
-	writeSn16(s, FLPROG_SN_DPORT, port);
-	execCmdSn(s, FLPROG_SOCK_CMD_CONNECT);
+	writeSn(s, FLPROG_WIZNET_SN_DIPR, buffer, 4);
+	writeSn16(s, FLPROG_WIZNET_SN_DPORT, port);
+	execCmdSn(s, FLPROG_WIZNET_SOCK_CMD_CONNECT);
 	endTransaction();
 	return FLPROG_SUCCESS;
 }
@@ -881,7 +881,7 @@ uint8_t FLProgWiznetClass::socketDisconnect(uint8_t s)
 	if (soket < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
 		beginTransaction();
-		execCmdSn(s, FLPROG_SOCK_CMD_DISCON);
+		execCmdSn(s, FLPROG_WIZNET_SOCK_CMD_DISCON);
 		endTransaction();
 		return FLPROG_SUCCESS;
 	}
@@ -894,10 +894,10 @@ uint8_t FLProgWiznetClass::socketDisconnect(uint8_t s)
 uint16_t FLProgWiznetClass::getSnRX_RSR(uint8_t s)
 {
 	uint16_t val, prev;
-	prev = readSn16(s, FLPROG_SN_RX_RSR);
+	prev = readSn16(s, FLPROG_WIZNET_SN_RX_RSR);
 	while (1)
 	{
-		val = readSn16(s, FLPROG_SN_RX_RSR);
+		val = readSn16(s, FLPROG_WIZNET_SN_RX_RSR);
 		if (val == prev)
 		{
 			return val;
@@ -938,9 +938,9 @@ int FLProgWiznetClass::socketRecv(uint8_t s, uint8_t *buf, int16_t len)
 	}
 	if (ret == 0)
 	{
-		uint8_t status = readSn(s, FLPROG_SN_CR);
-		if ((status == FLPROG_SN_SR_LISTEN) || (status == FLPROG_SN_SR_CLOSED) ||
-			(status == FLPROG_SN_SR_CLOSE_WAIT))
+		uint8_t status = readSn(s, FLPROG_WIZNET_SN_CR);
+		if ((status == FLPROG_WIZNET_SN_SR_LISTEN) || (status == FLPROG_WIZNET_SN_SR_CLOSED) ||
+			(status == FLPROG_WIZNET_SN_SR_CLOSE_WAIT))
 		{
 			ret = 0;
 		}
@@ -963,8 +963,8 @@ int FLProgWiznetClass::socketRecv(uint8_t s, uint8_t *buf, int16_t len)
 		if (inc >= 250 || _state[s].RX_RSR == 0)
 		{
 			_state[s].RX_inc = 0;
-			writeSn16(s, FLPROG_SN_RX_RD, ptr);
-			execCmdSn(s, FLPROG_SOCK_CMD_RECV);
+			writeSn16(s, FLPROG_WIZNET_SN_RX_RD, ptr);
+			execCmdSn(s, FLPROG_WIZNET_SOCK_CMD_RECV);
 		}
 		else
 		{
@@ -1010,10 +1010,10 @@ uint8_t FLProgWiznetClass::socketPeek(uint8_t s)
 uint16_t FLProgWiznetClass::getSnTX_FSR(uint8_t s)
 {
 	uint16_t val, prev;
-	prev = readSn16(s, FLPROG_SN_TX_FSR);
+	prev = readSn16(s, FLPROG_WIZNET_SN_TX_FSR);
 	while (1)
 	{
-		val = readSn16(s, FLPROG_SN_TX_FSR);
+		val = readSn16(s, FLPROG_WIZNET_SN_TX_FSR);
 		if (val == prev)
 		{
 			_state[s].TX_FSR = val;
@@ -1025,7 +1025,7 @@ uint16_t FLProgWiznetClass::getSnTX_FSR(uint8_t s)
 
 void FLProgWiznetClass::write_data(uint8_t s, uint16_t data_offset, const uint8_t *data, uint16_t len)
 {
-	uint16_t ptr = readSn16(s, FLPROG_SN_TX_WR);
+	uint16_t ptr = readSn16(s, FLPROG_WIZNET_SN_TX_WR);
 	ptr += data_offset;
 	uint16_t offset = ptr & SMASK;
 	uint16_t dstAddr = offset + SBASE(s);
@@ -1041,7 +1041,7 @@ void FLProgWiznetClass::write_data(uint8_t s, uint16_t data_offset, const uint8_
 		write(SBASE(s), data + size, len - size);
 	}
 	ptr += len;
-	writeSn16(s, FLPROG_SN_TX_WR, ptr);
+	writeSn16(s, FLPROG_WIZNET_SN_TX_WR, ptr);
 }
 
 uint16_t FLProgWiznetClass::socketSend(uint8_t s, const uint8_t *buf, uint16_t len)
@@ -1061,9 +1061,9 @@ uint16_t FLProgWiznetClass::socketSend(uint8_t s, const uint8_t *buf, uint16_t l
 	{
 		beginTransaction();
 		freesize = getSnTX_FSR(s);
-		status = readSn(s, FLPROG_SN_SR);
+		status = readSn(s, FLPROG_WIZNET_SN_SR);
 		endTransaction();
-		if ((status != FLPROG_SN_SR_ESTABLISHED) && (status != FLPROG_SN_SR_CLOSE_WAIT))
+		if ((status != FLPROG_WIZNET_SN_SR_ESTABLISHED) && (status != FLPROG_WIZNET_SN_SR_CLOSE_WAIT))
 		{
 			ret = 0;
 			break;
@@ -1072,10 +1072,10 @@ uint16_t FLProgWiznetClass::socketSend(uint8_t s, const uint8_t *buf, uint16_t l
 	} while (freesize < ret);
 	beginTransaction();
 	write_data(s, 0, (uint8_t *)buf, ret);
-	execCmdSn(s, FLPROG_SOCK_CMD_SEND);
-	while ((readSn(s, FLPROG_SN_IR) & FLPROG_SN_IR_SEND_OK) != FLPROG_SN_IR_SEND_OK)
+	execCmdSn(s, FLPROG_WIZNET_SOCK_CMD_SEND);
+	while ((readSn(s, FLPROG_WIZNET_SN_IR) & FLPROG_WIZNET_SN_IR_SEND_OK) != FLPROG_WIZNET_SN_IR_SEND_OK)
 	{
-		if (readSn(s, FLPROG_SN_SR) == FLPROG_SN_SR_CLOSED)
+		if (readSn(s, FLPROG_WIZNET_SN_SR) == FLPROG_WIZNET_SN_SR_CLOSED)
 		{
 			endTransaction();
 			return 0;
@@ -1085,7 +1085,7 @@ uint16_t FLProgWiznetClass::socketSend(uint8_t s, const uint8_t *buf, uint16_t l
 		beginTransaction();
 	}
 	/* +2008.01 bj */
-	writeSn(s, FLPROG_SN_IR, FLPROG_SN_IR_SEND_OK);
+	writeSn(s, FLPROG_WIZNET_SN_IR, FLPROG_WIZNET_SN_IR_SEND_OK);
 	endTransaction();
 	return ret;
 }
@@ -1096,9 +1096,9 @@ uint16_t FLProgWiznetClass::socketSendAvailable(uint8_t s)
 	uint16_t freesize = 0;
 	beginTransaction();
 	freesize = getSnTX_FSR(s);
-	status = readSn(s, FLPROG_SN_SR);
+	status = readSn(s, FLPROG_WIZNET_SN_SR);
 	endTransaction();
-	if ((status == FLPROG_SN_SR_ESTABLISHED) || (status == FLPROG_SN_SR_CLOSE_WAIT))
+	if ((status == FLPROG_WIZNET_SN_SR_ESTABLISHED) || (status == FLPROG_WIZNET_SN_SR_CLOSE_WAIT))
 	{
 		return freesize;
 	}
@@ -1137,8 +1137,8 @@ uint8_t FLProgWiznetClass::socketStartUDP(uint8_t s, uint8_t *addr, uint16_t por
 		return FLPROG_ERROR;
 	}
 	beginTransaction();
-	writeSn(s, FLPROG_SN_DIPR, addr, 4);
-	writeSn16(s, FLPROG_SN_DPORT, port);
+	writeSn(s, FLPROG_WIZNET_SN_DIPR, addr, 4);
+	writeSn16(s, FLPROG_WIZNET_SN_DPORT, port);
 	endTransaction();
 	_errorCode = FLPROG_NOT_ERROR;
 	return FLPROG_SUCCESS;
@@ -1152,18 +1152,18 @@ uint8_t FLProgWiznetClass::socketSendUDP(uint8_t s)
 		return FLPROG_ERROR;
 	}
 	beginTransaction();
-	execCmdSn(s, FLPROG_SOCK_CMD_SEND);
-	while ((readSn(s, FLPROG_SN_IR) & FLPROG_SN_IR_SEND_OK) != FLPROG_SN_IR_SEND_OK)
+	execCmdSn(s, FLPROG_WIZNET_SOCK_CMD_SEND);
+	while ((readSn(s, FLPROG_WIZNET_SN_IR) & FLPROG_WIZNET_SN_IR_SEND_OK) != FLPROG_WIZNET_SN_IR_SEND_OK)
 	{
-		if (readSn(s, FLPROG_SN_IR) & FLPROG_SN_IR_TIMEOUT)
+		if (readSn(s, FLPROG_WIZNET_SN_IR) & FLPROG_WIZNET_SN_IR_TIMEOUT)
 		{
-			writeSn(s, FLPROG_SN_IR, (FLPROG_SN_IR_SEND_OK | FLPROG_SN_IR_TIMEOUT));
+			writeSn(s, FLPROG_WIZNET_SN_IR, (FLPROG_WIZNET_SN_IR_SEND_OK | FLPROG_WIZNET_SN_IR_TIMEOUT));
 			endTransaction();
 			_errorCode = FLPROG_ETHERNET_SOKET_SEND_TIMEOUT_ERROR;
 			return FLPROG_ERROR;
 		}
 	}
-	writeSn(s, FLPROG_SN_IR, FLPROG_SN_IR_SEND_OK);
+	writeSn(s, FLPROG_WIZNET_SN_IR, FLPROG_WIZNET_SN_IR_SEND_OK);
 	endTransaction();
 	_errorCode = FLPROG_NOT_ERROR;
 	return FLPROG_SUCCESS;

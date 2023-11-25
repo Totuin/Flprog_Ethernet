@@ -1,6 +1,7 @@
 #pragma once
 #include <Arduino.h>
-#include "flprogEthernetUdp.h"
+#include "flprogUtilites.h"
+#include "flprogAbstactEthernetClasses.h"
 
 /* DHCP state machine. */
 #define FLPROG_STATE_DHCP_START 0
@@ -20,20 +21,15 @@
 /* DHCP message OP code */
 #define FLPROG_DHCP_BOOTREQUEST 1
 #define FLPROG_DHCP_BOOTREPLY 2
-
 #define FLPROG_DHCP_HTYPE10MB 1
 #define FLPROG_DHCP_HTYPE100MB 2
-
 #define FLPROG_DHCP_HLENETHERNET 6
 #define FLPROG_DHCP_HOPS 0
 #define FLPROG_DHCP_SECS 0
-
 #define FLPROG_MAGIC_COOKIE 0x63825363
 #define FLPROG_MAX_DHCP_OPT 16
-
-#define FLPROG_HOST_NAME "WIZnet"
+#define FLPROG_HOST_NAME "WizNet"
 #define FLPROG_DEFAULT_LEASE 900 // default lease time in seconds
-
 #define FLPROG_DHCP_CHECK_NONE 0
 #define FLPROG_DHCP_CHECK_RENEW_FAIL 1
 #define FLPROG_DHCP_CHECK_RENEW_OK 2
@@ -53,72 +49,23 @@
 #define FLPROG_DHCP_TIMEOUT_MESSAGE_TYPE 255
 #define FLPROG_DHCP_ERROR_ID_MESSAGE_TYPE 253
 
-enum
-{
-	padOption = 0,
-	subnetMask = 1,
-	timerOffset = 2,
-	routersOnSubnet = 3,
-	/* timeServer		=	4,
-	nameServer		=	5,*/
-	dns = 6,
-	/*logServer		=	7,
-	cookieServer		=	8,
-	lprServer		=	9,
-	impressServer		=	10,
-	resourceLocationServer	=	11,*/
-	hostName = 12,
-	/*bootFileSize		=	13,
-	meritDumpFile		=	14,*/
-	domainName = 15,
-	/*swapServer		=	16,
-	rootPath		=	17,
-	extentionsPath		=	18,
-	IPforwarding		=	19,
-	nonLocalSourceRouting	=	20,
-	policyFilter		=	21,
-	maxDgramReasmSize	=	22,
-	defaultIPTTL		=	23,
-	pathMTUagingTimeout	=	24,
-	pathMTUplateauTable	=	25,
-	ifMTU			=	26,
-	allSubnetsLocal		=	27,
-	broadcastAddr		=	28,
-	performMaskDiscovery	=	29,
-	maskSupplier		=	30,
-	performRouterDiscovery	=	31,
-	routerSolicitationAddr	=	32,
-	staticRoute		=	33,
-	trailerEncapsulation	=	34,
-	arpCacheTimeout		=	35,
-	ethernetEncapsulation	=	36,
-	tcpDefaultTTL		=	37,
-	tcpKeepaliveInterval	=	38,
-	tcpKeepaliveGarbage	=	39,
-	nisDomainName		=	40,
-	nisServers		=	41,
-	ntpServers		=	42,
-	vendorSpecificInfo	=	43,
-	netBIOSnameServer	=	44,
-	netBIOSdgramDistServer	=	45,
-	netBIOSnodeType		=	46,
-	netBIOSscope		=	47,
-	xFontServer		=	48,
-	xDisplayManager		=	49,*/
-	dhcpRequestedIPaddr = 50,
-	dhcpIPaddrLeaseTime = 51,
-	/*dhcpOptionOverload	=	52,*/
-	dhcpMessageType = 53,
-	dhcpServerIdentifier = 54,
-	dhcpParamRequest = 55,
-	/*dhcpMsg			=	56,
-	dhcpMaxMsgSize		=	57,*/
-	dhcpT1value = 58,
-	dhcpT2value = 59,
-	/*dhcpClassIdentifier	=	60,*/
-	dhcpClientIdentifier = 61,
-	endOption = 255
-};
+// Опции DHCP
+#define FLPROG_DHCP_PAD_OPTION 0
+#define FLPROG_DHCP_SUBNET_MASK_OPTION 1
+#define FLPROG_DHCP_TIMER_OFFSET_MASK_OPTION 2
+#define FLPROG_DHCP_ROUTERS_ON_SUBNET_MASK_OPTION 3
+#define FLPROG_DHCP_DNS_OPTION 6
+#define FLPROG_DHCP_HOST_NAME_OPTION 12
+#define FLPROG_DHCP_DOMAIN_NAME_OPTION 15
+#define FLPROG_DHCP_REQESTED_IP_ADDR_OPTION 50
+#define FLPROG_DHCP_IP_ADDR_LEASE_TIME_OPTION 51
+#define FLPROG_DHCP_MESSAGE_TYPE_OPTION 53
+#define FLPROG_DHCP_SERVER_IDENTIFIER_OPTION 54
+#define FLPROG_DHCP_PARAM_REQUEST_OPTION 55
+#define FLPROG_DHCP_T1_VALUE_OPTION 58
+#define FLPROG_DHCP_T2_VALUE_OPTION 59
+#define FLPROG_DHCP_CLIENT_IDENTIFIER_OPTION 61
+#define FLPROG_DHCP_END_OPTION 255
 
 typedef struct _FLPROG_RIP_MSG_FIXED
 {
@@ -136,7 +83,7 @@ typedef struct _FLPROG_RIP_MSG_FIXED
 	uint8_t chaddr[6];
 } FLPROG_RIP_MSG_FIXED;
 
-class FLProgDhcpClass
+class FLProgDhcpClass : public FLProgAbstactEthernetUDPChanel
 {
 public:
 	IPAddress getLocalIp();
@@ -146,29 +93,25 @@ public:
 	IPAddress getDnsServerIp();
 	int beginWithDHCP(uint8_t *, unsigned long timeout = 20000, unsigned long responseTimeout = 4000);
 	int checkLease();
-	uint8_t getStatus() { return _status; };
-	uint8_t getError() { return _errorCode; }
 
 private:
+	int request_DHCP_lease();
+	void reset_DHCP_lease();
+	uint8_t cheskStateMashine();
+	void send_DHCP_MESSAGE(uint8_t, uint16_t);
+	void printByte(char *, uint8_t);
+	uint8_t parseDHCPResponse();
+
 	uint32_t _dhcpInitialTransactionId;
 	uint32_t _dhcpTransactionId;
 	uint8_t _dhcpMacAddr[6];
-	FLProgEthernetUDP _udp;
-	uint8_t _errorCode = FLPROG_NOT_ERROR;
-	uint8_t _status = FLPROG_NOT_REDY_STATUS;
-#ifdef __arm__
-	uint8_t _dhcpLocalIp[4] __attribute__((aligned(4)));
-	uint8_t _dhcpSubnetMask[4] __attribute__((aligned(4)));
-	uint8_t _dhcpGatewayIp[4] __attribute__((aligned(4)));
-	uint8_t _dhcpDhcpServerIp[4] __attribute__((aligned(4)));
-	uint8_t _dhcpDnsServerIp[4] __attribute__((aligned(4)));
-#else
+
 	uint8_t _dhcpLocalIp[4];
 	uint8_t _dhcpSubnetMask[4];
 	uint8_t _dhcpGatewayIp[4];
 	uint8_t _dhcpDhcpServerIp[4];
 	uint8_t _dhcpDnsServerIp[4];
-#endif
+
 	uint32_t _dhcpLeaseTime;
 	uint32_t _dhcpT1, _dhcpT2;
 	uint32_t _renewInSec;
@@ -180,13 +123,4 @@ private:
 	uint32_t _startDhcpReqestTime;
 	uint32_t _lastCheckDhcpReqestTime;
 	uint32_t _respId;
-
-	int request_DHCP_lease();
-	void reset_DHCP_lease();
-
-	uint8_t cheskStateMashine();
-	void send_DHCP_MESSAGE(uint8_t, uint16_t);
-	void printByte(char *, uint8_t);
-
-	uint8_t parseDHCPResponse();
 };

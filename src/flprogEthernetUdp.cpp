@@ -1,65 +1,20 @@
 
 #include "flprogEthernetUdp.h"
 
-FLProgEthernetUDP::FLProgEthernetUDP(FlprogAbstractEthernet *sourse)
+FLProgEthernetUDP::FLProgEthernetUDP(FLProgAbstractTcpInterface *sourse)
 {
-	_sourse = sourse;
-	_dns.setSourse(sourse);
+	setSourse(sourse);
 }
 
-void FLProgEthernetUDP::setSourse(FlprogAbstractEthernet *sourse)
+void FLProgEthernetUDP::setSourse(FLProgAbstractTcpInterface *sourse)
 {
-	_sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	_dns.setSourse(sourse);
 	_sourse = sourse;
-}
-
-uint8_t FLProgEthernetUDP::begin(uint16_t port)
-{
-	if (!_sourse->hardware()->isInit())
-	{
-		_status = FLPROG_NOT_REDY_STATUS;
-		_errorCode = FLPROG_ETHERNET_INTERFACE_NOT_READY_ERROR;
-		return FLPROG_ERROR;
-	}
-	if (_port == port)
-	{
-		if (_sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
-		{
-			_status = FLPROG_READY_STATUS;
-			_errorCode = FLPROG_NOT_ERROR;
-			return FLPROG_SUCCESS;
-		}
-	}
-	if (_sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
-	{
-		_sourse->hardware()->socketClose(_sockindex);
-	}
-	_sockindex = _sourse->hardware()->socketBegin(FLPROG_SN_MR_UDP, port);
-	if (_sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
-	{
-		_status = FLPROG_READY_STATUS;
-		_errorCode = FLPROG_ETHERNET_SOKET_INDEX_ERROR;
-		return FLPROG_SUCCESS;
-	}
-	_port = port;
-	_remaining = 0;
-	_status = FLPROG_READY_STATUS;
-	return FLPROG_SUCCESS;
 }
 
 int FLProgEthernetUDP::available()
-{
-	return _remaining;
-}
 
-void FLProgEthernetUDP::stop()
-{
-	_sourse->closeSoket(_sockindex);
-	_sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
-}
-
-int FLProgEthernetUDP::beginPacket(const char *host, uint16_t port)
+	int FLProgEthernetUDP::beginPacket(const char *host, uint16_t port)
 {
 	if (_status != FLPROG_WAIT_ETHERNET_DNS_STATUS)
 	{
@@ -105,113 +60,6 @@ int FLProgEthernetUDP::beginPacket(const char *host, uint16_t port)
 	_dnsCachedHost = String(host);
 	_dnsCachedIP = IPAddress(remote_addr[0], remote_addr[1], remote_addr[2], remote_addr[3]);
 	return beginPacket(_dnsCachedIP, port);
-}
-
-int FLProgEthernetUDP::beginPacket(IPAddress ip, uint16_t port)
-{
-	_offset = 0;
-	_status = FLPROG_READY_STATUS;
-	uint8_t buffer[4];
-	flprog::ipToArray(ip, buffer);
-	if (_sourse->startUdpSoket(_sockindex, buffer, port))
-	{
-		_errorCode = FLPROG_NOT_ERROR;
-		return FLPROG_SUCCESS;
-	}
-	_errorCode = FLPROG_ETHERNET_UDP_SOKET_START_ERROR;
-	return FLPROG_ERROR;
-}
-
-int FLProgEthernetUDP::endPacket()
-{
-	_sourse->sendUdpSoket(_sockindex);
-	return FLPROG_SUCCESS;
-}
-
-size_t FLProgEthernetUDP::write(uint8_t byte)
-{
-	return write(&byte, 1);
-}
-
-size_t FLProgEthernetUDP::write(const uint8_t *buffer, size_t size)
-{
-	uint16_t bytes_written = _sourse->bufferDataSoket(_sockindex, _offset, buffer, size);
-	_offset += bytes_written;
-	return bytes_written;
-}
-
-int FLProgEthernetUDP::parsePacket()
-{
-	while (_remaining)
-	{
-		read((uint8_t *)NULL, _remaining);
-	}
-
-	if (_sourse->availableSoket(_sockindex) > 0)
-	{
-
-		uint8_t tmpBuf[8];
-		int ret = 0;
-		ret = _sourse->recvSoket(_sockindex, tmpBuf, 8);
-		if (ret > 0)
-		{
-			_remoteIP = tmpBuf;
-			_remotePort = tmpBuf[4];
-			_remotePort = (_remotePort << 8) + tmpBuf[5];
-			_remaining = tmpBuf[6];
-			_remaining = (_remaining << 8) + tmpBuf[7];
-			ret = _remaining;
-		}
-		return ret;
-	}
-	return 0;
-}
-
-int FLProgEthernetUDP::read()
-{
-	uint8_t byte;
-	if ((_remaining > 0) && (_sourse->recvSoket(_sockindex, &byte, 1) > 0))
-	{
-		_remaining--;
-		return byte;
-	}
-	return -1;
-}
-
-int FLProgEthernetUDP::read(uint8_t *buffer, size_t len)
-{
-	if (_remaining > 0)
-	{
-		int got;
-		if (_remaining <= len)
-		{
-			got = _sourse->recvSoket(_sockindex, buffer, _remaining);
-		}
-		else
-		{
-			got = _sourse->recvSoket(_sockindex, buffer, len);
-		}
-		if (got > 0)
-		{
-			_remaining -= got;
-			return got;
-		}
-	}
-	return -1;
-}
-
-int FLProgEthernetUDP::peek()
-{
-	if (_sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM || _remaining == 0)
-	{
-		return -1;
-	}
-	return _sourse->peekSoket(_sockindex);
-}
-
-void FLProgEthernetUDP::flush()
-{
-	// TODO: we should wait for TX buffer to be emptied
 }
 
 uint8_t FLProgEthernetUDP::beginMulticast(IPAddress ip, uint16_t port)

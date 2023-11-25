@@ -144,16 +144,6 @@ size_t FLProgEthernetClient::write(uint8_t b)
 	return write(&b, 1);
 }
 
-size_t FLProgEthernetClient::write(const uint8_t *buf, size_t size)
-{
-	uint8_t res = _sourse->writeToSoket(buf, size, _sockindex);
-	if (res)
-	{
-		return res;
-	}
-	setWriteError();
-	return 0;
-}
 
 int FLProgEthernetClient::available()
 {
@@ -172,10 +162,7 @@ int FLProgEthernetClient::peek()
 	return _sourse->peekSoket(_sockindex);
 }
 
-int FLProgEthernetClient::read()
-{
-	return _sourse->readFromSoket(_sockindex);
-}
+
 
 void FLProgEthernetClient::flush()
 { /*

@@ -1,9 +1,5 @@
 #include "flprogDhcp.h"
 
-void FLProgDhcpClass::setSourse(FlprogAbstractEthernet *sourse)
-{
-	_udp.setSourse(sourse);
-}
 
 int FLProgDhcpClass::beginWithDHCP(uint8_t *mac, unsigned long timeout, unsigned long responseTimeout)
 {
@@ -35,11 +31,10 @@ int FLProgDhcpClass::request_DHCP_lease()
 		_status = FLPROG_WAIT_ETHERNET_DHCP_STATUS;
 		_dhcpTransactionId = random(1UL, 2000UL);
 		_dhcpInitialTransactionId = _dhcpTransactionId;
-		_udp.stop();
-		if ((_udp.begin(FLPROG_DHCP_CLIENT_PORT)) != FLPROG_SUCCESS)
+		stop();
+		if ((begin(FLPROG_DHCP_CLIENT_PORT)) != FLPROG_SUCCESS)
 		{
 			_status = FLPROG_READY_STATUS;
-			_errorCode = _udp.getError();
 			return FLPROG_ERROR;
 		}
 	}
@@ -49,7 +44,7 @@ int FLProgDhcpClass::request_DHCP_lease()
 
 		return FLPROG_WITE;
 	}
-	_udp.stop();
+stop();
 	_dhcpTransactionId++;
 	_lastCheckLeaseMillis = millis();
 	return result;
@@ -160,7 +155,7 @@ void FLProgDhcpClass::send_DHCP_MESSAGE(uint8_t messageType, uint16_t secondsEla
 	uint8_t buffer[32];
 	memset(buffer, 0, 32);
 	IPAddress dest_addr(255, 255, 255, 255); // Broadcast address
-	if ((_udp.beginPacket(dest_addr, FLPROG_DHCP_SERVER_PORT)) != FLPROG_SUCCESS)
+	if ((beginPacket(dest_addr, FLPROG_DHCP_SERVER_PORT)) != FLPROG_SUCCESS)
 	{
 		return;
 	}
@@ -168,69 +163,69 @@ void FLProgDhcpClass::send_DHCP_MESSAGE(uint8_t messageType, uint16_t secondsEla
 	buffer[1] = FLPROG_DHCP_HTYPE10MB;	  // htype
 	buffer[2] = FLPROG_DHCP_HLENETHERNET; // hlen
 	buffer[3] = FLPROG_DHCP_HOPS;		  // hops
-	unsigned long xid = flprogW5100Htonl(_dhcpTransactionId);
+	unsigned long xid = flprogEthernetHtonl(_dhcpTransactionId);
 	memcpy(buffer + 4, &(xid), 4);
 	/*
 	buffer[8] = ((secondsElapsed & 0xff00) >> 8);
 	buffer[9] = (secondsElapsed & 0x00ff);
 	*/
-	unsigned short flags = flprogW5100Htons(FLPROG_DHCP_FLAGSBROADCAST);
+	unsigned short flags = flprogEthernetHtons(FLPROG_DHCP_FLAGSBROADCAST);
 	memcpy(buffer + 10, &(flags), 2);
-	_udp.write(buffer, 28);
+	write(buffer, 28);
 	memset(buffer, 0, 32);			 // clear local buffer
 	memcpy(buffer, _dhcpMacAddr, 6); // chaddr
-	_udp.write(buffer, 16);
+	write(buffer, 16);
 	memset(buffer, 0, 32); // clear local buffer
 	for (int i = 0; i < 6; i++)
 	{
-		_udp.write(buffer, 32);
+		write(buffer, 32);
 	}
 	buffer[0] = (uint8_t)((FLPROG_MAGIC_COOKIE >> 24) & 0xFF);
 	buffer[1] = (uint8_t)((FLPROG_MAGIC_COOKIE >> 16) & 0xFF);
 	buffer[2] = (uint8_t)((FLPROG_MAGIC_COOKIE >> 8) & 0xFF);
 	buffer[3] = (uint8_t)(FLPROG_MAGIC_COOKIE & 0xFF);
-	buffer[4] = dhcpMessageType;
+	buffer[4] = FLPROG_DHCP_MESSAGE_TYPE_OPTION;
 	buffer[5] = 0x01;
 	buffer[6] = messageType; // DHCP_REQUEST;
-	buffer[7] = dhcpClientIdentifier;
+	buffer[7] = FLPROG_DHCP_CLIENT_IDENTIFIER_OPTION;
 	buffer[8] = 0x07;
 	buffer[9] = 0x01;
 	memcpy(buffer + 10, _dhcpMacAddr, 6);
-	buffer[16] = hostName;
+	buffer[16] = FLPROG_DHCP_HOST_NAME_OPTION;
 	buffer[17] = strlen(FLPROG_HOST_NAME) + 6; // length of hostname + last 3 bytes of mac address
 	strcpy((char *)&(buffer[18]), FLPROG_HOST_NAME);
 	printByte((char *)&(buffer[24]), _dhcpMacAddr[3]);
 	printByte((char *)&(buffer[26]), _dhcpMacAddr[4]);
 	printByte((char *)&(buffer[28]), _dhcpMacAddr[5]);
-	_udp.write(buffer, 30);
+	write(buffer, 30);
 	if (messageType == FLPROG_DHCP_REQUEST)
 	{
-		buffer[0] = dhcpRequestedIPaddr;
+		buffer[0] = FLPROG_DHCP_REQESTED_IP_ADDR_OPTION;
 		buffer[1] = 0x04;
 		buffer[2] = _dhcpLocalIp[0];
 		buffer[3] = _dhcpLocalIp[1];
 		buffer[4] = _dhcpLocalIp[2];
 		buffer[5] = _dhcpLocalIp[3];
 
-		buffer[6] = dhcpServerIdentifier;
+		buffer[6] = FLPROG_DHCP_SERVER_IDENTIFIER_OPTION;
 		buffer[7] = 0x04;
 		buffer[8] = _dhcpDhcpServerIp[0];
 		buffer[9] = _dhcpDhcpServerIp[1];
 		buffer[10] = _dhcpDhcpServerIp[2];
 		buffer[11] = _dhcpDhcpServerIp[3];
-		_udp.write(buffer, 12);
+		write(buffer, 12);
 	}
-	buffer[0] = dhcpParamRequest;
+	buffer[0] = FLPROG_DHCP_PARAM_REQUEST_OPTION;
 	buffer[1] = 0x06;
-	buffer[2] = subnetMask;
-	buffer[3] = routersOnSubnet;
-	buffer[4] = dns;
-	buffer[5] = domainName;
-	buffer[6] = dhcpT1value;
-	buffer[7] = dhcpT2value;
-	buffer[8] = endOption;
-	_udp.write(buffer, 9);
-	_udp.endPacket();
+	buffer[2] = FLPROG_DHCP_SUBNET_MASK_OPTION;
+	buffer[3] = FLPROG_DHCP_ROUTERS_ON_SUBNET_MASK_OPTION;
+	buffer[4] = FLPROG_DHCP_DNS_OPTION;
+	buffer[5] = FLPROG_DHCP_DOMAIN_NAME_OPTION;
+	buffer[6] = FLPROG_DHCP_T1_VALUE_OPTION;
+	buffer[7] = FLPROG_DHCP_T2_VALUE_OPTION;
+	buffer[8] = FLPROG_DHCP_END_OPTION;
+	write(buffer, 9);
+	endPacket();
 }
 
 uint8_t FLProgDhcpClass::parseDHCPResponse()
@@ -243,7 +238,7 @@ uint8_t FLProgDhcpClass::parseDHCPResponse()
 	{
 		return FLPROG_DHCP_WITE_CHECK_REQEST_MESSAGE_TYPE;
 	}
-	if (_udp.parsePacket() <= 0)
+	if (parsePacket() <= 0)
 	{
 		_lastCheckDhcpReqestTime = millis();
 		return FLPROG_DHCP_WITE_CHECK_REQEST_MESSAGE_TYPE;
@@ -251,93 +246,92 @@ uint8_t FLProgDhcpClass::parseDHCPResponse()
 	uint8_t type = 0;
 	uint8_t opt_len = 0;
 	FLPROG_RIP_MSG_FIXED fixedMsg;
-	_udp.read((uint8_t *)&fixedMsg, sizeof(FLPROG_RIP_MSG_FIXED));
-	if (fixedMsg.op == FLPROG_DHCP_BOOTREPLY && _udp.remotePort() == FLPROG_DHCP_SERVER_PORT)
+	read((uint8_t *)&fixedMsg, sizeof(FLPROG_RIP_MSG_FIXED));
+	if (fixedMsg.op == FLPROG_DHCP_BOOTREPLY && remotePort() == FLPROG_DHCP_SERVER_PORT)
 	{
-		_respId = flporgW5100Ntohl(fixedMsg.xid);
+		_respId = flporgEthernetNtohl(fixedMsg.xid);
 		if (memcmp(fixedMsg.chaddr, _dhcpMacAddr, 6) != 0 ||
 			(_respId < _dhcpInitialTransactionId) ||
 			(_respId > _dhcpTransactionId))
 		{
-			_udp.flush(); // FIXME
+			flush(); // FIXME
 			return FLPROG_DHCP_ERROR_ID_MESSAGE_TYPE;
 		}
 		memcpy(_dhcpLocalIp, fixedMsg.yiaddr, 4);
-		_udp.read((uint8_t *)NULL, 240 - (int)sizeof(FLPROG_RIP_MSG_FIXED));
-		while (_udp.available() > 0)
+		read((uint8_t *)NULL, 240 - (int)sizeof(FLPROG_RIP_MSG_FIXED));
+		while (available() > 0)
 		{
-			switch (_udp.read())
+			switch (read())
 			{
-			case endOption:
+			case FLPROG_DHCP_END_OPTION:
 				break;
 
-			case padOption:
+			case FLPROG_DHCP_PAD_OPTION:
 				break;
 
-			case dhcpMessageType:
-				opt_len = _udp.read();
-				type = _udp.read();
+			case FLPROG_DHCP_MESSAGE_TYPE_OPTION:
+				opt_len = read();
+				type = read();
 				break;
 
-			case subnetMask:
-				opt_len = _udp.read();
-				_udp.read(_dhcpSubnetMask, 4);
+			case FLPROG_DHCP_SUBNET_MASK_OPTION:
+				opt_len = read();
+				read(_dhcpSubnetMask, 4);
 				break;
 
-			case routersOnSubnet:
-				opt_len = _udp.read();
-				_udp.read(_dhcpGatewayIp, 4);
-				_udp.read((uint8_t *)NULL, opt_len - 4);
+			case FLPROG_DHCP_ROUTERS_ON_SUBNET_MASK_OPTION:
+				opt_len = read();
+				read(_dhcpGatewayIp, 4);
+				read((uint8_t *)NULL, opt_len - 4);
 				break;
 
-			case dns:
-				opt_len = _udp.read();
-				_udp.read(_dhcpDnsServerIp, 4);
-				_udp.read((uint8_t *)NULL, opt_len - 4);
+			case FLPROG_DHCP_DNS_OPTION:
+				opt_len = read();
+				read(_dhcpDnsServerIp, 4);
+				read((uint8_t *)NULL, opt_len - 4);
 				break;
 
-			case dhcpServerIdentifier:
-				opt_len = _udp.read();
+			case FLPROG_DHCP_SERVER_IDENTIFIER_OPTION:
+				opt_len = read();
 				if (IPAddress(_dhcpDhcpServerIp) == IPAddress((uint32_t)0) ||
-					IPAddress(_dhcpDhcpServerIp) == _udp.remoteIP())
+					IPAddress(_dhcpDhcpServerIp) == remoteIP())
 				{
-					_udp.read(_dhcpDhcpServerIp, sizeof(_dhcpDhcpServerIp));
+					read(_dhcpDhcpServerIp, sizeof(_dhcpDhcpServerIp));
 				}
 				else
 				{
 					// Skip over the rest of this option
-					_udp.read((uint8_t *)NULL, opt_len);
+					read((uint8_t *)NULL, opt_len);
 				}
 				break;
 
-			case dhcpT1value:
+			case FLPROG_DHCP_T1_VALUE_OPTION:
 				opt_len = _udp.read();
 				_udp.read((uint8_t *)&_dhcpT1, sizeof(_dhcpT1));
-				_dhcpT1 = flporgW5100Ntohl(_dhcpT1);
+				_dhcpT1 = flporgEthernetNtohl(_dhcpT1);
 				break;
 
-			case dhcpT2value:
-				opt_len = _udp.read();
-				_udp.read((uint8_t *)&_dhcpT2, sizeof(_dhcpT2));
-				_dhcpT2 = flporgW5100Ntohl(_dhcpT2);
+			case FLPROG_DHCP_T2_VALUE_OPTION:
+				opt_len = read();
+				read((uint8_t *)&_dhcpT2, sizeof(_dhcpT2));
+				_dhcpT2 = flporgEthernetNtohl(_dhcpT2);
 				break;
 
-			case dhcpIPaddrLeaseTime:
-				opt_len = _udp.read();
-				_udp.read((uint8_t *)&_dhcpLeaseTime, sizeof(_dhcpLeaseTime));
-				_dhcpLeaseTime = flporgW5100Ntohl(_dhcpLeaseTime);
+			case FLPROG_DHCP_IP_ADDR_LEASE_TIME_OPTION:
+				opt_len = read();
+				read((uint8_t *)&_dhcpLeaseTime, sizeof(_dhcpLeaseTime));
+				_dhcpLeaseTime = flporgEthernetNtohl(_dhcpLeaseTime);
 				_renewInSec = _dhcpLeaseTime;
 				break;
 
 			default:
-				opt_len = _udp.read();
-				// Skip over the rest of this option
-				_udp.read((uint8_t *)NULL, opt_len);
+				opt_len = read();
+				read((uint8_t *)NULL, opt_len);
 				break;
 			}
 		}
 	}
-	_udp.flush(); // FIXME
+	flush();
 	return type;
 }
 

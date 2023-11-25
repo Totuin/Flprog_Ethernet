@@ -63,18 +63,8 @@ uint8_t FLProgEthernetServer::begin()
 	return FLPROG_ERROR;
 }
 
-size_t FLProgEthernetServer::write(uint8_t b)
-{
-	return write(&b, 1);
-}
-size_t FLProgEthernetServer::write(const uint8_t *buffer, size_t size)
-{
-	if (checkReadySourse() == FLPROG_ERROR)
-	{
-		return size;
-	}
-	return _sourse->writeToSoket(buffer, size, _sockindex);
-}
+
+
 
 int FLProgEthernetServer::available()
 {
@@ -85,14 +75,6 @@ int FLProgEthernetServer::available()
 	return _sourse->availableSoket(_sockindex);
 }
 
-int FLProgEthernetServer::read()
-{
-	if (checkReadySourse() == FLPROG_ERROR)
-	{
-		return -1;
-	}
-	return _sourse->readFromSoket(_sockindex);
-}
 
 uint8_t FLProgEthernetServer::connected()
 {

@@ -1,6 +1,7 @@
 #pragma once
-#include "hardware/flprogAbstractEthernetHardware.h"
-#include "flprogAbstractEthernet.h"
+#include "flprogUtilites.h"
+#include "flprogAbstactEthernetClasses.h"
+#include "hardware/flprogW5100.h"
 #include "flprogEthernetUdp.h"
 #include "flprogDns.h"
 #include "flprogDhcp.h"
@@ -43,7 +44,7 @@ private:
 	uint32_t _lastReconnectTime = flprog::timeBack(_reconnectEthernetPeriod);
 };
 
-class FLProgWiznetInterface : public FlprogEthernetClass
+class FLProgWiznetInterface : public FLProgAbstractTcpInterface
 {
 public:
 	FLProgWiznetInterface(int pinCs = -1, uint8_t bus = 255);
@@ -81,6 +82,7 @@ public:
 	virtual bool isImitation() { return false; }
 	int pinCs() { return _hardware.pinCs(); }
 	uint8_t spiBus() { return _hardware.spiBus(); }
+	virtual uint8_t type() { return FLPROG_ETHERNET_INTERFACE; }
 
 protected:
 	FLProgWiznetClass _hardware;

@@ -1,7 +1,98 @@
 #pragma once
-// #include "flprogSPI.h"
-#include "flprogAbstractEthernet.h"
-#include "flprogAbstractEthernetHardware.h"
+#include "flprogUtilites.h"
+#include "flprogAbstactEthernetClasses.h"
+
+#ifndef FLPROG_ETHERNET_MAX_SOCK_NUM
+#if defined(RAMEND) && defined(RAMSTART) && ((RAMEND - RAMSTART) <= 2048)
+#define FLPROG_ETHERNET_MAX_SOCK_NUM 4
+#else
+#define FLPROG_ETHERNET_MAX_SOCK_NUM 8
+#endif
+#endif
+
+#define SPI_ETHERNET_SPEED 14000000
+#if defined(ARDUINO_ARCH_ARC32)
+#undef SPI_ETHERNET_SPEED
+#define SPI_ETHERNET_SPEED 8000000
+#endif
+
+#if defined(__SAMD21G18A__)
+#undef SPI_ETHERNET_SPEED
+#define SPI_ETHERNET_SPEED 8000000
+#endif
+
+#ifndef FLPROG_ETHERNET_MAX_SOCK_NUM
+#if defined(RAMEND) && defined(RAMSTART) && ((RAMEND - RAMSTART) <= 2048)
+#define FLPROG_ETHERNET_MAX_SOCK_NUM 4
+#else
+#define FLPROG_ETHERNET_MAX_SOCK_NUM 8
+#endif
+#endif
+
+#define FLPROG_WIZNET_SN_MR_CLOSE 0x00
+#define FLPROG_WIZNET_SN_MR_TCP 0x21
+#define FLPROG_WIZNET_SN_MR_UDP 0x02
+#define FLPROG_WIZNET_SN_MR_MULTI 0x80
+
+#define FLPROG_WIZNET_SOCK_CMD_OPEN 0x01
+#define FLPROG_WIZNET_SOCK_CMD_CLOSE 0x10
+#define FLPROG_WIZNET_SOCK_CMD_LISTEN 0x02
+#define FLPROG_WIZNET_SOCK_CMD_CONNECT 0x04
+#define FLPROG_WIZNET_SOCK_CMD_DISCON 0x08
+#define FLPROG_WIZNET_SOCK_CMD_RECV 0x40
+#define FLPROG_WIZNET_SOCK_CMD_SEND 0x20
+
+#define FLPROG_WIZNET_SN_IR_SEND_OK 0x10
+#define FLPROG_WIZNET_SN_IR_TIMEOUT 0x08
+
+#define FLPROG_WIZNET_SN_SR_ESTABLISHED 0x17
+#define FLPROG_WIZNET_SN_SR_CLOSE_WAIT 0x1C
+#define FLPROG_WIZNET_SN_SR_LISTEN 0x14
+#define FLPROG_WIZNET_SN_SR_CLOSED 0x00
+#define FLPROG_WIZNET_SN_SR_FIN_WAIT 0x18
+#define FLPROG_WIZNET_SN_SR_LAST_ACK 0x1D
+#define FLPROG_WIZNET_SN_SR_TIME_WAIT 0x1B
+#define FLPROG_WIZNET_SN_SR_FIN_WAIT 0x18
+#define FLPROG_WIZNET_SN_SR_CLOSING 0x1A
+#define FLPROG_WIZNET_SN_SR_INIT 0x13
+
+#define FLPROG_WIZNET_GAR 0x0001            // Gateway IP address
+#define FLPROG_WIZNET_SUBR 0x0005           // Subnet mask address
+#define FLPROG_WIZNET_SHAR 0x0009           // Source MAC address
+#define FLPROG_WIZNET_SIPR 0x000F           // Source IP address
+#define FLPROG_WIZNET_RTR 0x0017            // Timeout address
+#define FLPROG_WIZNET_RCR 0x0019            // Retry count
+#define FLPROG_WIZNET_RMSR 0x001A           // Receive memory size (W5100 only)
+#define FLPROG_WIZNET_TMSR 0x001B           // Transmit memory size (W5100 only)
+#define FLPROG_WIZNET_MR 0x0000             // Mode
+#define FLPROG_WIZNET_VERSIONR_W5200 0x001F // Chip Version Register (W5200 only)
+#define FLPROG_WIZNET_VERSIONR_W5500 0x0039 // Chip Version Register (W5500 only)
+#define FLPROG_WIZNET_PSTATUS_W5200 0x0035  // PHY Status
+#define FLPROG_WIZNET_PHYCFGR_W5500 0x002E  // PHY Configuration register, default: 10111xxx
+
+#define FLPROG_WIZNET_SN_CR 0x0001      // Command
+#define FLPROG_WIZNET_SN_SR 0x0003      // Status
+#define FLPROG_WIZNET_SN_MR 0x0000      // Mode
+#define FLPROG_WIZNET_SN_IR 0x0002      // Interrupt
+#define FLPROG_WIZNET_SN_PORT 0x0004    // Source Port
+#define FLPROG_WIZNET_SN_RX_RD 0x0028   // RX Read Pointer
+#define FLPROG_WIZNET_SN_RX_SIZE 0x001E // RX Memory Size (W5200 only)
+#define FLPROG_WIZNET_SN_RX_RSR 0x0026  // RX Free Size
+#define FLPROG_WIZNET_SN_TX_SIZE 0x001F // RX Memory Size (W5200 only)
+#define FLPROG_WIZNET_SN_TX_FSR 0x0020  // TX Free Size
+#define FLPROG_WIZNET_SN_TX_WR 0x0024   // TX Write Pointer
+#define FLPROG_WIZNET_SN_DIPR 0x000C    // Destination IP Addr
+#define FLPROG_WIZNET_SN_DPORT 0x0010   // Destination Port
+#define FLPROG_WIZNET_SN_DHAR 0x0006    // Destination Hardw Addr
+
+
+typedef struct
+{
+  uint16_t RX_RSR; // Number of bytes received
+  uint16_t RX_RD;  // Address to read
+  uint16_t TX_FSR; // Free space ready for transmit
+  uint8_t RX_inc;  // how much have we advanced RX_RD
+} socketstate_t;
 
 class FLProgWiznetClass : public FLProgAbstractEthernetHardware
 {
@@ -11,7 +102,7 @@ public:
   void setPinCs(int pinCs);
   virtual uint8_t getLinkStatus();
 
-  uint8_t SoketConnected(uint8_t soket);
+  uint8_t soketConnected(uint8_t soket);
   int readFromSoket(uint8_t soket);
   uint8_t readFromSoket(uint8_t soket, uint8_t *buf, int16_t len);
   size_t writeToSoket(const uint8_t *buffer, size_t size, uint8_t soket);
@@ -23,8 +114,8 @@ public:
   virtual IPAddress getGatewayIp();
   virtual void setSubnetMask(IPAddress addr);
   virtual IPAddress getSubnetMask();
-  virtual void setMACAddress(const uint8_t *addr) { write(FLPROG_SHAR, addr, 6); };
-  virtual void getMACAddress(uint8_t *addr) { read(FLPROG_SHAR, addr, 6); };
+  virtual void setMACAddress(const uint8_t *addr) { write(FLPROG_WIZNET_SHAR, addr, 6); };
+  virtual void getMACAddress(uint8_t *addr) { read(FLPROG_WIZNET_SHAR, addr, 6); };
   virtual void setIPAddress(IPAddress addr);
   virtual IPAddress getIPAddress();
   virtual void setRetransmissionTime(uint16_t timeout);
@@ -110,7 +201,7 @@ private:
 
   uint16_t _local_port = 49152; // 49152 to 65535 TODO: randomize this when not using DHCP, but how?
   const uint16_t CH_SIZE = 0x0100;
-  socketstate_t _state[FLPROG_ETHERNET_MAX_SOCK_NUM];
+  withnetSocketState_t _state[FLPROG_ETHERNET_MAX_SOCK_NUM];
   uint8_t _spiBus = 255;
   int _pinCs = -1;
   uint8_t softReset(void);
