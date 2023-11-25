@@ -15,23 +15,23 @@ uint8_t FLProgWiznetClass::init()
 	return FLPROG_WITE;
 }
 
-uint8_t FLProgWiznetClass::socetConnected(uint8_t socet)
+uint8_t FLProgWiznetClass::socetConnected(uint8_t soket)
 {
-	if (socet < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	if (soket < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
-		uint8_t s = socketStatus(socet);
+		uint8_t s = socketStatus(soket);
 		return !((s == FLPROG_SN_SR_LISTEN) || (s == FLPROG_SN_SR_CLOSED) || (s == FLPROG_SN_SR_FIN_WAIT) ||
-				 ((s == FLPROG_SN_SR_CLOSE_WAIT) && !socketRecvAvailable(socet)));
+				 ((s == FLPROG_SN_SR_CLOSE_WAIT) && !socketRecvAvailable(soket)));
 	}
 	return 0;
 }
 
-int FLProgWiznetClass::readFromSocet(uint8_t socet)
+int FLProgWiznetClass::readFromSoket(uint8_t soket)
 {
 	uint8_t b;
-	if (socet < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	if (soket < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
-		if (socketRecv(socet, &b, 1) > 0)
+		if (socketRecv(soket, &b, 1) > 0)
 		{
 
 			return b;
@@ -40,47 +40,45 @@ int FLProgWiznetClass::readFromSocet(uint8_t socet)
 	return -1;
 }
 
-size_t FLProgWiznetClass::writeToSocet(const uint8_t *buffer, size_t size, uint8_t socet)
+uint8_t FLProgWiznetClass::readFromSoket(uint8_t soket, uint8_t *buf, int16_t len)
 {
-	if (socet < FLPROG_ETHERNET_MAX_SOCK_NUM)
-	{
-		if (socketStatus(socet) == FLPROG_SN_SR_ESTABLISHED)
-		{
-			socketSend(socet, buffer, size);
-		}
-	}
-	return size;
-}
 
-int FLProgWiznetClass::availableSocet(uint8_t socet)
-{
-	if (socet < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	if (soket < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
-		return socketRecvAvailable(socet);
+		return socketRecv(soket, buf, len);
 	}
 	return 0;
 }
 
-void FLProgWiznetClass::disconnecSocet(uint8_t socet)
+size_t FLProgWiznetClass::writeToSoket(const uint8_t *buffer, size_t size, uint8_t soket)
 {
-	if (socet < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	if (soket < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
-		socketDisconnect(socet);
+		if (socketStatus(soket) == FLPROG_SN_SR_ESTABLISHED)
+		{
+			return socketSend(soket, buffer, size);
+		}
 	}
+	return 0;
 }
 
-uint8_t FLProgWiznetClass::getTCPSocet(uint16_t port)
+uint8_t FLProgWiznetClass::isConnectStatusSoket(uint8_t soket)
 {
-	return socketBegin(FLPROG_SN_MR_TCP, port);
+	if (soket < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
+		uint8_t stat = socketStatus(soket);
+		return ((stat == FLPROG_SN_SR_ESTABLISHED) || (stat == FLPROG_SN_SR_CLOSE_WAIT));
+	}
+	return 0;
 }
 
-bool FLProgWiznetClass::isListenSocet(uint8_t socet)
+uint8_t FLProgWiznetClass::isCosedStatusSoket(uint8_t soket)
 {
-	if (socet < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	if (soket < FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
-		return socketListen(socet);
+		return (socketStatus(soket) == FLPROG_SN_SR_CLOSED);
 	}
-	return false;
+	return 0;
 }
 
 uint8_t FLProgWiznetClass::checkInit()
@@ -236,8 +234,10 @@ void FLProgWiznetClass::MACAddress(uint8_t *mac_address)
 
 uint16_t FLProgWiznetClass::localPort(uint8_t soc)
 {
-	if (soc >= FLPROG_ETHERNET_MAX_SOCK_NUM)
+	if (!(soc < FLPROG_ETHERNET_MAX_SOCK_NUM))
+	{
 		return 0;
+	}
 	uint16_t port;
 	beginTransaction();
 	port = readSn16(soc, FLPROG_SN_PORT);
@@ -260,7 +260,7 @@ IPAddress FLProgWiznetClass::remoteIP(uint8_t soc)
 
 uint16_t FLProgWiznetClass::remotePort(uint8_t soc)
 {
-	if (soc >= FLPROG_ETHERNET_MAX_SOCK_NUM)
+	if (!(soc < FLPROG_ETHERNET_MAX_SOCK_NUM))
 	{
 		return 0;
 	}
@@ -721,7 +721,7 @@ uint8_t FLProgWiznetClass::socketBegin(uint8_t protocol, uint16_t port)
 		status[s] = readSn(s, FLPROG_SN_SR);
 		if (status[s] == FLPROG_SN_SR_CLOSED)
 		{
-			privateMaceSocet(s, protocol, port);
+			privateMaceSoket(s, protocol, port);
 			endTransaction();
 			return s;
 		}
@@ -731,7 +731,7 @@ uint8_t FLProgWiznetClass::socketBegin(uint8_t protocol, uint16_t port)
 		if ((status[s] == FLPROG_SN_SR_LAST_ACK) || (status[s] == FLPROG_SN_SR_TIME_WAIT) || (status[s] == FLPROG_SN_SR_CLOSING))
 		{
 			execCmdSn(s, FLPROG_SOCK_CMD_CLOSE);
-			privateMaceSocet(s, protocol, port);
+			privateMaceSoket(s, protocol, port);
 			endTransaction();
 			return s;
 		}
@@ -740,7 +740,7 @@ uint8_t FLProgWiznetClass::socketBegin(uint8_t protocol, uint16_t port)
 	return FLPROG_ETHERNET_MAX_SOCK_NUM; // all sockets are in use
 }
 
-void FLProgWiznetClass::privateMaceSocet(uint8_t soc, uint8_t protocol, uint16_t port)
+void FLProgWiznetClass::privateMaceSoket(uint8_t soc, uint8_t protocol, uint16_t port)
 {
 	delayMicroseconds(250); // TODO: is this needed??
 	writeSn(soc, FLPROG_SN_MR, protocol);
@@ -777,7 +777,7 @@ uint8_t FLProgWiznetClass::socketBeginMulticast(uint8_t protocol, IPAddress ip, 
 		status[s] = readSn(s, FLPROG_SN_SR);
 		if (status[s] == FLPROG_SN_SR_CLOSED)
 		{
-			privateMaceSocetMulticast(s, protocol, ip, port);
+			privateMaceSoketMulticast(s, protocol, ip, port);
 			endTransaction();
 			return s;
 		}
@@ -787,7 +787,7 @@ uint8_t FLProgWiznetClass::socketBeginMulticast(uint8_t protocol, IPAddress ip, 
 		if ((status[s] == FLPROG_SN_SR_LAST_ACK) || (status[s] == FLPROG_SN_SR_TIME_WAIT) || (status[s] == FLPROG_SN_SR_CLOSING))
 		{
 			execCmdSn(s, FLPROG_SOCK_CMD_CLOSE);
-			privateMaceSocetMulticast(s, protocol, ip, port);
+			privateMaceSoketMulticast(s, protocol, ip, port);
 			endTransaction();
 			return s;
 		}
@@ -796,7 +796,7 @@ uint8_t FLProgWiznetClass::socketBeginMulticast(uint8_t protocol, IPAddress ip, 
 	return FLPROG_ETHERNET_MAX_SOCK_NUM;
 }
 
-void FLProgWiznetClass::privateMaceSocetMulticast(uint8_t soc, uint8_t protocol, IPAddress ip, uint16_t port)
+void FLProgWiznetClass::privateMaceSoketMulticast(uint8_t soc, uint8_t protocol, IPAddress ip, uint16_t port)
 {
 	delayMicroseconds(250); // TODO: is this needed??
 	writeSn(soc, FLPROG_SN_MR, protocol);
@@ -832,6 +832,10 @@ void FLProgWiznetClass::privateMaceSocetMulticast(uint8_t soc, uint8_t protocol,
 
 uint8_t FLProgWiznetClass::socketStatus(uint8_t s)
 {
+	if (!(soc < FLPROG_ETHERNET_MAX_SOCK_NUM))
+	{
+		return 0;
+	}
 	beginTransaction();
 	uint8_t status = readSn(s, FLPROG_SN_SR);
 	endTransaction();
@@ -874,10 +878,13 @@ uint8_t FLProgWiznetClass::socketConnect(uint8_t s, IPAddress ip, uint16_t port)
 
 uint8_t FLProgWiznetClass::socketDisconnect(uint8_t s)
 {
-	beginTransaction();
-	execCmdSn(s, FLPROG_SOCK_CMD_DISCON);
-	endTransaction();
-	return FLPROG_SUCCESS;
+	if (soket < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
+		beginTransaction();
+		execCmdSn(s, FLPROG_SOCK_CMD_DISCON);
+		endTransaction();
+		return FLPROG_SUCCESS;
+	}
 }
 
 /*****************************************/
@@ -984,12 +991,16 @@ uint16_t FLProgWiznetClass::socketRecvAvailable(uint8_t s)
 
 uint8_t FLProgWiznetClass::socketPeek(uint8_t s)
 {
-	uint8_t b;
-	beginTransaction();
-	uint16_t ptr = _state[s].RX_RD;
-	read((ptr & SMASK) + RBASE(s), &b, 1);
-	endTransaction();
-	return b;
+	if (s < FLPROG_ETHERNET_MAX_SOCK_NUM)
+	{
+		uint8_t b;
+		beginTransaction();
+		uint16_t ptr = _state[s].RX_RD;
+		read((ptr & SMASK) + RBASE(s), &b, 1);
+		endTransaction();
+		return b;
+	}
+	return 0;
 }
 
 /*****************************************/

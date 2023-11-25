@@ -12,13 +12,11 @@
 #endif
 
 class FLProgAbstractEthernetHardware;
-class FLProgDNSClient;
 
 class FlprogAbstractEthernet : public FLProgAbstractTcpInterface
 {
 public:
     virtual FLProgAbstractEthernetHardware *hardware() = 0;
-    virtual FLProgDNSClient *dnsClient() = 0;
     virtual uint8_t type() { return FLPROG_ETHERNET_INTERFACE; }
 
 protected:

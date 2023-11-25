@@ -1,31 +1,20 @@
 #pragma once
 #include <Arduino.h>
-#include "Udp.h"
+#include "flprogUtilites.h"
 #include "flprogDns.h"
-#include "hardware/flprogAbstractEthernetHardware.h"
-#include "flprogAbstractEthernet.h"
 
-#ifndef FLPROG_ETHERNET_MAX_SOCK_NUM
-#if defined(RAMEND) && defined(RAMSTART) && ((RAMEND - RAMSTART) <= 2048)
-#define FLPROG_ETHERNET_MAX_SOCK_NUM 4
-#else
-#define FLPROG_ETHERNET_MAX_SOCK_NUM 8
-#endif
-#endif
+
 
 #define FLPROG_UDP_TX_PACKET_MAX_SIZE 24
 
 #define FLPROG_UDP_TIMED_OUT 4
 
-class FLProgDNSClient;
-
-class FLProgEthernetUDP : public UDP
+class FLProgEthernetUDP
 {
 public:
 	FLProgEthernetUDP(){};
 	FLProgEthernetUDP(FlprogAbstractEthernet *sourse);
 	void setSourse(FlprogAbstractEthernet *sourse);
-	void setDNS(FLProgDNSClient *dns) { _dns = dns; }
 	virtual uint8_t begin(uint16_t);
 	virtual uint8_t beginMulticast(IPAddress, uint16_t);
 	virtual void stop();
@@ -34,8 +23,6 @@ public:
 	virtual int endPacket();
 	virtual size_t write(uint8_t);
 	virtual size_t write(const uint8_t *buffer, size_t size);
-
-	using Print::write;
 	virtual int parsePacket();
 	virtual int available();
 	virtual int read();
@@ -52,7 +39,7 @@ public:
 	void setDnsCacheStorageTime(uint32_t time) { _dnsCacheStorageTime = time; }
 
 protected:
-	uint8_t _sockindex;
+	uint8_t _sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
 	uint16_t _remaining;
 	uint8_t _status = FLPROG_NOT_REDY_STATUS;
 	uint8_t _errorCode = FLPROG_NOT_ERROR;
@@ -63,7 +50,7 @@ private:
 	uint16_t _remotePort;
 	uint16_t _offset;
 	FlprogAbstractEthernet *_sourse;
-	FLProgDNSClient *_dns;
+	FLProgDNSClient _dns;
 
 	String _dnsCachedHost = "";
 	IPAddress _dnsCachedIP = FLPROG_INADDR_NONE;

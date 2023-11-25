@@ -1,6 +1,6 @@
 #include "flprogEthernetServer.h"
 
-FLProgEthernetServer::FLProgEthernetServer(FlprogAbstractEthernet *sourse, uint16_t port)
+FLProgEthernetServer::FLProgEthernetServer(FLProgAbstractTcpInterface *sourse, uint16_t port)
 {
 	_sourse = sourse;
 	_port = port;
@@ -43,21 +43,21 @@ uint8_t FLProgEthernetServer::begin()
 	{
 		return FLPROG_ERROR;
 	}
-	_sourse->disconnecSocet(_sockindex);
-	_sockindex = _sourse->getTCPSocet(_port);
+	_sourse->disconnecSoket(_sockindex);
+	_sockindex = _sourse->getTCPSoket(_port);
 	if (_sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
 	{
 		_status = FLPROG_NOT_REDY_STATUS;
 		_errorCode = FLPROG_ETHERNET_SOKET_INDEX_ERROR;
 		return FLPROG_ERROR;
 	}
-	if (_sourse->isListenSocet(_sockindex))
+	if (_sourse->isListenSoket(_sockindex))
 	{
 		_status = FLPROG_READY_STATUS;
 		_errorCode = FLPROG_NOT_ERROR;
 		return FLPROG_SUCCESS;
 	}
-	_sourse->disconnecSocet(_sockindex);
+	_sourse->disconnecSoket(_sockindex);
 	_status = FLPROG_NOT_REDY_STATUS;
 	_errorCode = FLPROG_ETHERNET_SOKET_NOT_INIT_ERROR;
 	return FLPROG_ERROR;
@@ -73,7 +73,7 @@ size_t FLProgEthernetServer::write(const uint8_t *buffer, size_t size)
 	{
 		return size;
 	}
-	return _sourse->writeToSocet(buffer, size, _sockindex);
+	return _sourse->writeToSoket(buffer, size, _sockindex);
 }
 
 int FLProgEthernetServer::available()
@@ -82,7 +82,7 @@ int FLProgEthernetServer::available()
 	{
 		return 0;
 	}
-	return _sourse->availableSocet(_sockindex);
+	return _sourse->availableSoket(_sockindex);
 }
 
 int FLProgEthernetServer::read()
@@ -91,7 +91,7 @@ int FLProgEthernetServer::read()
 	{
 		return -1;
 	}
-	return _sourse->readFromSocet(_sockindex);
+	return _sourse->readFromSoket(_sockindex);
 }
 
 uint8_t FLProgEthernetServer::connected()

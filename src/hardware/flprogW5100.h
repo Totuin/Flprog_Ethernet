@@ -11,13 +11,12 @@ public:
   void setPinCs(int pinCs);
   virtual uint8_t getLinkStatus();
 
-  virtual uint8_t socetConnected(uint8_t socet);
-  virtual int readFromSocet(uint8_t socet);
-  virtual size_t writeToSocet(const uint8_t *buffer, size_t size, uint8_t socet);
-  virtual int availableSocet(uint8_t socet);
-  virtual void disconnecSocet(uint8_t socet);
-  virtual uint8_t getTCPSocet(uint16_t port);
-  virtual bool isListenSocet(uint8_t socet);
+  uint8_t SoketConnected(uint8_t soket);
+  int readFromSoket(uint8_t soket);
+  uint8_t readFromSoket(uint8_t soket, uint8_t *buf, int16_t len);
+  size_t writeToSoket(const uint8_t *buffer, size_t size, uint8_t soket);
+  uint8_t isConnectStatusSoket(uint8_t soket);
+  uint8_t isCosedStatusSoket(uint8_t soket);
 
   virtual void setSpiBus(uint8_t bus) { _spiBus = bus; };
   virtual void setGatewayIp(IPAddress addr);
@@ -121,8 +120,8 @@ private:
   void initCs() { pinMode(pinCs(), OUTPUT); };
   void setCs() { digitalWrite(pinCs(), LOW); };
   void resetCs() { digitalWrite(pinCs(), HIGH); };
-  void privateMaceSocet(uint8_t soc, uint8_t protocol, uint16_t port);
-  void privateMaceSocetMulticast(uint8_t soc, uint8_t protocol, IPAddress ip, uint16_t port);
+  void privateMaceSoket(uint8_t soc, uint8_t protocol, uint16_t port);
+  void privateMaceSoketMulticast(uint8_t soc, uint8_t protocol, IPAddress ip, uint16_t port);
   void beginTransaction() { RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, _spiBus); };
   void endTransaction() { RT_HW_Base.spiEndTransaction(_spiBus); };
 };

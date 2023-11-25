@@ -131,7 +131,6 @@ void FlprogEthernetClass::begin(unsigned long timeout, unsigned long responseTim
 	_subnetIp = _dhcp.getSubnetMask();
 	_dnsIp = _dhcp.getDnsServerIp();
 	hardware()->setNetSettings(_ip, _gatewayIp, _subnetIp);
-	_dns.begin(_dnsIp);
 	hardware()->socketPortRand(micros());
 	_status = FLPROG_READY_STATUS;
 	_errorCode = FLPROG_NOT_ERROR;
@@ -171,7 +170,6 @@ void FlprogEthernetClass::begin(IPAddress ip, IPAddress dns, IPAddress gateway, 
 	_dnsIp = dns;
 	_subnetIp = subnet;
 	_gatewayIp = gateway;
-	_dns.begin(_dnsIp);
 	hardware()->setNetSettings(_macAddress, _ip, _gatewayIp, _subnetIp);
 	hardware()->socketPortRand(micros());
 	_status = FLPROG_READY_STATUS;
@@ -218,8 +216,5 @@ void FLProgWiznetInterface::init(int pinCs, uint8_t bus)
 {
 	_hardware.setPinCs(pinCs);
 	_hardware.setSpiBus(bus);
-	_udp.setSourse(this);
-	_udp.setDNS(&_dns);
-	_dhcp.setUDP(&_udp);
-	_dns.setUDP(&_udp);
+	_dhcp.setSourse(this);
 }

@@ -139,7 +139,6 @@ typedef struct _FLPROG_RIP_MSG_FIXED
 class FLProgDhcpClass
 {
 public:
-	void setUDP(FLProgEthernetUDP *udp);
 	IPAddress getLocalIp();
 	IPAddress getSubnetMask();
 	IPAddress getGatewayIp();
@@ -154,7 +153,7 @@ private:
 	uint32_t _dhcpInitialTransactionId;
 	uint32_t _dhcpTransactionId;
 	uint8_t _dhcpMacAddr[6];
-	FLProgEthernetUDP *_udp;
+	FLProgEthernetUDP _udp;
 	uint8_t _errorCode = FLPROG_NOT_ERROR;
 	uint8_t _status = FLPROG_NOT_REDY_STATUS;
 #ifdef __arm__
