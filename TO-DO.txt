@@ -12,4 +12,4 @@
 
 Написать описание API библиотеки
 
-Метод pool у интерфейса должен возвращать результат исполнения (FLPROG_ERROR, FLPROG_SUCCESS,  FLPROG_WITE) 
+****Метод pool у интерфейса должен возвращать результат исполнения (FLPROG_ERROR, FLPROG_SUCCESS,  FLPROG_WITE) 

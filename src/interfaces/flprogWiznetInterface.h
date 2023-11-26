@@ -10,7 +10,7 @@ public:
     FLProgWiznetInterface();
     FLProgWiznetInterface(int pinCs, uint8_t bus = 255);
 
-    virtual void pool();
+    virtual uint8_t pool();
 
     virtual uint8_t soketConnected(uint8_t soket) { return _hardware.soketConnected(soket); };
     virtual int readFromSoket(uint8_t soket) { return _hardware.readFromSoket(soket); };

@@ -45,7 +45,7 @@ public:
     virtual bool isReady() { return _status == FLPROG_READY_STATUS; };
 
     // API обязательное для реализации наследниками
-    virtual void pool() = 0;
+    virtual uint8_t pool() = 0;
     virtual uint8_t soketConnected(uint8_t soket) = 0;
     virtual int readFromSoket(uint8_t soket) = 0;
     virtual int readFromSoket(uint8_t soket, uint8_t *buf, int16_t len) = 0;
