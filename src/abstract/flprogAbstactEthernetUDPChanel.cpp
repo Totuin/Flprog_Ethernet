@@ -1,4 +1,4 @@
-#include "flprogAbstactEthernetClasses.h"
+#include "flprogAbstactEthernetUDPChanel.h"
 
 size_t FLProgAbstactEthernetUDPChanel::write(const uint8_t *buffer, size_t size)
 {
@@ -6,7 +6,6 @@ size_t FLProgAbstactEthernetUDPChanel::write(const uint8_t *buffer, size_t size)
     _offset += bytes_written;
     return bytes_written;
 }
-
 
 int FLProgAbstactEthernetUDPChanel::parsePacket()
 {
@@ -73,16 +72,9 @@ int FLProgAbstactEthernetUDPChanel::endPacket()
     return FLPROG_SUCCESS;
 }
 
-void FLProgAbstactEthernetUDPChanel::stop()
-{
-    _sourse->closeSoket(_sockindex);
-    _sockindex = FLPROG_ETHERNET_MAX_SOCK_NUM;
-}
-
 int FLProgAbstactEthernetUDPChanel::beginPacket(IPAddress ip, uint16_t port)
 {
     _offset = 0;
-    _status = FLPROG_READY_STATUS;
     uint8_t buffer[4];
     flprog::ipToArray(ip, buffer);
     if (_sourse->startUdpSoket(_sockindex, buffer, port))
@@ -96,40 +88,40 @@ int FLProgAbstactEthernetUDPChanel::beginPacket(IPAddress ip, uint16_t port)
 
 uint8_t FLProgAbstactEthernetUDPChanel::begin(uint16_t port)
 {
-	if (!_sourse->isReady())
-	{
-		_status = FLPROG_NOT_REDY_STATUS;
-		_errorCode = FLPROG_ETHERNET_INTERFACE_NOT_READY_ERROR;
-		return FLPROG_ERROR;
-	}
-	if (_port == port)
-	{
-		if (_sockindex < FLPROG_ETHERNET_MAX_SOCK_NUM)
-		{
-			_status = FLPROG_READY_STATUS;
-			_errorCode = FLPROG_NOT_ERROR;
-			return FLPROG_SUCCESS;
-		}
-	}
-	_sourse->closeSoket(_sockindex);
-	_sockindex = _sourse->getUDPSoket(port);
-	if (_sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM)
-	{
-		_status = FLPROG_READY_STATUS;
-		_errorCode = FLPROG_ETHERNET_SOKET_INDEX_ERROR;
-		return FLPROG_SUCCESS;
-	}
-	_port = port;
-	_remaining = 0;
-	_status = FLPROG_READY_STATUS;
-	return FLPROG_SUCCESS;
+    if (!_sourse->isInit())
+    {
+        _status = FLPROG_NOT_REDY_STATUS;
+        _errorCode = FLPROG_ETHERNET_INTERFACE_NOT_READY_ERROR;
+        return FLPROG_ERROR;
+    }
+    if (_port == port)
+    {
+        if (_sockindex < _sourse->maxSoketNum())
+        {
+
+            _errorCode = FLPROG_NOT_ERROR;
+            return FLPROG_SUCCESS;
+        }
+    }
+    _sourse->closeSoket(_sockindex);
+    _sockindex = _sourse->getUDPSoket(port);
+    if (_sockindex >= _sourse->maxSoketNum())
+    {
+
+        _errorCode = FLPROG_ETHERNET_SOKET_INDEX_ERROR;
+        return FLPROG_ERROR;
+    }
+    _port = port;
+    _remaining = 0;
+
+    return FLPROG_SUCCESS;
 }
 
 int FLProgAbstactEthernetUDPChanel::peek()
 {
-	if (_sockindex >= FLPROG_ETHERNET_MAX_SOCK_NUM || _remaining == 0)
-	{
-		return -1;
-	}
-	return _sourse->peekSoket(_sockindex);
+    if (_sockindex >= _sourse->maxSoketNum() || _remaining == 0)
+    {
+        return -1;
+    }
+    return _sourse->peekSoket(_sockindex);
 }

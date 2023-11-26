@@ -1,0 +1,87 @@
+#include "flprogAbstractTcpInterface.h"
+
+void FLProgAbstractTcpInterface::setDhcp()
+{
+    if (_isDhcp)
+    {
+        return;
+    }
+    _isDhcp = true;
+    _isNeedReconect = true;
+}
+
+void FLProgAbstractTcpInterface::resetDhcp()
+{
+    if (!_isDhcp)
+    {
+        return;
+    }
+    _isDhcp = false;
+    _isNeedReconect = true;
+}
+
+void FLProgAbstractTcpInterface::dhcpMode(bool val)
+{
+    if (_isDhcp == val)
+    {
+        return;
+    }
+    _isDhcp = val;
+    _isNeedReconect = true;
+}
+
+void FLProgAbstractTcpInterface::localIP(IPAddress ip)
+{
+    if (_ip == ip)
+    {
+        return;
+    }
+    _ip = ip;
+    _isNeedReconect = true;
+}
+
+void FLProgAbstractTcpInterface::dns(IPAddress ip)
+{
+    if (_dnsIp == ip)
+    {
+        return;
+    }
+    _dnsIp = ip;
+    _isNeedReconect = true;
+}
+
+void FLProgAbstractTcpInterface::subnet(IPAddress ip)
+{
+    if (_subnetIp == ip)
+    {
+        return;
+    }
+    _subnetIp = ip;
+    _isNeedReconect = true;
+}
+
+void FLProgAbstractTcpInterface::gateway(IPAddress ip)
+{
+    if (_gatewayIp == _ip)
+    {
+        return;
+    }
+    _gatewayIp = _ip;
+    _isNeedReconect = true;
+}
+
+void FLProgAbstractTcpInterface::mac(uint8_t m0, uint8_t m1, uint8_t m2, uint8_t m3, uint8_t m4, uint8_t m5)
+{
+    if (flprog::applyMac(m0, m1, m2, m3, m4, m5, _macAddress))
+    {
+        _isNeedReconect = true;
+    }
+}
+
+void FLProgAbstractTcpInterface::mac(uint8_t *mac_address)
+{
+    for (uint8_t i = 0; i < 6; i++)
+    {
+        mac_address[i] = _macAddress[i];
+    }
+}

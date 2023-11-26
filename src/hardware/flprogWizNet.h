@@ -1,13 +1,11 @@
 #pragma once
 #include "flprogUtilites.h"
-#include "flprogAbstactEthernetClasses.h"
+#include "../abstract/flprogAbstractEthernetHardware.h"
 
-#ifndef FLPROG_ETHERNET_MAX_SOCK_NUM
 #if defined(RAMEND) && defined(RAMSTART) && ((RAMEND - RAMSTART) <= 2048)
-#define FLPROG_ETHERNET_MAX_SOCK_NUM 4
+#define FLPROG_WIZNET_MAX_SOCK_NUM 4
 #else
-#define FLPROG_ETHERNET_MAX_SOCK_NUM 8
-#endif
+#define FLPROG_WIZNET_MAX_SOCK_NUM 8
 #endif
 
 #define SPI_ETHERNET_SPEED 14000000
@@ -19,14 +17,6 @@
 #if defined(__SAMD21G18A__)
 #undef SPI_ETHERNET_SPEED
 #define SPI_ETHERNET_SPEED 8000000
-#endif
-
-#ifndef FLPROG_ETHERNET_MAX_SOCK_NUM
-#if defined(RAMEND) && defined(RAMSTART) && ((RAMEND - RAMSTART) <= 2048)
-#define FLPROG_ETHERNET_MAX_SOCK_NUM 4
-#else
-#define FLPROG_ETHERNET_MAX_SOCK_NUM 8
-#endif
 #endif
 
 #define FLPROG_WIZNET_SN_MR_CLOSE 0x00
@@ -85,14 +75,13 @@
 #define FLPROG_WIZNET_SN_DPORT 0x0010   // Destination Port
 #define FLPROG_WIZNET_SN_DHAR 0x0006    // Destination Hardw Addr
 
-
 typedef struct
 {
   uint16_t RX_RSR; // Number of bytes received
   uint16_t RX_RD;  // Address to read
   uint16_t TX_FSR; // Free space ready for transmit
   uint8_t RX_inc;  // how much have we advanced RX_RD
-} socketstate_t;
+} wizNetSocketState_t;
 
 class FLProgWiznetClass : public FLProgAbstractEthernetHardware
 {
@@ -120,7 +109,7 @@ public:
   virtual IPAddress getIPAddress();
   virtual void setRetransmissionTime(uint16_t timeout);
   virtual void setRetransmissionCount(uint8_t retry);
-  virtual void execCmdSn(SOCKET s, uint8_t _cmd);
+  virtual void execCmdSn(uint8_t s, uint8_t _cmd);
   virtual uint8_t getChip(void) { return _chip; }
   virtual uint16_t _CH_SIZE() { return CH_SIZE; };
   virtual uint16_t _SSIZE() { return SSIZE; };
@@ -134,13 +123,13 @@ public:
   virtual uint16_t CH_BASE() { return _CH_BASE_MSB << 8; };
   uint8_t _CH_BASE_MSB; // 1 redundant byte, saves ~80 bytes code on AVR
 
-  // W5100 Socket registers
-  virtual uint8_t readSn(SOCKET s, uint16_t addr) { return read(CH_BASE() + s * CH_SIZE + addr); };
-  virtual uint8_t writeSn(SOCKET s, uint16_t addr, uint8_t data) { return write(CH_BASE() + s * CH_SIZE + addr, data); };
-  virtual uint16_t readSn(SOCKET s, uint16_t addr, uint8_t *buf, uint16_t len) { return read(CH_BASE() + s * CH_SIZE + addr, buf, len); };
-  virtual uint16_t writeSn(SOCKET s, uint16_t addr, uint8_t *buf, uint16_t len) { return write(CH_BASE() + s * CH_SIZE + addr, buf, len); };
-  virtual uint16_t readSn16(SOCKET _s, uint16_t address);
-  virtual void writeSn16(SOCKET _s, uint16_t address, uint16_t _data);
+  // W5100 uint8_t registers
+  virtual uint8_t readSn(uint8_t s, uint16_t addr) { return read(CH_BASE() + s * CH_SIZE + addr); };
+  virtual uint8_t writeSn(uint8_t s, uint16_t addr, uint8_t data) { return write(CH_BASE() + s * CH_SIZE + addr, data); };
+  virtual uint16_t readSn(uint8_t s, uint16_t addr, uint8_t *buf, uint16_t len) { return read(CH_BASE() + s * CH_SIZE + addr, buf, len); };
+  virtual uint16_t writeSn(uint8_t s, uint16_t addr, uint8_t *buf, uint16_t len) { return write(CH_BASE() + s * CH_SIZE + addr, buf, len); };
+  virtual uint16_t readSn16(uint8_t _s, uint16_t address);
+  virtual void writeSn16(uint8_t _s, uint16_t address, uint16_t _data);
 
 #ifdef ETHERNET_LARGE_BUFFERS
   uint16_t SSIZE;
@@ -192,16 +181,22 @@ public:
   virtual uint8_t socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port);
   virtual uint8_t socketSendUDP(uint8_t s);
   virtual bool isInit() { return _status == FLPROG_READY_STATUS; };
+  virtual uint8_t maxSoketNum() { return FLPROG_WIZNET_MAX_SOCK_NUM; };
+
+  virtual uint8_t getTCPSoket(uint16_t port) { return socketBegin(FLPROG_WIZNET_SN_MR_TCP, port); };
+  virtual uint8_t getUDPSoket(uint16_t port) { return socketBegin(FLPROG_WIZNET_SN_MR_UDP, port); };
+  virtual uint8_t beginMulticastSoket(IPAddress ip, uint16_t port) { return socketBeginMulticast((FLPROG_WIZNET_SN_MR_UDP | FLPROG_WIZNET_SN_MR_MULTI), ip, port); };
+
   int pinCs();
   uint8_t spiBus();
-
+ 
 private:
   uint8_t _chip = 0;
   uint32_t _startWhiteInitTime;
 
   uint16_t _local_port = 49152; // 49152 to 65535 TODO: randomize this when not using DHCP, but how?
   const uint16_t CH_SIZE = 0x0100;
-  withnetSocketState_t _state[FLPROG_ETHERNET_MAX_SOCK_NUM];
+  wizNetSocketState_t _state[FLPROG_WIZNET_MAX_SOCK_NUM];
   uint8_t _spiBus = 255;
   int _pinCs = -1;
   uint8_t softReset(void);

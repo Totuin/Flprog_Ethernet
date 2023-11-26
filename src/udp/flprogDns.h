@@ -2,7 +2,7 @@
 #pragma once
 #include <Arduino.h>
 #include "flprogUtilites.h"
-#include "flprogAbstactEthernetClasses.h"
+#include "../abstract/flprogAbstactEthernetUDPChanel.h"
 
 #define FLPROG_DNS_SOCKET_NONE 255
 #define FLPROG_DNS_UDP_HEADER_SIZE 8
@@ -35,14 +35,20 @@ class FLProgDNSClient : public FLProgAbstactEthernetUDPChanel
 {
 public:
 	int getHostByName(const char *aHostname, uint8_t *aResult, uint16_t timeout = 5000);
+	void setDnsCacheStorageTime(uint32_t time) { _cacheStorageTime = time; };
 
-protected:
+private:
 	uint16_t buildRequest(const char *aName);
-	uint16_t processResponse(uint16_t aTimeout, uint8_t *aAddress);
+	uint16_t processResponse(uint16_t aTimeout, const char *aHostname, uint8_t *aAddress);
+	bool checkCach(const char *aHostname, uint8_t *aResult);
 
-	IPAddress _iDNSServer;
 	uint16_t _iRequestId;
 	uint8_t _wait_retries = 0;
 	uint32_t _startTime;
 	uint32_t _reqestStartTime;
+
+	String _cachedHost = "";
+	IPAddress _cachedIP = FLPROG_INADDR_NONE;
+	uint32_t _startCachTime;
+	uint32_t _cacheStorageTime = 60000;
 };

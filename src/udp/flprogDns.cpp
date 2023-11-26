@@ -1,11 +1,39 @@
 #include "flprogDns.h"
 
+
+
+
+
+bool FLProgDNSClient::checkCach(const char *aHostname, uint8_t *aResult)
+{
+	if (flprog::isTimer(_startCachTime, _cacheStorageTime))
+	{
+		_cachedHost = "";
+		_cachedIP = FLPROG_INADDR_NONE;
+		return false;
+	}
+	if (!(_cachedHost.equals(String(aHostname))))
+	{
+		_cachedHost = "";
+		_cachedIP = FLPROG_INADDR_NONE;
+		return false;
+	}
+	if (_cachedIP == FLPROG_INADDR_NONE)
+	{
+		_cachedHost = "";
+		return false;
+	}
+	flprog::ipToArray(_cachedIP, aResult);
+	return true;
+}
+
 int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint16_t timeout)
 {
-	if (_status == FLPROG_NOT_REDY_STATUS)
+	if (checkCach(aHostname, aResult))
 	{
-		_errorCode = FLPROG_ETHERNET_DNS_NOT_READY_ERROR;
-		return FLPROG_ERROR;
+		_status = FLPROG_READY_STATUS;
+		_errorCode = FLPROG_NOT_ERROR;
+		return FLPROG_SUCCESS;
 	}
 	if (_status == FLPROG_READY_STATUS)
 	{
@@ -16,6 +44,9 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 			aResult[1] = temp[1];
 			aResult[2] = temp[2];
 			aResult[3] = temp[3];
+			_cachedIP = temp;
+			_startCachTime = millis();
+			_cachedHost = String(aHostname);
 			_wait_retries = 0;
 			_errorCode = FLPROG_NOT_ERROR;
 			return FLPROG_SUCCESS;
@@ -53,7 +84,7 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 		_errorCode = FLPROG_NOT_ERROR;
 		return FLPROG_WITE;
 	}
-	uint8_t result = processResponse(timeout, aResult);
+	uint8_t result = processResponse(timeout, aHostname, aResult);
 	if (result == FLPROG_WITE)
 	{
 		return FLPROG_WITE;
@@ -104,7 +135,7 @@ uint16_t FLProgDNSClient::buildRequest(const char *aName)
 	return FLPROG_SUCCESS;
 }
 
-uint16_t FLProgDNSClient::processResponse(uint16_t aTimeout, uint8_t *aAddress)
+uint16_t FLProgDNSClient::processResponse(uint16_t aTimeout, const char *aHostname, uint8_t *aAddress)
 {
 
 	if (flprog::isTimer(_startTime, aTimeout))
@@ -211,6 +242,9 @@ uint16_t FLProgDNSClient::processResponse(uint16_t aTimeout, uint8_t *aAddress)
 				return FLPROG_ERROR;
 			}
 			read(aAddress, 4);
+			_startCachTime = millis();
+			_cachedHost = String(aHostname);
+			_cachedIP = IPAddress(aAddress[0], aAddress[1], aAddress[2], aAddress[3]);
 			return FLPROG_SUCCESS;
 		}
 		else

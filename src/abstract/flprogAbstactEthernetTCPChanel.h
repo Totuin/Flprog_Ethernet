@@ -1,0 +1,23 @@
+#pragma once
+#include <Arduino.h>
+#include "IPAddress.h"
+#include "flprogUtilites.h"
+#include "flprogAbstactEthernetChanel.h"
+
+
+
+class FLProgAbstactEthernetTCPChanel : public FLProgAbstactEthernetChanel
+{
+public:
+    int available() { return _sourse->availableSoket(_sockindex); }
+
+    virtual size_t write(const uint8_t *buf, size_t size) { return _sourse->writeToSoket(buf, size, _sockindex); };
+
+    int read() { return _sourse->readFromSoket(_sockindex); };
+    int read(uint8_t *buf, size_t size) { return _sourse->readFromSoket(buf, size, _sockindex); };
+    int peek() { return _sourse->peekSoket(_sockindex); };
+
+    uint16_t localPort() { return _sourse->localPortSoket(_sockindex); };
+    IPAddress remoteIP() { return _sourse->remoteIPSoket(_sockindex); };
+    uint16_t remotePort() { return _sourse->remotePortSoket(_sockindex); };
+};

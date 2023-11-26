@@ -1,7 +1,7 @@
 #pragma once
 #include <Arduino.h>
 #include "flprogUtilites.h"
-#include "flprogAbstactEthernetClasses.h"
+#include "../abstract/flprogAbstactEthernetUDPChanel.h"
 
 /* DHCP state machine. */
 #define FLPROG_STATE_DHCP_START 0
@@ -83,24 +83,35 @@ typedef struct _FLPROG_RIP_MSG_FIXED
 	uint8_t chaddr[6];
 } FLPROG_RIP_MSG_FIXED;
 
-class FLProgDhcpClass : public FLProgAbstactEthernetUDPChanel
+class FLProgDhcp : public FLProgAbstactEthernetUDPChanel
 {
 public:
+virtual void setSourse(FLProgAbstractTcpInterface *sourse);
 	IPAddress getLocalIp();
 	IPAddress getSubnetMask();
 	IPAddress getGatewayIp();
 	IPAddress getDhcpServerIp();
 	IPAddress getDnsServerIp();
-	int beginWithDHCP(uint8_t *, unsigned long timeout = 20000, unsigned long responseTimeout = 4000);
+	int beginWithDHCP(uint8_t *mac, uint32_t timeout = 20000, uint32_t responseTimeout = 4000);
 	int checkLease();
 
 private:
-	int request_DHCP_lease();
+	int request_DHCP_lease(uint32_t responseTimeout);
 	void reset_DHCP_lease();
-	uint8_t cheskStateMashine();
+	
 	void send_DHCP_MESSAGE(uint8_t, uint16_t);
 	void printByte(char *, uint8_t);
-	uint8_t parseDHCPResponse();
+	uint8_t parseDHCPResponse(uint32_t responseTimeout);
+
+
+
+
+//state mashine
+uint8_t cheskStateMashine(uint32_t responseTimeout);
+void sendDiscoverMessage();
+void sendReqestMessage();
+
+
 
 	uint32_t _dhcpInitialTransactionId;
 	uint32_t _dhcpTransactionId;
@@ -116,11 +127,11 @@ private:
 	uint32_t _dhcpT1, _dhcpT2;
 	uint32_t _renewInSec;
 	uint32_t _rebindInSec;
-	uint32_t _timeout;
-	uint32_t _responseTimeout;
 	uint32_t _lastCheckLeaseMillis;
 	uint8_t _dhcp_state;
+
 	uint32_t _startDhcpReqestTime;
+	uint32_t _sartFullDhcpReqestTime;
 	uint32_t _lastCheckDhcpReqestTime;
 	uint32_t _respId;
 };
