@@ -6,7 +6,7 @@ void FLProgDhcp::setSourse(FLProgAbstractTcpInterface *sourse)
 	_status = FLPROG_READY_STATUS;
 }
 
-int FLProgDhcp::beginWithDHCP(uint8_t *mac, uint32_t timeout, uint32_t responseTimeout)
+uint8_t FLProgDhcp::beginWithDHCP(uint32_t timeout, uint32_t responseTimeout)
 {
 	if (_status == FLPROG_NOT_REDY_STATUS)
 	{
@@ -31,7 +31,7 @@ int FLProgDhcp::beginWithDHCP(uint8_t *mac, uint32_t timeout, uint32_t responseT
 		_sartFullDhcpReqestTime = millis();
 		memset(_dhcpMacAddr, 0, 6);
 		reset_DHCP_lease();
-		memcpy((void *)_dhcpMacAddr, (void *)mac, 6);
+		memcpy((void *)_dhcpMacAddr, (void *)_sourse->mac(), 6);
 		_dhcp_state = FLPROG_STATE_DHCP_START;
 	}
 	return request_DHCP_lease(responseTimeout);
@@ -42,7 +42,7 @@ void FLProgDhcp::reset_DHCP_lease()
 	memset(_dhcpLocalIp, 0, 20);
 }
 
-int FLProgDhcp::request_DHCP_lease(uint32_t responseTimeout)
+uint8_t FLProgDhcp::request_DHCP_lease(uint32_t responseTimeout)
 {
 	if (_status != FLPROG_WAIT_ETHERNET_DHCP_STATUS)
 	{
@@ -356,55 +356,6 @@ uint8_t FLProgDhcp::parseDHCPResponse(uint32_t responseTimeout)
 	}
 	flush();
 	return type;
-}
-
-/*
-	returns:
-	0/FLPROG_DHCP_CHECK_NONE: nothing happened
-	1/FLPROG_DHCP_CHECK_RENEW_FAIL: renew failed
-	2/FLPROG_DHCP_CHECK_RENEW_OK: renew success
-	3/FLPROG_DHCP_CHECK_REBIND_FAIL: rebind fail
-	4/FLPROG_DHCP_CHECK_REBIND_OK: rebind success
-*/
-int FLProgDhcp::checkLease()
-{
-	int rc = FLPROG_DHCP_CHECK_NONE;
-	unsigned long now = millis();
-	unsigned long elapsed = now - _lastCheckLeaseMillis;
-	if (elapsed >= 1000)
-	{
-		_lastCheckLeaseMillis = now - (elapsed % 1000);
-		elapsed = elapsed / 1000;
-		if (_renewInSec < elapsed * 2)
-		{
-			_renewInSec = 0;
-		}
-		else
-		{
-			_renewInSec -= elapsed;
-		}
-		if (_rebindInSec < elapsed * 2)
-		{
-			_rebindInSec = 0;
-		}
-		else
-		{
-			_rebindInSec -= elapsed;
-		}
-	}
-	if (_renewInSec == 0 && _dhcp_state == FLPROG_STATE_DHCP_LEASED)
-	{
-		_dhcp_state = FLPROG_STATE_DHCP_REREQUEST;
-		rc = 1 + request_DHCP_lease(4000);
-	}
-	if (_rebindInSec == 0 && (_dhcp_state == FLPROG_STATE_DHCP_LEASED ||
-							  _dhcp_state == FLPROG_STATE_DHCP_START))
-	{
-		_dhcp_state = FLPROG_STATE_DHCP_START;
-		reset_DHCP_lease();
-		rc = 3 + request_DHCP_lease(4000);
-	}
-	return rc;
 }
 
 IPAddress FLProgDhcp::getLocalIp()

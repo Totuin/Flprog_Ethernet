@@ -26,6 +26,7 @@ void FLProgWiznetInterface::pool()
         {
             _status = FLPROG_NOT_REDY_STATUS;
         }
+        maintain();
         return;
     }
 
@@ -60,7 +61,7 @@ void FLProgWiznetInterface::pool()
     {
         return;
     }
-    if (_isDhcp || (_ip == FLPROG_INADDR_NONE))
+    if (isDhcp())
     {
         begin();
         _lastReconnectTime = millis();
@@ -104,7 +105,7 @@ void FLProgWiznetInterface::updateEthernetStatus()
     _lastCheckEthernetStatusTime = millis();
 }
 
-void FLProgWiznetInterface::begin(unsigned long timeout, unsigned long responseTimeout)
+void FLProgWiznetInterface::begin()
 {
     if (linkStatus() != FLPROG_ETHERNET_LINK_ON)
     {
@@ -118,7 +119,7 @@ void FLProgWiznetInterface::begin(unsigned long timeout, unsigned long responseT
         _status = FLPROG_WAIT_ETHERNET_DHCP_STATUS;
     }
 
-    int result = _dhcp.beginWithDHCP(_macAddress, timeout, responseTimeout);
+    uint8_t result = _dhcp.beginWithDHCP(_timeout, _responseTimeout);
     if (result == FLPROG_ERROR)
     {
         _status = FLPROG_NOT_REDY_STATUS;
@@ -148,6 +149,51 @@ void FLProgWiznetInterface::begin(unsigned long timeout, unsigned long responseT
     _status = FLPROG_READY_STATUS;
     _errorCode = FLPROG_NOT_ERROR;
     _isNeedReconect = false;
+    _startMaintainTime = millis();
+}
+
+uint8_t FLProgWiznetInterface::maintain()
+{
+    if (!isDhcp())
+    {
+        return FLPROG_SUCCESS;
+    }
+    if (!_isMaintainMode)
+    {
+        if (!flprog::isTimer(_startMaintainTime, _maintainPeriod))
+        {
+            return FLPROG_SUCCESS;
+        }
+    }
+    if (linkStatus() != FLPROG_ETHERNET_LINK_ON)
+    {
+        return FLPROG_SUCCESS;
+    }
+    _isMaintainMode = true;
+    uint8_t result = _dhcp.beginWithDHCP(_timeout, _responseTimeout);
+    if (result == FLPROG_ERROR)
+    {
+        _isMaintainMode = false;
+        _errorCode = _dhcp.getError();
+        _startMaintainTime = millis();
+        return FLPROG_SUCCESS;
+    }
+    if (result == FLPROG_WITE)
+    {
+        return FLPROG_SUCCESS;
+    }
+    if ((_dhcp.getLocalIp()) != FLPROG_INADDR_NONE)
+    {
+        _ip = _dhcp.getLocalIp();
+        _gatewayIp = _dhcp.getGatewayIp();
+        _subnetIp = _dhcp.getSubnetMask();
+        _dnsIp = _dhcp.getDnsServerIp();
+        _hardware.setNetSettings(_ip, _gatewayIp, _subnetIp);
+        _hardware.socketPortRand(micros());
+    }
+    _startMaintainTime = millis();
+    _isMaintainMode = false;
+    return FLPROG_SUCCESS;
 }
 
 void FLProgWiznetInterface::begin(IPAddress ip)
@@ -193,28 +239,4 @@ void FLProgWiznetInterface::begin(IPAddress ip, IPAddress dns, IPAddress gateway
 uint8_t FLProgWiznetInterface::hardwareStatus()
 {
     return _hardware.getChip();
-}
-
-int FLProgWiznetInterface::maintain()
-{
-    int rc = FLPROG_DHCP_CHECK_NONE;
-    rc = _dhcp.checkLease();
-    switch (rc)
-    {
-    case FLPROG_DHCP_CHECK_NONE:
-    {
-        break;
-    }
-    case FLPROG_DHCP_CHECK_RENEW_OK:
-    case FLPROG_DHCP_CHECK_REBIND_OK:
-        _ip = _dhcp.getLocalIp();
-        _gatewayIp = _dhcp.getGatewayIp();
-        _subnetIp = _dhcp.getSubnetMask();
-        _dnsIp = _dhcp.getDnsServerIp();
-        _hardware.setNetSettings(_ip, _gatewayIp, _subnetIp);
-        break;
-    default:
-        break;
-    }
-    return rc;
 }

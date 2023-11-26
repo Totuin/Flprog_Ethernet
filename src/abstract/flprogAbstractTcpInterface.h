@@ -9,7 +9,7 @@ public:
     void setDhcp();
     void resetDhcp();
     void dhcpMode(bool val);
-    bool dhcpMode() { return _isDhcp; };
+    bool isDhcp();
 
     IPAddress localIP() { return _ip; };
     void localIP(IPAddress ip);

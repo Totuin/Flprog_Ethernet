@@ -92,11 +92,10 @@ public:
 	IPAddress getGatewayIp();
 	IPAddress getDhcpServerIp();
 	IPAddress getDnsServerIp();
-	int beginWithDHCP(uint8_t *mac, uint32_t timeout = 20000, uint32_t responseTimeout = 4000);
-	int checkLease();
+	uint8_t beginWithDHCP(uint32_t timeout = 20000, uint32_t responseTimeout = 4000);
 
 private:
-	int request_DHCP_lease(uint32_t responseTimeout);
+	uint8_t request_DHCP_lease(uint32_t responseTimeout);
 	void reset_DHCP_lease();
 
 	void send_DHCP_MESSAGE(uint8_t messageType);

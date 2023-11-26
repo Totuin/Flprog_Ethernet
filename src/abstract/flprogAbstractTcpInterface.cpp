@@ -30,6 +30,19 @@ void FLProgAbstractTcpInterface::dhcpMode(bool val)
     _isNeedReconect = true;
 }
 
+bool FLProgAbstractTcpInterface::isDhcp()
+{
+    if (_isDhcp)
+    {
+        return true;
+    }
+    if (_ip == FLPROG_INADDR_NONE)
+    {
+        return true;
+    }
+    return false;
+};
+
 void FLProgAbstractTcpInterface::localIP(IPAddress ip)
 {
     if (_ip == ip)

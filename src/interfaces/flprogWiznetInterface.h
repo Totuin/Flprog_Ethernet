@@ -43,8 +43,8 @@ public:
     void begin(IPAddress ip, IPAddress dns);
     void begin(IPAddress ip, IPAddress dns, IPAddress gateway);
     void begin(IPAddress ip, IPAddress dns, IPAddress gateway, IPAddress subnet);
-    void begin(unsigned long timeout = 20000, unsigned long responseTimeout = 4000);
-    int maintain();
+    void begin();
+    uint8_t maintain();
     uint8_t linkStatus() { return _hardware.getLinkStatus(); };
     uint8_t hardwareStatus();
     void setRetransmissionTimeout(uint16_t milliseconds) { _hardware.setRetransmissionTime(milliseconds); };
@@ -63,9 +63,16 @@ public:
     virtual uint8_t maxSoketNum() { return _hardware.maxSoketNum(); };
     virtual bool isInit() { return _hardware.isInit(); };
 
-protected:
+private:
     FLProgWiznetClass _hardware;
     FLProgDhcp _dhcp;
+
+    uint32_t _maintainPeriod = 1800000;
+    uint32_t _startMaintainTime;
+    bool _isMaintainMode = false;
+
+    uint32_t _timeout = 20000;
+    uint32_t _responseTimeout = 6000;
 
     uint32_t _checkEthernetStatusPeriod = 1000;
     uint32_t _lastCheckEthernetStatusTime = flprog::timeBack(_checkEthernetStatusPeriod);
