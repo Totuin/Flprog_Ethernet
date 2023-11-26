@@ -50,7 +50,7 @@ uint8_t FLProgWiznetClass::readFromSoket(uint8_t soket, uint8_t *buf, int16_t le
 	return 0;
 }
 
-size_t FLProgWiznetClass::writeToSoket(const uint8_t *buffer, size_t size, uint8_t soket)
+size_t FLProgWiznetClass::writeToSoket(uint8_t soket, const uint8_t *buffer, size_t size)
 {
 	if (soket < FLPROG_WIZNET_MAX_SOCK_NUM)
 	{
@@ -900,8 +900,8 @@ uint8_t FLProgWiznetClass::socketDisconnect(uint8_t s)
 		beginTransaction();
 		execCmdSn(s, FLPROG_WIZNET_SOCK_CMD_DISCON);
 		endTransaction();
-		return FLPROG_SUCCESS;
 	}
+	return FLPROG_SUCCESS;
 }
 
 /*****************************************/

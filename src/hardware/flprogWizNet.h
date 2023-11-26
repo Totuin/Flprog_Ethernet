@@ -99,7 +99,7 @@ public:
   uint8_t soketConnected(uint8_t soket);
   int readFromSoket(uint8_t soket);
   uint8_t readFromSoket(uint8_t soket, uint8_t *buf, int16_t len);
-  size_t writeToSoket(const uint8_t *buffer, size_t size, uint8_t soket);
+  size_t writeToSoket(uint8_t soket,const uint8_t *buffer, size_t size);
   uint8_t isConnectStatusSoket(uint8_t soket);
   uint8_t isCosedStatusSoket(uint8_t soket);
 

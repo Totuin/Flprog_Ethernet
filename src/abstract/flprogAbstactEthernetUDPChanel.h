@@ -12,13 +12,11 @@ public:
     int read();
     int read(uint8_t *buffer, size_t len);
     virtual int available() { return _remaining; };
-
     IPAddress remoteIP() { return _remoteIP; };
     uint16_t remotePort() { return _remotePort; };
     uint16_t localPort() { return _port; }
-
     uint8_t begin(uint16_t port);
-    int beginPacket(IPAddress ip, uint16_t port);
+    int beginIpPacket(IPAddress ip, uint16_t port);
     int parsePacket();
     int endPacket();
 

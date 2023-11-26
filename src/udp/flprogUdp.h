@@ -15,7 +15,8 @@ public:
 	FLProgUdpClient(FLProgAbstractTcpInterface *sourse);
 	virtual void setSourse(FLProgAbstractTcpInterface *sourse);
 	virtual uint8_t beginMulticast(IPAddress, uint16_t);
-	virtual int beginPacket(const char *host, uint16_t port);
+	int beginPacket(IPAddress ip, uint16_t port) { return beginIpPacket(ip, port); };
+	int beginPacket(const char *host, uint16_t port);
 	void setDnsCacheStorageTime(uint32_t time) { _dns.setDnsCacheStorageTime(time); };
 
 private:

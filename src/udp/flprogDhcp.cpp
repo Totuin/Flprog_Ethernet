@@ -23,13 +23,11 @@ int FLProgDhcp::beginWithDHCP(uint8_t *mac, uint32_t timeout, uint32_t responseT
 			return FLPROG_ERROR;
 		}
 	}
-
 	if (_status == FLPROG_READY_STATUS)
 	{
 		_dhcpLeaseTime = 0;
 		_dhcpT1 = 0;
 		_dhcpT2 = 0;
-		timeout;
 		_sartFullDhcpReqestTime = millis();
 		memset(_dhcpMacAddr, 0, 6);
 		reset_DHCP_lease();
@@ -181,7 +179,7 @@ void FLProgDhcp::send_DHCP_MESSAGE(uint8_t messageType, uint16_t secondsElapsed)
 	uint8_t buffer[32];
 	memset(buffer, 0, 32);
 	IPAddress dest_addr(255, 255, 255, 255); // Broadcast address
-	if ((beginPacket(dest_addr, FLPROG_DHCP_SERVER_PORT)) != FLPROG_SUCCESS)
+	if ((beginIpPacket(dest_addr, FLPROG_DHCP_SERVER_PORT)) != FLPROG_SUCCESS)
 	{
 		return;
 	}

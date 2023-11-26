@@ -27,8 +27,7 @@ int FLProgUdpClient::beginPacket(const char *host, uint16_t port)
 		_errorCode = _dns.getError();
 		return FLPROG_ERROR;
 	}
-
-	return beginPacket(IPAddress(remote_addr[0], remote_addr[1], remote_addr[2], remote_addr[3]), port);
+	return beginIpPacket(IPAddress(remote_addr[0], remote_addr[1], remote_addr[2], remote_addr[3]), port);
 }
 
 uint8_t FLProgUdpClient::beginMulticast(IPAddress ip, uint16_t port)

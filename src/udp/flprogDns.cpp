@@ -64,7 +64,7 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 			_wait_retries = 0;
 			return FLPROG_ERROR;
 		}
-		if (beginPacket(_sourse->dns(), FLPROG_DNS_PORT) != FLPROG_SUCCESS)
+		if (beginIpPacket(_sourse->dns(), FLPROG_DNS_PORT) != FLPROG_SUCCESS)
 		{
 			stop();
 			_wait_retries = 0;

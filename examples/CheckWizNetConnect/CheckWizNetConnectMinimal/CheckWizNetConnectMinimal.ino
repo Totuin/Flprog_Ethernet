@@ -49,25 +49,16 @@ void setup()
     WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40); 
     // WiznetInterface.localIP(192, 168, 199, 155);
     // WiznetInterface.resetDhcp();
-    pinMode(13, OUTPUT);
 }
 //=================================================================================================
 void loop()
 {
     WiznetInterface.pool();
     printStatusMessages();
-    blinkLed();
+
 }
 
 //=================================================================================================
-void blinkLed()
-{
-    if (flprog::isTimer(blinkStartTime, 500))
-    {
-        blinkStartTime = millis();
-        digitalWrite(13, !(digitalRead(13)));
-    }
-}
 
 void printStatusMessages()
 {

@@ -16,7 +16,7 @@ public:
     virtual int readFromSoket(uint8_t soket) { return _hardware.readFromSoket(soket); };
     virtual int readFromSoket(uint8_t soket, uint8_t *buf, int16_t len) { return _hardware.readFromSoket(soket, buf, len); };
 
-    virtual size_t writeToSoket(const uint8_t *buffer, size_t size, uint8_t soket) { return _hardware.writeToSoket(buffer, size, soket); };
+    virtual size_t writeToSoket(uint8_t soket, const uint8_t *buffer, size_t size) { return _hardware.writeToSoket(soket, buffer, size); };
     virtual int availableSoket(uint8_t soket) { return _hardware.socketRecvAvailable(soket); };
     virtual void disconnecSoket(uint8_t soket) { _hardware.socketDisconnect(soket); };
     virtual uint8_t getTCPSoket(uint16_t port) { return _hardware.getTCPSoket(port); };

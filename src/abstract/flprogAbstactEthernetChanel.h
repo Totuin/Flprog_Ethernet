@@ -20,7 +20,7 @@ public:
 
     virtual size_t write(uint8_t byte) { return write(&byte, 1); };
 
-    int read(char *buffer, size_t len) { return read((uint8_t *)buffer, len); };
+   // int read(char *buffer, size_t len) { return read((uint8_t *)buffer, len); };
     uint8_t getStatus() { return _status; };
     uint8_t getError() { return _errorCode; };
 

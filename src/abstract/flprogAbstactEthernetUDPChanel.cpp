@@ -72,7 +72,7 @@ int FLProgAbstactEthernetUDPChanel::endPacket()
     return FLPROG_SUCCESS;
 }
 
-int FLProgAbstactEthernetUDPChanel::beginPacket(IPAddress ip, uint16_t port)
+int FLProgAbstactEthernetUDPChanel::beginIpPacket(IPAddress ip, uint16_t port)
 {
     _offset = 0;
     uint8_t buffer[4];
