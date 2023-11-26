@@ -88,8 +88,11 @@ uint8_t FLProgWiznetClass::checkInit()
 		_status = FLPROG_WAIT_ETHERNET_HARDWARE_INIT_STATUS;
 		return FLPROG_WITE;
 	}
-
+#ifdef FLPROG_COMPACT_LIBRARY_MODE
+	SPI.begin();
+#else
 	RT_HW_Base.spiBegin(spiBus());
+#endif
 	initCs();
 	beginTransaction();
 	if (isW5200())
@@ -536,11 +539,11 @@ uint16_t FLProgWiznetClass::write(uint16_t addr, const uint8_t *buf, uint16_t le
 		for (uint16_t i = 0; i < len; i++)
 		{
 			setCs();
-			RT_HW_Base.spiTransfer(0xF0, spiBus());
-			RT_HW_Base.spiTransfer((addr >> 8), spiBus());
-			RT_HW_Base.spiTransfer((addr & 0xFF), spiBus());
+			spiTransfer(0xF0);
+			spiTransfer(addr >> 8);
+			spiTransfer(addr & 0xFF);
 			addr++;
-			RT_HW_Base.spiTransfer((buf[i]), spiBus());
+			spiTransfer(buf[i]);
 			resetCs();
 		}
 	}
@@ -553,11 +556,11 @@ uint16_t FLProgWiznetClass::write(uint16_t addr, const uint8_t *buf, uint16_t le
 		cmd[3] = len & 0xFF;
 		for (uint8_t i = 0; i < 4; i++)
 		{
-			RT_HW_Base.spiTransfer(cmd[i], spiBus());
+			spiTransfer(cmd[i]);
 		}
 		for (uint16_t i = 0; i < len; i++)
 		{
-			RT_HW_Base.spiTransfer((buf[i]), spiBus());
+			spiTransfer((buf[i]));
 		}
 		resetCs();
 	}
@@ -596,18 +599,18 @@ uint16_t FLProgWiznetClass::write(uint16_t addr, const uint8_t *buf, uint16_t le
 			}
 			for (uint16_t i = 0; i < (len + 3); i++)
 			{
-				RT_HW_Base.spiTransfer(cmd[i], spiBus());
+				spiTransfer(cmd[i]);
 			}
 		}
 		else
 		{
 			for (uint8_t i = 0; i < 3; i++)
 			{
-				RT_HW_Base.spiTransfer(cmd[i], spiBus());
+				spiTransfer(cmd[i]);
 			}
 			for (uint16_t i = 0; i < len; i++)
 			{
-				RT_HW_Base.spiTransfer(buf[i], spiBus());
+				spiTransfer(buf[i]);
 			}
 		}
 		resetCs();
@@ -623,11 +626,11 @@ uint16_t FLProgWiznetClass::read(uint16_t addr, uint8_t *buf, uint16_t len)
 		for (uint16_t i = 0; i < len; i++)
 		{
 			setCs();
-			RT_HW_Base.spiTransfer(0x0F, spiBus());
-			RT_HW_Base.spiTransfer((addr >> 8), spiBus());
-			RT_HW_Base.spiTransfer((addr & 0xFF), spiBus());
+			spiTransfer(0x0F);
+			spiTransfer(addr >> 8);
+			spiTransfer(addr & 0xFF);
 			addr++;
-			buf[i] = RT_HW_Base.spiTransfer(0, spiBus());
+			buf[i] = spiTransfer(0);
 			resetCs();
 		}
 	}
@@ -640,11 +643,11 @@ uint16_t FLProgWiznetClass::read(uint16_t addr, uint8_t *buf, uint16_t len)
 		cmd[3] = len & 0xFF;
 		for (uint8_t i = 0; i < 4; i++)
 		{
-			RT_HW_Base.spiTransfer(cmd[i], spiBus());
+			spiTransfer(cmd[i]);
 		}
 		for (uint16_t i = 0; i < len; i++)
 		{
-			buf[i] = RT_HW_Base.spiTransfer(0, spiBus());
+			buf[i] = spiTransfer(0);
 		}
 		resetCs();
 	}
@@ -677,11 +680,11 @@ uint16_t FLProgWiznetClass::read(uint16_t addr, uint8_t *buf, uint16_t len)
 		}
 		for (uint8_t i = 0; i < 3; i++)
 		{
-			RT_HW_Base.spiTransfer(cmd[i], spiBus());
+			spiTransfer(cmd[i]);
 		}
 		for (uint16_t i = 0; i < len; i++)
 		{
-			buf[i] = RT_HW_Base.spiTransfer(0, spiBus());
+			buf[i] = spiTransfer(0);
 		}
 		resetCs();
 	}
@@ -1095,10 +1098,8 @@ uint16_t FLProgWiznetClass::socketSend(uint8_t s, const uint8_t *buf, uint16_t l
 			return 0;
 		}
 		endTransaction();
-		yield();
 		beginTransaction();
 	}
-	/* +2008.01 bj */
 	writeSn(s, FLPROG_WIZNET_SN_IR, FLPROG_WIZNET_SN_IR_SEND_OK);
 	endTransaction();
 	return ret;
@@ -1187,15 +1188,49 @@ int FLProgWiznetClass::pinCs()
 {
 	if (_pinCs == -1)
 	{
+#ifdef FLPROG_COMPACT_LIBRARY_MODE
+		return 10;
+#else
 		return RT_HW_Base.device.spi.csETH;
+#endif
 	}
 	return _pinCs;
 }
 uint8_t FLProgWiznetClass::spiBus()
 {
+#ifdef FLPROG_COMPACT_LIBRARY_MODE
+	return 0;
+#else
 	if (_spiBus == 255)
 	{
 		return RT_HW_Base.device.spi.busETH;
 	}
 	return _spiBus;
+#endif
+}
+
+void FLProgWiznetClass::beginTransaction()
+{
+#ifdef FLPROG_COMPACT_LIBRARY_MODE
+	SPI.beginTransaction(FLPROG_WIZNET_SPI_SETTINGS);
+#else
+	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus());
+#endif
+}
+void FLProgWiznetClass::endTransaction()
+{
+#ifdef FLPROG_COMPACT_LIBRARY_MODE
+	SPI.endTransaction();
+#else
+	RT_HW_Base.spiEndTransaction(_spiBus);
+#endif
+}
+
+uint8_t FLProgWiznetClass::spiTransfer(uint8_t data)
+{
+#ifdef FLPROG_COMPACT_LIBRARY_MODE
+	return SPI.transfer(data);
+#else
+	return RT_HW_Base.spiTransfer(data, spiBus());
+#endif
 }

@@ -2,6 +2,11 @@
 #include "flprogUtilites.h"
 #include "../abstract/flprogAbstractEthernetHardware.h"
 
+#ifdef FLPROG_COMPACT_LIBRARY_MODE
+#include <SPI.h>
+#define FLPROG_WIZNET_SPI_SETTINGS SPISettings(14000000, MSBFIRST, SPI_MODE0)
+#endif
+
 #if defined(RAMEND) && defined(RAMSTART) && ((RAMEND - RAMSTART) <= 2048)
 #define FLPROG_WIZNET_MAX_SOCK_NUM 4
 #else
@@ -189,7 +194,7 @@ public:
 
   int pinCs();
   uint8_t spiBus();
- 
+
 private:
   uint8_t _chip = 0;
   uint32_t _startWhiteInitTime;
@@ -208,6 +213,9 @@ private:
   void resetCs() { digitalWrite(pinCs(), HIGH); };
   void privateMaceSoket(uint8_t soc, uint8_t protocol, uint16_t port);
   void privateMaceSoketMulticast(uint8_t soc, uint8_t protocol, IPAddress ip, uint16_t port);
-  void beginTransaction() { RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, _spiBus); };
-  void endTransaction() { RT_HW_Base.spiEndTransaction(_spiBus); };
+  void beginTransaction();
+  void endTransaction();
+  uint8_t spiTransfer(uint8_t);
+
+ 
 };
