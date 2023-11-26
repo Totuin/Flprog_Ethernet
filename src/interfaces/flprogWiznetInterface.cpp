@@ -110,7 +110,7 @@ void FLProgWiznetInterface::begin(unsigned long timeout, unsigned long responseT
     {
         _status = FLPROG_NOT_REDY_STATUS;
         _errorCode = FLPROG_ETHERNET_LINK_OFF_ERROR;
-        _isNeedReconect - true;
+        _isNeedReconect = true;
         return;
     }
     if (_status != FLPROG_WAIT_ETHERNET_DHCP_STATUS)
@@ -123,7 +123,7 @@ void FLProgWiznetInterface::begin(unsigned long timeout, unsigned long responseT
     {
         _status = FLPROG_NOT_REDY_STATUS;
         _errorCode = _dhcp.getError();
-        _isNeedReconect - true;
+        _isNeedReconect = true;
         return;
     }
     if (result == FLPROG_WITE)
@@ -136,7 +136,7 @@ void FLProgWiznetInterface::begin(unsigned long timeout, unsigned long responseT
     {
         _status = FLPROG_NOT_REDY_STATUS;
         _errorCode = FLPROG_ETHERNET_DHCP_NOT_CORRECT_RESULT_ERROR;
-        _isNeedReconect - true;
+        _isNeedReconect = true;
         return;
     }
     _ip = _dhcp.getLocalIp();
@@ -176,7 +176,7 @@ void FLProgWiznetInterface::begin(IPAddress ip, IPAddress dns, IPAddress gateway
     {
         _status = FLPROG_NOT_REDY_STATUS;
         _errorCode = FLPROG_ETHERNET_LINK_OFF_ERROR;
-        _isNeedReconect - true;
+        _isNeedReconect = true;
         return;
     }
     _ip = ip;

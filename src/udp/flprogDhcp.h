@@ -86,7 +86,7 @@ typedef struct _FLPROG_RIP_MSG_FIXED
 class FLProgDhcp : public FLProgAbstactEthernetUDPChanel
 {
 public:
-virtual void setSourse(FLProgAbstractTcpInterface *sourse);
+	virtual void setSourse(FLProgAbstractTcpInterface *sourse);
 	IPAddress getLocalIp();
 	IPAddress getSubnetMask();
 	IPAddress getGatewayIp();
@@ -98,20 +98,15 @@ virtual void setSourse(FLProgAbstractTcpInterface *sourse);
 private:
 	int request_DHCP_lease(uint32_t responseTimeout);
 	void reset_DHCP_lease();
-	
-	void send_DHCP_MESSAGE(uint8_t, uint16_t);
-	void printByte(char *, uint8_t);
+
+	void send_DHCP_MESSAGE(uint8_t messageType);
+	void printByte(char *buffer, uint8_t size);
 	uint8_t parseDHCPResponse(uint32_t responseTimeout);
 
-
-
-
-//state mashine
-uint8_t cheskStateMashine(uint32_t responseTimeout);
-void sendDiscoverMessage();
-void sendReqestMessage();
-
-
+	// state mashine
+	uint8_t cheskStateMashine(uint32_t responseTimeout);
+	void sendDiscoverMessage();
+	void sendReqestMessage();
 
 	uint32_t _dhcpInitialTransactionId;
 	uint32_t _dhcpTransactionId;

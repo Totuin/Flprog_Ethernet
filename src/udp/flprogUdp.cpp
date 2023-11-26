@@ -21,7 +21,7 @@ int FLProgUdpClient::beginPacket(const char *host, uint16_t port)
 		_status = FLPROG_WAIT_ETHERNET_DNS_STATUS;
 		return FLPROG_WITE;
 	}
-	if (result = FLPROG_ERROR)
+	if (result == FLPROG_ERROR)
 	{
 		_status = FLPROG_READY_STATUS;
 		_errorCode = _dns.getError();

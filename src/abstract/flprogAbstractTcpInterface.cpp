@@ -62,11 +62,11 @@ void FLProgAbstractTcpInterface::subnet(IPAddress ip)
 
 void FLProgAbstractTcpInterface::gateway(IPAddress ip)
 {
-    if (_gatewayIp == _ip)
+    if (_gatewayIp == ip)
     {
         return;
     }
-    _gatewayIp = _ip;
+    _gatewayIp = ip;
     _isNeedReconect = true;
 }
 

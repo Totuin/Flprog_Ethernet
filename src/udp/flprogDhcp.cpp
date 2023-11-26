@@ -70,7 +70,7 @@ int FLProgDhcp::request_DHCP_lease(uint32_t responseTimeout)
 void FLProgDhcp::sendDiscoverMessage()
 {
 	_dhcpTransactionId++;
-	send_DHCP_MESSAGE(FLPROG_DHCP_DISCOVER, ((millis() - _startDhcpReqestTime) / 1000));
+	send_DHCP_MESSAGE(FLPROG_DHCP_DISCOVER);
 	_startDhcpReqestTime = millis();
 	_lastCheckDhcpReqestTime = flprog::timeBack(100);
 	_dhcp_state = FLPROG_STATE_DHCP_DISCOVER;
@@ -79,7 +79,7 @@ void FLProgDhcp::sendDiscoverMessage()
 void FLProgDhcp::sendReqestMessage()
 {
 	_dhcpTransactionId = _respId;
-	send_DHCP_MESSAGE(FLPROG_DHCP_REQUEST, ((millis() - _startDhcpReqestTime) / 1000));
+	send_DHCP_MESSAGE(FLPROG_DHCP_REQUEST);
 	_startDhcpReqestTime = millis();
 	_lastCheckDhcpReqestTime = flprog::timeBack(100);
 	_dhcp_state = FLPROG_STATE_DHCP_REQUEST;
@@ -125,7 +125,7 @@ uint8_t FLProgDhcp::cheskStateMashine(uint32_t responseTimeout)
 	{
 		_dhcpTransactionId++;
 		_startDhcpReqestTime = millis();
-		send_DHCP_MESSAGE(FLPROG_DHCP_REQUEST, ((millis() - _startDhcpReqestTime) / 1000));
+		send_DHCP_MESSAGE(FLPROG_DHCP_REQUEST);
 		_dhcp_state = FLPROG_STATE_DHCP_REQUEST;
 		return FLPROG_WITE;
 	}
@@ -174,7 +174,7 @@ uint8_t FLProgDhcp::cheskStateMashine(uint32_t responseTimeout)
 	return FLPROG_ERROR;
 }
 
-void FLProgDhcp::send_DHCP_MESSAGE(uint8_t messageType, uint16_t secondsElapsed)
+void FLProgDhcp::send_DHCP_MESSAGE(uint8_t messageType)
 {
 	uint8_t buffer[32];
 	memset(buffer, 0, 32);
@@ -432,15 +432,15 @@ IPAddress FLProgDhcp::getDnsServerIp()
 	return IPAddress(_dhcpDnsServerIp);
 }
 
-void FLProgDhcp::printByte(char *buf, uint8_t n)
+void FLProgDhcp::printByte(char *buffer, uint8_t size)
 {
-	char *str = &buf[1];
-	buf[0] = '0';
+	char *str = &buffer[1];
+	buffer[0] = '0';
 	do
 	{
-		unsigned long m = n;
-		n /= 16;
-		char c = m - 16 * n;
+		unsigned long m = size;
+		size /= 16;
+		char c = m - 16 * size;
 		*str-- = c < 10 ? c + '0' : c + 'A' - 10;
-	} while (n);
+	} while (size);
 }

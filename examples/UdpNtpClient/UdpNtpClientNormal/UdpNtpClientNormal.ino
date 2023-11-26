@@ -42,8 +42,8 @@ FLProgWiznetInterface WiznetInterface;
 
 uint32_t localPort = 8888; //--Определение порта для UDP пакетов (используется стандартный номер);
 
-const char *timeServer = "ntp1.vniiftri.ru"; //--Имя NTP сервера - сервер точного времени;
-// const char *timeServer = "time.nist.gov";
+ const char *timeServer = "time.nist.gov";//--Имя NTP сервера - сервер точного времени;
+ //const char *timeServer = "ntp1.vniiftri.ru"; 
 // const char *timeServer = "128.138.140.44";
 // IPAddress  timeServer = IPAddress(128, 138, 140, 44);
 
@@ -65,7 +65,7 @@ FLProgUdpClient Udp(&WiznetInterface); //--Создание UDP клиента;
          Определение рабочих параметров и функций
   -----------------------------------------------------------------------------------------
 */
-uint32_t reqestPeriod = 5000;                             // Периодичность запроса времени от сервера
+uint32_t reqestPeriod = 10000;                             // Периодичность запроса времени от сервера
 uint32_t sendPacadeTime = flprog::timeBack(reqestPeriod); // Время начала ожидания
 bool isReplyInProcess = false;                            // Флаг ожидания ответа
 
