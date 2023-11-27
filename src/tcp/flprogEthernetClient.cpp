@@ -59,7 +59,7 @@ int FLProgEthernetClient::connect(IPAddress ip, uint16_t port)
 			_sourse->closeSoket(_sockindex);
 			_sockindex = _sourse->maxSoketNum();
 		}
-		_sockindex = _sourse->getTCPSoket(0);
+		_sockindex = _sourse->getClientTCPSoket(0);
 		if (_sockindex >= _sourse->maxSoketNum())
 		{
 			_status = FLPROG_READY_STATUS;

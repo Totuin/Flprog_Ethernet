@@ -1,8 +1,8 @@
 #pragma once
 #include "flprogUtilites.h"
-#include "../abstract/flprogAbstractTcpInterface.h"
-#include "../hardware/flprogWizNet.h"
-#include "../udp/flprogDhcp.h"
+#include "../../abstract/flprogAbstractTcpInterface.h"
+#include "../../hardware/wizNet/flprogWizNet.h"
+#include "../../udp/flprogDhcp.h"
 
 class FLProgWiznetInterface : public FLProgAbstractTcpInterface
 {
@@ -25,7 +25,8 @@ public:
   virtual size_t writeToSoket(uint8_t soket, const uint8_t *buffer, size_t size) { return _hardware.writeToSoket(soket, buffer, size); };
   virtual int availableSoket(uint8_t soket) { return _hardware.socketRecvAvailable(soket); };
   virtual void disconnecSoket(uint8_t soket) { _hardware.socketDisconnect(soket); };
-  virtual uint8_t getTCPSoket(uint16_t port) { return _hardware.getTCPSoket(port); };
+  virtual uint8_t getClientTCPSoket(uint16_t port) { return _hardware.getClientTCPSoket(port); };
+ virtual uint8_t getServerTCPSoket(uint16_t port) { return _hardware.getServerTCPSoket(port); };
   virtual uint8_t getUDPSoket(uint16_t port) { return _hardware.getUDPSoket(port); };
   virtual bool isListenSoket(uint8_t soket) { return _hardware.socketListen(soket); };
   virtual void closeSoket(uint8_t soket) { _hardware.socketClose(soket); };

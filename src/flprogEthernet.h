@@ -6,7 +6,8 @@
 #include "udp/flprogDhcp.h"
 #include "tcp/flprogEthernetClient.h"
 #include "tcp/flprogEthernetServer.h"
-#include "interfaces/flprogWiznetInterface.h"
+#include "interfaces/wizNet/flprogWiznetInterface.h"   
+#include "interfaces/onBoardWifi/flprogOnBoardWifiInterface.h"                    
 
 
 

@@ -34,6 +34,13 @@ uint8_t FLProgWiznetInterface::pool()
     {
         return FLPROG_ERROR;
     }
+    if (_isNeedReconect)
+    {
+        _lastReconnectTime = flprog::timeBack(_reconnectEthernetPeriod);
+        _status = FLPROG_WAIT_ETHERNET_CONNECT_STATUS;
+        _isNeedReconect = false;
+        return connect();
+    }
     return maintain();
 }
 
@@ -58,19 +65,19 @@ uint8_t FLProgWiznetInterface::initHarware()
 
 uint8_t FLProgWiznetInterface::connect()
 {
-    if (_status != FLPROG_WAIT_ETHERNET_DHCP_STATUS)
-    {
-        if (!flprog::isTimer(_lastReconnectTime, _reconnectEthernetPeriod))
-        {
-            return FLPROG_WITE;
-        }
-        _hardware.setMACAddress(_macAddress);
-    }
     if (isDhcp())
     {
-
+        if (_status != FLPROG_WAIT_ETHERNET_DHCP_STATUS)
+        {
+            if (!flprog::isTimer(_lastReconnectTime, _reconnectEthernetPeriod))
+            {
+                return FLPROG_WITE;
+            }
+            _hardware.setMACAddress(_macAddress);
+        }
         return begin();
     }
+    _hardware.setMACAddress(_macAddress);
     if (_dnsIp == FLPROG_INADDR_NONE)
     {
         _dnsIp = _ip;
@@ -100,7 +107,6 @@ uint8_t FLProgWiznetInterface::checkHarwareLinkStatus()
     {
         _errorCode = FLPROG_ETHERNET_LINK_OFF_ERROR;
     }
-    _isNeedReconect = true;
     return FLPROG_ERROR;
 }
 

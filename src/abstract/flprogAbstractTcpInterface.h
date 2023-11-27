@@ -52,7 +52,8 @@ public:
     virtual size_t writeToSoket(uint8_t soket, const uint8_t *buffer, size_t size) = 0;
     virtual int availableSoket(uint8_t soket) = 0;
     virtual void disconnecSoket(uint8_t soket) = 0;
-    virtual uint8_t getTCPSoket(uint16_t port) = 0;
+    virtual uint8_t getClientTCPSoket(uint16_t port) = 0;
+    virtual uint8_t getServerTCPSoket(uint16_t port) = 0;
     virtual uint8_t getUDPSoket(uint16_t port) = 0;
     virtual bool isListenSoket(uint8_t soket) = 0;
     virtual void closeSoket(uint8_t soket) = 0;
@@ -78,10 +79,10 @@ protected:
     uint8_t _status = FLPROG_NOT_REDY_STATUS;
     uint8_t _errorCode = FLPROG_NOT_ERROR;
     bool _needUpdateData = false;
-    IPAddress _ip = INADDR_NONE;
-    IPAddress _dnsIp = INADDR_NONE;
+    IPAddress _ip = FLPROG_INADDR_NONE;
+    IPAddress _dnsIp = FLPROG_INADDR_NONE;
     IPAddress _subnetIp = IPAddress(255, 255, 255, 0);
-    IPAddress _gatewayIp = INADDR_NONE;
+    IPAddress _gatewayIp = FLPROG_INADDR_NONE;
     uint8_t _macAddress[6] = {0, 0, 0, 0, 0, 0};
     bool _isNeedReconect = true;
 };

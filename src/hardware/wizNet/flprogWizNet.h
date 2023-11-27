@@ -1,6 +1,6 @@
 #pragma once
 #include "flprogUtilites.h"
-#include "../abstract/flprogAbstractEthernetHardware.h"
+#include "../../abstract/flprogAbstractEthernetHardware.h"
 
 #ifdef FLPROG_COMPACT_LIBRARY_MODE
 #include <SPI.h>
@@ -99,9 +99,6 @@ public:
   void setPinCs(int pinCs);
   void setSpiBus(uint8_t bus) { _spiBus = bus; };
 
-
-
-
   virtual uint8_t getLinkStatus();
   virtual uint8_t getChip();
 
@@ -112,7 +109,6 @@ public:
   uint8_t isConnectStatusSoket(uint8_t soket);
   uint8_t isCosedStatusSoket(uint8_t soket);
 
-  
   virtual void setGatewayIp(IPAddress addr);
   virtual IPAddress getGatewayIp();
   virtual void setSubnetMask(IPAddress addr);
@@ -193,14 +189,14 @@ public:
   virtual uint16_t socketBufferData(uint8_t s, uint16_t offset, const uint8_t *buf, uint16_t len);
   virtual uint8_t socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port);
   virtual uint8_t socketSendUDP(uint8_t s);
-
   virtual uint8_t maxSoketNum() { return FLPROG_WIZNET_MAX_SOCK_NUM; };
-
-  virtual uint8_t getTCPSoket(uint16_t port) { return socketBegin(FLPROG_WIZNET_SN_MR_TCP, port); };
+  uint8_t getClientTCPSoket(uint16_t port){return getTCPSoket(port);};
+  uint8_t getServerTCPSoket(uint16_t port){return getTCPSoket(port);};
   virtual uint8_t getUDPSoket(uint16_t port) { return socketBegin(FLPROG_WIZNET_SN_MR_UDP, port); };
   virtual uint8_t beginMulticastSoket(IPAddress ip, uint16_t port) { return socketBeginMulticast((FLPROG_WIZNET_SN_MR_UDP | FLPROG_WIZNET_SN_MR_MULTI), ip, port); };
 
 private:
+  uint8_t getTCPSoket(uint16_t port) { return socketBegin(FLPROG_WIZNET_SN_MR_TCP, port); };
   uint8_t checkInit();
   uint8_t softReset(void);
   uint8_t isW5100(void);

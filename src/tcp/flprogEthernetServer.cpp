@@ -44,7 +44,7 @@ uint8_t FLProgEthernetServer::begin()
 		return FLPROG_ERROR;
 	}
 	_sourse->disconnecSoket(_sockindex);
-	_sockindex = _sourse->getTCPSoket(_port);
+	_sockindex = _sourse->getServerTCPSoket(_port);
 	if (_sockindex >= _sourse->maxSoketNum())
 	{
 		_status = FLPROG_NOT_REDY_STATUS;
