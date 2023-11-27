@@ -7,6 +7,7 @@ class FLProgAbstractEthernetHardware
 {
 public:
     virtual uint8_t init() = 0;
+    virtual bool isInit() = 0;
     virtual uint8_t getLinkStatus() = 0;
     virtual void setGatewayIp(IPAddress addr) = 0;
     virtual IPAddress getGatewayIp() = 0;
@@ -19,7 +20,6 @@ public:
     virtual void setRetransmissionTime(uint16_t timeout) = 0;
     virtual void setRetransmissionCount(uint8_t retry) = 0;
     virtual uint8_t getChip() = 0;
-    virtual bool isInit() = 0;
     virtual uint8_t maxSoketNum() = 0;
 
     // утилиты

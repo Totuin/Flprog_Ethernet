@@ -94,47 +94,10 @@ uint8_t FLProgWiznetClass::checkInit()
 	RT_HW_Base.spiBegin(spiBus());
 #endif
 	initCs();
-	beginTransaction();
-	if (isW5200())
+	if (getChip() == FLPROG_ETHERNET_NO_HARDWARE)
 	{
-		_CH_BASE_MSB = 0x40;
-		for (uint8_t i = 0; i < 8; i++)
-		{
-			if (i < FLPROG_WIZNET_MAX_SOCK_NUM)
-			{
-				writeSn(i, FLPROG_WIZNET_SN_RX_SIZE, SSIZE >> 10);
-				writeSn(i, FLPROG_WIZNET_SN_TX_SIZE, SSIZE >> 10);
-			}
-			else
-			{
-				writeSn(i, FLPROG_WIZNET_SN_RX_SIZE, 0);
-				writeSn(i, FLPROG_WIZNET_SN_TX_SIZE, 0);
-			}
-		}
+		return FLPROG_ERROR;
 	}
-	else
-	{
-		if (isW5500())
-		{
-			_CH_BASE_MSB = 0x10;
-		}
-		else
-		{
-			if (isW5100())
-			{
-				_CH_BASE_MSB = 0x04;
-			}
-			else
-			{
-				_chip = FLPROG_ETHERNET_NO_HARDWARE;
-				endTransaction();
-				_status = FLPROG_NOT_REDY_STATUS;
-				_errorCode = FLPROG_ETHERNET_HARDWARE_INIT_ERROR;
-				return FLPROG_ERROR;
-			}
-		}
-	}
-	endTransaction();
 	_status = FLPROG_READY_STATUS;
 	_errorCode = FLPROG_NOT_ERROR;
 	return FLPROG_SUCCESS;
@@ -1182,6 +1145,47 @@ uint8_t FLProgWiznetClass::socketSendUDP(uint8_t s)
 	endTransaction();
 	_errorCode = FLPROG_NOT_ERROR;
 	return FLPROG_SUCCESS;
+}
+
+uint8_t FLProgWiznetClass::getChip()
+{
+	beginTransaction();
+	if (isW5200())
+	{
+		_CH_BASE_MSB = 0x40;
+		for (uint8_t i = 0; i < 8; i++)
+		{
+			if (i < FLPROG_WIZNET_MAX_SOCK_NUM)
+			{
+				writeSn(i, FLPROG_WIZNET_SN_RX_SIZE, SSIZE >> 10);
+				writeSn(i, FLPROG_WIZNET_SN_TX_SIZE, SSIZE >> 10);
+			}
+			else
+			{
+				writeSn(i, FLPROG_WIZNET_SN_RX_SIZE, 0);
+				writeSn(i, FLPROG_WIZNET_SN_TX_SIZE, 0);
+			}
+		}
+		endTransaction();
+		return FLPROG_ETHERNET_W5200;
+	}
+	if (isW5500())
+	{
+		_CH_BASE_MSB = 0x10;
+		endTransaction();
+		return FLPROG_ETHERNET_W5500;
+	}
+	if (isW5100())
+	{
+		_CH_BASE_MSB = 0x04;
+		endTransaction();
+		return FLPROG_ETHERNET_W5100;
+	}
+	endTransaction();
+	_chip = FLPROG_ETHERNET_NO_HARDWARE;
+	_status = FLPROG_NOT_REDY_STATUS;
+	_errorCode = FLPROG_ETHERNET_HARDWARE_INIT_ERROR;
+	return _chip;
 }
 
 int FLProgWiznetClass::pinCs()
