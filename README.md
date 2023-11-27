@@ -15,8 +15,7 @@
 - [Flprog_Utilites](https://github.com/Totuin/Flprog_Utilites)
 - RT_00_HW_BASE
 
-## Directory Hierarchy
-
+## Состав библиотеки
 ```
 |—— examples
 |    |—— CheckWizNetConnect
@@ -41,8 +40,6 @@
 |            |—— WebServerClassicMethodMinimal.ino
 |        |—— WebServerPollMethod
 |            |—— WebServerPollMethod.ino
-|—— keywords.txt
-|—— library.properties
 |—— src
 |    |—— abstract
 |        |—— flprogAbstactEthernetChanel.cpp
@@ -72,7 +69,7 @@
 |        |—— flprogDns.h
 |        |—— flprogUdp.cpp
 |        |—— flprogUdp.h
-|—— TO-DO.txt
+|—— keywords.txt
 ```
 
 
