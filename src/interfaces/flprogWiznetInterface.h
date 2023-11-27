@@ -10,6 +10,12 @@ public:
   FLProgWiznetInterface();
   FLProgWiznetInterface(int pinCs, uint8_t bus = 255);
 
+  void setPinCs(int pinCs) { _hardware.setPinCs(pinCs); };
+  void setSpiBus(uint8_t bus) { _hardware.setSpiBus(bus); };
+
+  void setReconnectionPeriod(uint32_t period) { _reconnectEthernetPeriod = period; };
+  uint32_t reconnectionPeriod() { return _reconnectEthernetPeriod; };
+
   virtual uint8_t pool();
 
   virtual uint8_t soketConnected(uint8_t soket) { return _hardware.soketConnected(soket); };
@@ -51,10 +57,9 @@ public:
   void setRetransmissionCount(uint8_t num) { _hardware.setRetransmissionCount(num); };
   uint32_t checkLinePeriod() { return _checkEthernetStatusPeriod; };
   void checkLinePeriod(uint32_t period) { _checkEthernetStatusPeriod = period; };
-  uint32_t reconnectPeriod() { return _reconnectEthernetPeriod; };
-  void reconnectPeriod(uint32_t period) { _reconnectEthernetPeriod = period; };
+
   void init(int pinCs, uint8_t bus);
-  void setPinCs(int pinCs) { _hardware.setPinCs(pinCs); };
+
   virtual bool isImitation() { return false; }
   int pinCs() { return _hardware.pinCs(); }
   uint8_t spiBus() { return _hardware.spiBus(); }
@@ -63,8 +68,7 @@ public:
   virtual bool isInit() { return _hardware.isInit(); };
 
 private:
-uint8_t checkHarwareLinkStatus();
-
+  uint8_t checkHarwareLinkStatus();
   uint8_t checkHardware();
   uint8_t initHarware();
   uint8_t connect();

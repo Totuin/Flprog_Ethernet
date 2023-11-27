@@ -97,6 +97,11 @@ public:
   uint8_t spiBus();
 
   void setPinCs(int pinCs);
+  void setSpiBus(uint8_t bus) { _spiBus = bus; };
+
+
+
+
   virtual uint8_t getLinkStatus();
   virtual uint8_t getChip();
 
@@ -107,7 +112,7 @@ public:
   uint8_t isConnectStatusSoket(uint8_t soket);
   uint8_t isCosedStatusSoket(uint8_t soket);
 
-  virtual void setSpiBus(uint8_t bus) { _spiBus = bus; };
+  
   virtual void setGatewayIp(IPAddress addr);
   virtual IPAddress getGatewayIp();
   virtual void setSubnetMask(IPAddress addr);
