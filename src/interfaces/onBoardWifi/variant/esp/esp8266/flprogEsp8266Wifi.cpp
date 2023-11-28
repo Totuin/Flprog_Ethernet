@@ -1,6 +1,6 @@
 #include "flprogEsp8266Wifi.h"
 
-// #ifdef FLPROG_ESP8266_WIFI_ON_BOARD_TCP_DEVICE
+#ifdef FLPROG_ESP8266_WIFI_ON_BOARD_TCP_DEVICE
 
 bool FLProgOnBoardWifiInterface::isReady()
 {
@@ -424,4 +424,4 @@ IPAddress FLProgOnBoardWifiInterface::remoteIPSoket(uint8_t soket)
     return FLPROG_INADDR_NONE;
 }
 
-// #endif
+#endif

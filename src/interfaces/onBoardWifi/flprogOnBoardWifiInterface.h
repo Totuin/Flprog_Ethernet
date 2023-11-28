@@ -71,6 +71,7 @@ extern "C"
 #include "variant/esp/esp8266/flprogEsp8266Wifi.h"
 #endif
 
+/*
 #ifndef FLPROG_WIFI_ON_BOARD_TCP_DEVICE
 #ifdef ARDUINO_ARCH_ESP32
 #define FLPROG_WIFI_ON_BOARD_TCP_DEVICE
@@ -91,7 +92,7 @@ extern "C"
 #endif
 #endif
 #endif
-
+*/
 #ifndef FLPROG_WIFI_ON_BOARD_TCP_DEVICE
 #define FLPROG_WIFI_ON_BOARD_TCP_DEVICE
 #define FLPROG_ANON_WIFI_ON_BOARD_TCP_DEVICE

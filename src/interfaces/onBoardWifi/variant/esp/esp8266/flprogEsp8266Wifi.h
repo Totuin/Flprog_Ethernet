@@ -2,7 +2,7 @@
 #include "flprogUtilites.h"
 #include "../../../flprogOnBoardWifiInterface.h"
 
-// #ifdef FLPROG_ESP8266_WIFI_ON_BOARD_TCP_DEVICE
+#ifdef FLPROG_ESP8266_WIFI_ON_BOARD_TCP_DEVICE
 
 #define FLPROG_WIFI_NOT_DEFINED_SOKET 0
 #define FLPROG_WIFI_SERVER_SOKET 1
@@ -78,4 +78,4 @@ private:
     WiFiUDP *_udp[FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM];
 };
 
-// #endif
+#endif

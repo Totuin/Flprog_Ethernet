@@ -27,10 +27,18 @@ bool isNeedApSendDisconnectMessage = true;
 //=================================================================================================
 void setup()
 {
+
     Serial.begin(115200);
     while (!Serial)
     {
     }
+
+    RT_HW_Base.consoleBegin();
+    if (RT_HW_Base.consoleHead())
+    {
+        consoleHead();
+    }
+
     Serial.print("Архитектура - ");
 #if defined(RT_HW_ARCH_NAME)
     Serial.println(RT_HW_ARCH_NAME);
