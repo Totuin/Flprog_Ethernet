@@ -63,6 +63,7 @@ protected:
 #define FLPROG_WIFI_ON_BOARD_TCP_DEVICE
 #define FLPROG_ESP8266_WIFI_ON_BOARD_TCP_DEVICE
 #include "ESP8266WiFi.h"
+#include <WiFiUdp.h>
 extern "C"
 {
 #include "user_interface.h"

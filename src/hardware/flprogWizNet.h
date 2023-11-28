@@ -1,6 +1,6 @@
 #pragma once
 #include "flprogUtilites.h"
-#include "../../abstract/flprogAbstractEthernetHardware.h"
+#include "../abstract/flprogAbstractEthernetHardware.h"
 
 #ifdef FLPROG_COMPACT_LIBRARY_MODE
 #include <SPI.h>

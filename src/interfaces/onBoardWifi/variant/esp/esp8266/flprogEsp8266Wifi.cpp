@@ -214,6 +214,148 @@ uint8_t FLProgOnBoardWifiInterface::apReconnect()
     return FLPROG_SUCCESS;
 }
 
+void FLProgOnBoardWifiInterface::disconnecSoket(uint8_t soket)
+{
+    if (!checkOnUseSoket(soket))
+    {
+        clearSoket(soket);
+        return;
+    }
+
+    if (_sokets[soket].soketType == FLPROG_WIFI_SERVER_SOKET)
+    {
+        if (_sever[_sokets[soket].indexOnTypeArray] != 0)
+        {
+            _sever[_sokets[soket].indexOnTypeArray]->stop();
+        }
+    }
+    if (_sokets[soket].soketType == FLPROG_WIFI_CLIENT_SOKET)
+    {
+        if (_client[_sokets[soket].indexOnTypeArray] != 0)
+        {
+            _client[_sokets[soket].indexOnTypeArray]->stop();
+        }
+    }
+    if (_sokets[soket].soketType == FLPROG_WIFI_UDP_SOKET)
+    {
+        if (_udp[_sokets[soket].indexOnTypeArray] != 0)
+        {
+            _udp[_sokets[soket].indexOnTypeArray]->stop();
+        }
+    }
+    clearSoket(soket);
+}
+
+uint8_t FLProgOnBoardWifiInterface::getServerTCPSoket(uint16_t port)
+{
+    if (!isReady())
+    {
+        return FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM;
+    }
+    uint8_t result = getFreeSoketIndex();
+    if (result >= FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM)
+    {
+        return FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM;
+    }
+    uint8_t serverIndex = 0;
+    while ((serverIndex < FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM) && (_sever[serverIndex] == 0))
+    {
+        serverIndex++;
+    }
+    if (serverIndex >= FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM)
+    {
+        return FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM;
+    }
+    _sever[serverIndex] = new WiFiServer(port);
+    _sokets[result].soketType = FLPROG_WIFI_SERVER_SOKET;
+    _sokets[result].indexOnTypeArray = serverIndex;
+    _sokets[result].isUsed = true;
+    return result;
+};
+
+bool FLProgOnBoardWifiInterface::isListenSoket(uint8_t soket)
+{
+    return checkOnUseSoket(soket);
+}
+
+uint8_t FLProgOnBoardWifiInterface::getFreeSoketIndex()
+{
+    for (uint8_t i = 0; i < FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM; i++)
+    {
+        if (!checkOnUseSoket(i))
+        {
+            clearSoket(i);
+            return i;
+        }
+    }
+    return FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM;
+}
+
+bool FLProgOnBoardWifiInterface::checkOnUseSoket(uint8_t soket)
+{
+    if (soket >= FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM)
+    {
+        return false;
+    }
+    if (!_sokets[soket].isUsed)
+    {
+        return false;
+    }
+    uint8_t type = _sokets[soket].soketType;
+    if (type == FLPROG_WIFI_NOT_DEFINED_SOKET)
+    {
+        return false;
+    }
+    uint8_t index = _sokets[soket].indexOnTypeArray;
+    if (index >= FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM)
+    {
+        return false;
+    }
+    if (type == FLPROG_WIFI_SERVER_SOKET)
+    {
+        return _sever[index] != 0;
+    }
+    if (type == FLPROG_WIFI_CLIENT_SOKET)
+    {
+        return _client[index] != 0;
+    }
+    if (type == FLPROG_WIFI_UDP_SOKET)
+    {
+        return _udp[index] != 0;
+    }
+    return false;
+}
+
+void FLProgOnBoardWifiInterface::clearSoket(uint8_t soket)
+{
+    if (soket >= FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM)
+    {
+        return;
+    }
+    _sokets[soket].isUsed = false;
+    uint8_t type = _sokets[soket].soketType;
+    if (type != FLPROG_WIFI_NOT_DEFINED_SOKET)
+    {
+        uint8_t index = _sokets[soket].indexOnTypeArray;
+        if (index < FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM)
+        {
+            if (type == FLPROG_WIFI_SERVER_SOKET)
+            {
+                _sever[index] = 0;
+            }
+            if (type == FLPROG_WIFI_CLIENT_SOKET)
+            {
+                _client[index] = 0;
+            }
+            if (type == FLPROG_WIFI_UDP_SOKET)
+            {
+                _udp[index] = 0;
+            }
+        }
+        _sokets[soket].soketType = FLPROG_WIFI_NOT_DEFINED_SOKET;
+    }
+}
+
 uint8_t FLProgOnBoardWifiInterface::resetToVoidVar(uint8_t soket)
 {
     (void)soket;

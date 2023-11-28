@@ -1,7 +1,7 @@
 #pragma once
 #include "flprogUtilites.h"
 #include "../../abstract/flprogAbstractTcpInterface.h"
-#include "../../hardware/wizNet/flprogWizNet.h"
+#include "../../hardware/flprogWizNet.h"
 #include "../../udp/flprogDhcp.h"
 
 class FLProgWiznetInterface : public FLProgAbstractTcpInterface
