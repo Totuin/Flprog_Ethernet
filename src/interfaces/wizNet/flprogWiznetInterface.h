@@ -11,7 +11,10 @@ public:
   FLProgWiznetInterface(int pinCs, uint8_t bus = 255);
 
   void setPinCs(int pinCs) { _hardware.setPinCs(pinCs); };
-  void setSpiBus(uint8_t bus) { _hardware.setSpiBus(bus); };
+   int pinCs() { return _hardware.pinCs(); }
+
+  void setSpiBus(uint8_t bus) { _hardware.setSpiBus(bus); };  
+  uint8_t spiBus() { return _hardware.spiBus(); }
 
   void setReconnectionPeriod(uint32_t period) { _reconnectEthernetPeriod = period; };
   uint32_t reconnectionPeriod() { return _reconnectEthernetPeriod; };
@@ -24,6 +27,9 @@ public:
 
   void setDhcpTimeout(uint32_t period) { _timeout = period; };
   uint32_t dhcpTimeout() { return _timeout; };
+
+  void setMaintainPeriod(uint32_t period) { _maintainPeriod = period; };
+  uint32_t maintainPeriod() { return _maintainPeriod; };
 
   virtual uint8_t pool();
 
@@ -69,8 +75,7 @@ public:
   void init(int pinCs, uint8_t bus);
 
   virtual bool isImitation() { return false; }
-  int pinCs() { return _hardware.pinCs(); }
-  uint8_t spiBus() { return _hardware.spiBus(); }
+
   virtual uint8_t type() { return FLPROG_ETHERNET_INTERFACE; }
   virtual uint8_t maxSoketNum() { return _hardware.maxSoketNum(); };
   virtual bool isInit() { return _hardware.isInit(); };
