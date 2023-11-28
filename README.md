@@ -76,7 +76,7 @@ uint8_t *macAddres = WiznetInterface.mac();
 WiznetInterface.setPinCs(10);
   
 // Получение номера пина  
-int = WiznetInterface.pinCs() ;
+int pin = WiznetInterface.pinCs() ;
 ```
 <br>
 
