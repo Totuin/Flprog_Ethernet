@@ -43,6 +43,7 @@ public:
     uint8_t getStatus() { return _status; };
     uint8_t getError() { return _errorCode; };
     virtual bool isReady() { return _status == FLPROG_READY_STATUS; };
+     bool checkMac(uint8_t *mac);
 
     // API обязательное для реализации наследниками
     virtual uint8_t pool() = 0;

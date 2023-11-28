@@ -7,8 +7,10 @@ class FLProgAbstracttWiFiInterface : public FLProgAbstractTcpInterface
 public:
     void setApSsid(String ssid);
     void setApPassword(String password);
+    String apSsid() { return String(_apSsid); };
     void setClientSsidd(String ssid);
     void setClientPassword(String password);
+    String clientSsid() { return String(_clientSsid); };
 
     void apMac(uint8_t m0, uint8_t m1, uint8_t m2, uint8_t m3, uint8_t m4, uint8_t m5);
     uint8_t *apMac() { return _apMacaddress; };
@@ -29,11 +31,13 @@ public:
     void clientOff();
     void clientMode(bool val);
     bool clientMode() { return _clientWorkStatus; };
+    virtual bool clientIsReady() { return false; };
+    virtual bool apIsReady() { return false; };
     virtual void apOn();
     void apOff();
     void apMode(bool val);
     bool apMode() { return _apWorkStatus; };
-  
+   
 
 protected:
     uint8_t _apMacaddress[6] = {0, 0, 0, 0, 0, 0};

@@ -13,3 +13,5 @@
 Написать описание API библиотеки
 
 ****Метод pool у интерфейса должен возвращать результат исполнения (FLPROG_ERROR, FLPROG_SUCCESS,  FLPROG_WITE) 
+
+Реализовать в WizNet проверку задания Mac адреса ( bool FLProgAbstractTcpInterface::checkMac(uint8_t *mac) )

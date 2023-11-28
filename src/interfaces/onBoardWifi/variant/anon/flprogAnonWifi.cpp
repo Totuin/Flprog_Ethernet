@@ -1,10 +1,11 @@
 #include "flprogAnonWifi.h"
+
+#ifdef FLPROG_ANON_WIFI_ON_BOARD_TCP_DEVICE
 uint8_t FLProgOnBoardWifiInterface::resetToVoidVar(uint8_t soket)
 {
     (void)soket;
     return 0;
 }
-
 
 int FLProgOnBoardWifiInterface::readFromSoket(uint8_t soket, uint8_t *buf, int16_t len)
 {
@@ -21,7 +22,6 @@ size_t FLProgOnBoardWifiInterface::writeToSoket(uint8_t soket, const uint8_t *bu
     (void)size;
     return 0;
 }
-
 
 uint8_t FLProgOnBoardWifiInterface::startUdpSoket(uint8_t soket, uint8_t *addr, uint16_t port)
 {
@@ -48,7 +48,6 @@ int FLProgOnBoardWifiInterface::recvSoket(uint8_t soket, uint8_t *buf, int16_t l
     return -1;
 }
 
-
 uint8_t FLProgOnBoardWifiInterface::beginMulticastSoket(IPAddress ip, uint16_t port)
 {
     (void)port;
@@ -64,10 +63,9 @@ uint8_t FLProgOnBoardWifiInterface::connectSoket(uint8_t soket, IPAddress ip, ui
     return 0;
 }
 
-
 IPAddress FLProgOnBoardWifiInterface::remoteIPSoket(uint8_t soket)
 {
     (void)soket;
     return FLPROG_INADDR_NONE;
 }
-
+#endif

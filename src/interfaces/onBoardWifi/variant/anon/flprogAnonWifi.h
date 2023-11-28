@@ -7,7 +7,6 @@
 class FLProgOnBoardWifiInterface : public FLProgAbstracttWiFiInterface
 {
 public:
-    FLProgOnBoardWifiInterface(){};
     virtual uint8_t pool() { return FLPROG_SUCCESS; };
     virtual bool isImitation() { return true; }
     virtual bool isReady() { return false; };

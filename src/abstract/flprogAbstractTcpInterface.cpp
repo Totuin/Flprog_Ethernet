@@ -98,3 +98,16 @@ void FLProgAbstractTcpInterface::mac(uint8_t *mac_address)
         mac_address[i] = _macAddress[i];
     }
 }
+
+
+bool FLProgAbstractTcpInterface::checkMac(uint8_t *mac)
+{
+    for (uint8_t i = 0; i < 6; i++)
+    {
+        if (mac[i] > 0)
+        {
+            return true;
+        }
+    }
+    return false;
+}

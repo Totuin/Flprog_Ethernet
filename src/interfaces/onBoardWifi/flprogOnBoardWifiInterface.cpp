@@ -78,7 +78,6 @@ void FLProgAbstracttWiFiInterface::apSubnet(IPAddress ip)
     _apIsNeedReconect = true;
 }
 
-
 void FLProgAbstracttWiFiInterface::apGateway(IPAddress ip)
 {
     if (ip == _apGatewayIp)
@@ -148,6 +147,4 @@ void FLProgAbstracttWiFiInterface::apMode(bool val)
     _apWorkStatus = val;
     _apIsNeedReconect = true;
 }
-
-
 
