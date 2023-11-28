@@ -16,6 +16,15 @@ public:
   void setReconnectionPeriod(uint32_t period) { _reconnectEthernetPeriod = period; };
   uint32_t reconnectionPeriod() { return _reconnectEthernetPeriod; };
 
+  void setCheckStatusPeriod(uint32_t period) { _checkEthernetStatusPeriod = period; };
+  uint32_t checkStatusPeriod() { return _checkEthernetStatusPeriod; };
+
+  void setResponseDhcpTimeout(uint32_t period) { _responseTimeout = period; };
+  uint32_t responseDhcpTimeout() { return _responseTimeout; };
+
+  void setDhcpTimeout(uint32_t period) { _timeout = period; };
+  uint32_t dhcpTimeout() { return _timeout; };
+
   virtual uint8_t pool();
 
   virtual uint8_t soketConnected(uint8_t soket) { return _hardware.soketConnected(soket); };
@@ -26,7 +35,7 @@ public:
   virtual int availableSoket(uint8_t soket) { return _hardware.socketRecvAvailable(soket); };
   virtual void disconnecSoket(uint8_t soket) { _hardware.socketDisconnect(soket); };
   virtual uint8_t getClientTCPSoket(uint16_t port) { return _hardware.getClientTCPSoket(port); };
- virtual uint8_t getServerTCPSoket(uint16_t port) { return _hardware.getServerTCPSoket(port); };
+  virtual uint8_t getServerTCPSoket(uint16_t port) { return _hardware.getServerTCPSoket(port); };
   virtual uint8_t getUDPSoket(uint16_t port) { return _hardware.getUDPSoket(port); };
   virtual bool isListenSoket(uint8_t soket) { return _hardware.socketListen(soket); };
   virtual void closeSoket(uint8_t soket) { _hardware.socketClose(soket); };
@@ -56,8 +65,6 @@ public:
   uint8_t hardwareStatus();
   void setRetransmissionTimeout(uint16_t milliseconds) { _hardware.setRetransmissionTime(milliseconds); };
   void setRetransmissionCount(uint8_t num) { _hardware.setRetransmissionCount(num); };
-  uint32_t checkLinePeriod() { return _checkEthernetStatusPeriod; };
-  void checkLinePeriod(uint32_t period) { _checkEthernetStatusPeriod = period; };
 
   void init(int pinCs, uint8_t bus);
 
