@@ -97,6 +97,8 @@ void setup()
   Serial.print("SPI BUS - ");
   Serial.println(WiznetInterface.spiBus());
 
+  flprog::printConsole();
+
   WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40); //--Установка MAC-адрес контроллера
   // WiznetInterface.localIP(192, 168, 199, 155);
   // WiznetInterface.resetDhcp();

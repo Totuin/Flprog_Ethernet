@@ -32,13 +32,6 @@ void setup()
     while (!Serial)
     {
     }
-
-    RT_HW_Base.consoleBegin();
-    if (RT_HW_Base.consoleHead())
-    {
-        consoleHead();
-    }
-
     Serial.print("Архитектура - ");
 #if defined(RT_HW_ARCH_NAME)
     Serial.println(RT_HW_ARCH_NAME);
@@ -52,6 +45,9 @@ void setup()
 #else
     Serial.println("Плата не определенна!");
 #endif
+
+    flprog::printConsole();
+
     WifiInterface.clientOn();
     WifiInterface.apOn();
     WifiInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x28); //--Установка MAC-адрес контроллера (лучше адрес прошитый производителем);
