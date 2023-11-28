@@ -16,23 +16,19 @@
 - RT_00_HW_BASE
 
 ## Поддерживаемые контроллеры
-
-  ```
-  Atmega328
-  Mega2560
-  STM32
-  RP2040
-  ESP8266
-  ```
-
+- **Atmega328**
+- **Mega2560**
+- **STM32**
+- **Raspberry Pi Pico** *(RP 2040)*
+- **ESP8266**
 <br>
 <br>
 
 # Класс FLProgWiznetInterface
 
-## __Конструктор__ <br> _Создание интерфейса для работы с чипом W5100(W5200,W5500)_
+## __Конструктор__ <br> *Создание интерфейса для работы с чипом W5100 (W5200, W5500)*
 
-- *Шина SPI и пин CS берутся из  __RT_HW_Base.device.spi.busETH__ и __RT_HW_Base.device.spi.csETH__.*
+- *Шина SPI и пин CS берутся из  **RT_HW_Base.device.spi.busETH** и **RT_HW_Base.device.spi.csETH**.*
  ```cpp
 FLProgWiznetInterface WiznetInterface;
 ```
