@@ -26,9 +26,11 @@
 
 <br>
 
-# Класс FLProgWiznetInterface
+## Класс FLProgWiznetInterface
 
-## **Конструктор** <br> *Создание интерфейса для работы с чипом W5100 (W5200, W5500)*
+### **Конструктор**  
+
+**Создание интерфейса для работы с чипом W5100 (W5200, W5500)**
 
 - *Шина SPI и пин CS берутся из  **RT_HW_Base.device.spi.busETH** и **RT_HW_Base.device.spi.csETH**.*
 
@@ -56,7 +58,7 @@ FLProgWiznetInterface WiznetInterface(10);
 FLProgWiznetInterface WiznetInterface(10, 0);
 ```
 
-## **Настройка интерфейса**
+### **Настройка интерфейса**
 
 - *Установка MAC-адрес контроллера.<br>
 Обязательно вызывается в секции setup().*
@@ -214,7 +216,7 @@ IPAddress ip = WiznetInterface.subnet();
 ```
 <br>
 
-## **Управление интерфейсом**
+### **Управление интерфейсом**
 
 ```cpp
 // Цикл работы интерфейса. 
@@ -233,5 +235,4 @@ uint8_t type = WiznetInterface.getStatus();
 
 // Получение текущей ошибка интерфейса (описания значений кодов ошибок ниже).
 uint8_t type = WiznetInterface.getError();
-
  ```
