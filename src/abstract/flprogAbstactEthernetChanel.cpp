@@ -4,6 +4,7 @@ void FLProgAbstactEthernetChanel::stop()
 {
     _sourse->closeSoket(_sockindex);
     _sockindex = _sourse->maxSoketNum();
+    _status = FLPROG_NOT_REDY_STATUS;
 }
 
 uint8_t FLProgAbstactEthernetChanel::checkReadySourse()

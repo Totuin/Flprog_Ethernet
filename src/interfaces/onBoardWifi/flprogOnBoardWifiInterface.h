@@ -37,7 +37,6 @@ public:
     void apOff();
     void apMode(bool val);
     bool apMode() { return _apWorkStatus; };
-   
 
 protected:
     uint8_t _apMacaddress[6] = {0, 0, 0, 0, 0, 0};
@@ -61,7 +60,6 @@ protected:
 
 #ifdef ARDUINO_ARCH_ESP8266
 #define FLPROG_WIFI_ON_BOARD_TCP_DEVICE
-#define FLPROG_ESP8266_WIFI_ON_BOARD_TCP_DEVICE
 #include "ESP8266WiFi.h"
 #include <WiFiUdp.h>
 extern "C"
@@ -75,7 +73,6 @@ extern "C"
 #ifndef FLPROG_WIFI_ON_BOARD_TCP_DEVICE
 #ifdef ARDUINO_ARCH_ESP32
 #define FLPROG_WIFI_ON_BOARD_TCP_DEVICE
-#define FLPROG_ESP32_WIFI_ON_BOARD_TCP_DEVICE
 #include "WiFi.h"
 #include <esp_wifi.h>
 #include "variant/esp/esp32/flprogEsp32Wifi.h"

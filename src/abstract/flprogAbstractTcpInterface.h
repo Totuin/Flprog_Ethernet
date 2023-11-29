@@ -31,12 +31,6 @@ public:
     uint8_t *mac() { return _macAddress; };
     virtual void mac(uint8_t *mac_address);
 
-    virtual bool isBusy() { return _busy; };
-    virtual void isBusy(bool busy) { _busy = busy; };
-
-    void setBusy() { _busy = true; };
-    void resetBusy() { _busy = false; };
-
     virtual uint8_t type() { return FLPROG_ANON_INTERFACE; };
     virtual bool isImitation() { return true; }
 
@@ -75,7 +69,6 @@ public:
     virtual bool isInit() = 0;
 
 protected:
-    bool _busy = false;
     bool _isDhcp = true;
     uint8_t _status = FLPROG_NOT_REDY_STATUS;
     uint8_t _errorCode = FLPROG_NOT_ERROR;
