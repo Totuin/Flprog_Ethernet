@@ -62,7 +62,12 @@ FLProgWiznetInterface WiznetInterface(10, 0);
 Обязательно вызывается в секции setup().*
 
 ```cpp
+// Установка непосредственно числами
 WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40);
+
+// Установка путём передачи массива
+uint8_t macAddr[6] = {0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40};
+WiznetInterface.mac(macAddr);
 ```
 
 <br>
@@ -163,3 +168,70 @@ WiznetInterface.dhcpMode(true);
 // Получение текущего состояния режима получения IP адреса через DHCP 
 bool mode =  WiznetInterface.isDhcp();
 ```
+
+<br>
+
+- *Доступ к параметрам соеденения.*
+
+```cpp
+// Внимание если не отключить режим DHCP то заданные IP адреса при соеденении будут замененны полученными от сервера DHCP!
+
+// Задание Ip адреса устройства.
+// В качестве значения могут перетдаться как обект IPAddress так и четыре цифры
+WiznetInterface.localIP(IPAddress(192, 168, 1, 100));
+WiznetInterface.localIP(192, 168, 1, 100);
+
+// Получение IP адреса устройства.
+// Возвращает объект класса IPAddress
+IPAddress ip = WiznetInterface.localIP();
+
+// Задание Ip адреса DNS сервера.
+// В качестве значения могут перетдаться как обект IPAddress так и четыре цифры
+WiznetInterface.dns(IPAddress(192, 168, 1, 1));
+WiznetInterface.dns(192, 168, 1, 1);
+
+// Получение IP адреса DNS сервера
+// Возвращает объект класса IPAddress
+IPAddress ip = WiznetInterface.dns();
+
+// Задание Ip адреса шлюза.
+// В качестве значения могут перетдаться как обект IPAddress так и четыре цифры
+WiznetInterface.gateway(IPAddress(192, 168, 1, 1));
+WiznetInterface.gateway(192, 168, 1, 1);
+
+// Получение IP адреса шлюза
+// Возвращает объект класса IPAddress
+IPAddress ip = WiznetInterface.gateway();
+
+// Задание маски подсети. По умолчанию установленна 255.255.255.0
+// В качестве значения могут перетдаться как обект IPAddress так и четыре цифры
+WiznetInterface.subnet(IPAddress(255, 255, 255, 0));
+WiznetInterface.subnet(255, 255, 255, );
+
+// Получение маски подсети
+// Возвращает объект класса IPAddress
+IPAddress ip = WiznetInterface.subnet();
+```
+<br>
+
+## **Управление интерфейсом**
+
+```cpp
+// Цикл работы интерфейса. 
+// Обязательно вызывать один раз в секции loop().
+// Возвращает результат выполнения цикла (описания значений результатов ниже).
+uint8_t result = WiznetInterface.pool();
+
+// Получение типа интерфейса (описания значений типов интерфейса ниже).
+uint8_t type = WiznetInterface.type();
+
+// Флаг указывающий что испольуемый интерфейс не поддерживается на данной платформе (true - интерфейс не поддерживается) 
+bool isImitation = WiznetInterface.isImitation();
+
+// Получение текущего статуса интерфейса (описания значений статусов ниже).
+uint8_t type = WiznetInterface.getStatus();
+
+// Получение текущей ошибка интерфейса (описания значений кодов ошибок ниже).
+uint8_t type = WiznetInterface.getError();
+
+ ```
