@@ -7,13 +7,14 @@
 class FLProgWiznetInterface : public FLProgAbstractTcpInterface
 {
 public:
+  // Основные методы для пользователей
   FLProgWiznetInterface();
   FLProgWiznetInterface(int pinCs, uint8_t bus = 255);
 
   void setPinCs(int pinCs) { _hardware.setPinCs(pinCs); };
-   int pinCs() { return _hardware.pinCs(); }
+  int pinCs() { return _hardware.pinCs(); }
 
-  void setSpiBus(uint8_t bus) { _hardware.setSpiBus(bus); };  
+  void setSpiBus(uint8_t bus) { _hardware.setSpiBus(bus); };
   uint8_t spiBus() { return _hardware.spiBus(); }
 
   void setReconnectionPeriod(uint32_t period) { _reconnectEthernetPeriod = period; };
@@ -33,10 +34,10 @@ public:
 
   virtual uint8_t pool();
 
+  // Внутрение методы библиотеки
   virtual uint8_t soketConnected(uint8_t soket) { return _hardware.soketConnected(soket); };
   virtual int readFromSoket(uint8_t soket) { return _hardware.readFromSoket(soket); };
   virtual int readFromSoket(uint8_t soket, uint8_t *buf, int16_t len) { return _hardware.readFromSoket(soket, buf, len); };
-
   virtual size_t writeToSoket(uint8_t soket, const uint8_t *buffer, size_t size) { return _hardware.writeToSoket(soket, buffer, size); };
   virtual int availableSoket(uint8_t soket) { return _hardware.socketRecvAvailable(soket); };
   virtual void disconnecSoket(uint8_t soket) { _hardware.socketDisconnect(soket); };
@@ -46,7 +47,6 @@ public:
   virtual bool isListenSoket(uint8_t soket) { return _hardware.socketListen(soket); };
   virtual void closeSoket(uint8_t soket) { _hardware.socketClose(soket); };
   virtual uint8_t sendUdpSoket(uint8_t soket) { return _hardware.socketSendUDP(soket); };
-
   virtual uint8_t startUdpSoket(uint8_t soket, uint8_t *addr, uint16_t port) { return _hardware.socketStartUDP(soket, addr, port); };
   virtual uint16_t bufferDataSoket(uint8_t soket, uint16_t offset, const uint8_t *buf, uint16_t len) { return _hardware.socketBufferData(soket, offset, buf, len); };
   virtual int recvSoket(uint8_t soket, uint8_t *buf, int16_t len) { return _hardware.socketRecv(soket, buf, len); };
@@ -71,11 +71,8 @@ public:
   uint8_t hardwareStatus();
   void setRetransmissionTimeout(uint16_t milliseconds) { _hardware.setRetransmissionTime(milliseconds); };
   void setRetransmissionCount(uint8_t num) { _hardware.setRetransmissionCount(num); };
-
   void init(int pinCs, uint8_t bus);
-
   virtual bool isImitation() { return false; }
-
   virtual uint8_t type() { return FLPROG_ETHERNET_INTERFACE; }
   virtual uint8_t maxSoketNum() { return _hardware.maxSoketNum(); };
   virtual bool isInit() { return _hardware.isInit(); };
