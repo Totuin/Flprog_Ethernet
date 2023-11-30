@@ -1,4 +1,7 @@
 #include "flprogEthernet.h"
+#ifndef LED_BUILTIN
+#define LED_BUILTIN 2
+#endif
 
 /*
   -------------------------------------------------------------------------------------------------
@@ -41,7 +44,7 @@ void setup()
   while (!Serial)
   {
   }
-  
+
   flprog::printConsole("Тест проверки WIFI Web сервера по схеме pool");
 
   WifiInterface.clientOn();

@@ -1,5 +1,5 @@
-#include "flprogEsp8266Wifi.h"
- #ifdef ARDUINO_ARCH_ESP8266
+#include "flprogEsp32Wifi.h"
+#ifdef ARDUINO_ARCH_ESP32
 
 //-----------------------------------------------FLProgOnBoardWifiInterface----------------------------------------------------------------
 
@@ -146,7 +146,7 @@ uint8_t FLProgOnBoardWifiInterface::clientReconnect()
     WiFi.disconnect();
     if (checkMac(_macAddress))
     {
-        wifi_set_macaddr(STATION_IF, _macAddress);
+        esp_wifi_set_mac(WIFI_IF_STA, _macAddress);
     }
     if (isDhcp())
     {
@@ -192,7 +192,7 @@ uint8_t FLProgOnBoardWifiInterface::apReconnect()
     WiFi.softAPdisconnect();
     if (checkMac(_apMacaddress))
     {
-        wifi_set_macaddr(SOFTAP_IF, _apMacaddress);
+        esp_wifi_set_mac(WIFI_IF_AP, _apMacaddress);
     }
     if (_apIp == FLPROG_INADDR_NONE)
     {

@@ -1,18 +1,8 @@
 #pragma once
 #include "flprogUtilites.h"
 
-// #ifdef ARDUINO_ARCH_ESP8266
-#define FLPROG_CAN_USE_WIFI_SOKET
+#ifdef ARDUINO_ARCH_ESP8266
 #include "ESP8266WiFi.h"
-// #endif
-
-#ifdef ARDUINO_ARCH_ESP32
-#define FLPROG_CAN_USE_WIFI_SOKET
-#include "WiFi.h"
-#include <esp_wifi.h>
-#endif
-
-#ifdef FLPROG_CAN_USE_WIFI_SOKET
 
 #include <WiFiUdp.h>
 

@@ -1,4 +1,7 @@
 #include <flprogEthernet.h> //подключаем библиотеку Ethernet
+#ifndef LED_BUILTIN
+#define LED_BUILTIN 2
+#endif
 
 /*
   -------------------------------------------------------------------------------------------------

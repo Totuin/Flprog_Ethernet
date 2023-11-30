@@ -1,5 +1,5 @@
-#include "flprogWifiSoket.h"
-#ifdef FLPROG_CAN_USE_WIFI_SOKET
+#include "flprogESP32WifiSoket.h"
+#ifdef ARDUINO_ARCH_ESP32
 
 void FLProgWifiSoket::disconnect()
 {
@@ -40,7 +40,7 @@ void FLProgWifiSoket::beUDP(uint16_t port)
 void FLProgWifiSoket::beCliendTcp(uint16_t port)
 {
     close();
-    _client.setLocalPortStart(port);
+    _client.localPort(port);
     _soketType = FLPROG_WIFI_CLIENT_SOKET;
     _isUsed = true;
 }
@@ -53,7 +53,7 @@ bool FLProgWifiSoket::isListen()
     }
     if (_soketType == FLPROG_WIFI_SERVER_SOKET)
     {
-        return (_server.status() != CLOSED);
+        return (_server);
     }
     return true;
 }
@@ -97,18 +97,7 @@ int FLProgWifiSoket::connect(IPAddress ip, uint16_t port)
 
 uint8_t FLProgWifiSoket::status()
 {
-    /*  CLOSED      = 0,
-      LISTEN      = 1,
-      SYN_SENT    = 2,
-      SYN_RCVD    = 3,
-      ESTABLISHED = 4,
-      FIN_WAIT_1  = 5,
-      FIN_WAIT_2  = 6,
-      CLOSE_WAIT  = 7,
-      CLOSING     = 8,
-      LAST_ACK    = 9,
-      TIME_WAIT   = 10
-    */
+  
     if (!_isUsed)
     {
         return CLOSED;
@@ -121,9 +110,13 @@ uint8_t FLProgWifiSoket::status()
 
     if (_soketType == FLPROG_WIFI_CLIENT_SOKET)
     {
-        return _client.status();
+        return ESTABLISHED;
     }
-    return _server.status();
+    if (_server)
+    {
+        return LISTEN;
+    }
+    return CLOSED;
 }
 
 int FLProgWifiSoket::available()

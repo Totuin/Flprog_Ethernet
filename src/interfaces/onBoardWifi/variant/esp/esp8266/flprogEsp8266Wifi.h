@@ -1,7 +1,7 @@
 #pragma once
-// #ifdef ARDUINO_ARCH_ESP8266
+#ifdef ARDUINO_ARCH_ESP8266
 #include "flprogUtilites.h"
-#include "../../../flprogWifiSoket.h"
+#include "flprogESP8266WifiSoket.h"
 #include "../../../flprogOnBoardWifiInterface.h"
 
 class FLProgOnBoardWifiInterface : public FLProgAbstracttWiFiInterface
@@ -64,4 +64,4 @@ private:
     FLProgWifiSoket _sokets[FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM];
 };
 
-// #endif
+#endif
