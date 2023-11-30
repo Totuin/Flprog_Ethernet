@@ -9,9 +9,9 @@
 FLProgOnBoardWifiInterface WifiInterface;
 
 /*
------------------------------------------------------------------------------------------------- -
-Задание параметров интернет соеденения и параметров клиента
------------------------------------------------------------------------------------------------- -
+  ------------------------------------------------------------------------------------------------ -
+  Задание параметров интернет соеденения и параметров клиента
+  ------------------------------------------------------------------------------------------------ -
 */
 
 const char *host = "djxmmx.net";
@@ -62,21 +62,8 @@ void setup()
     while (!Serial)
     {
     }
-    Serial.print("Архитектура - ");
-#if defined(RT_HW_ARCH_NAME)
-    Serial.println(RT_HW_ARCH_NAME);
-#else
-    Serial.println("Архитектура не определенна!");
-#endif
-
-    Serial.print("Плата - ");
-#if defined(RT_HW_BOARD_NAME)
-    Serial.println(RT_HW_BOARD_NAME);
-#else
-    Serial.println("Плата не определенна!");
-#endif
-
-    flprog::printConsole();
+    
+    flprog::printConsole(" Тест WIFI Web клиента ");
 
     WifiInterface.clientOn();
     WifiInterface.apOn();

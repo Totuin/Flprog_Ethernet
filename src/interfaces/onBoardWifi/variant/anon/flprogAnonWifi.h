@@ -13,6 +13,8 @@ public:
     virtual uint8_t type() { return FLPROG_ETHERNET_ON_BOARD_WIFI_ANON; };
 
     virtual uint8_t soketConnected(uint8_t soket) { return resetToVoidVar(soket); };
+
+    int parsePacketSocet(uint8_t soket);
     virtual int readFromSoket(uint8_t soket) { return resetToVoidVar(soket); };
     virtual int readFromSoket(uint8_t soket, uint8_t *buf, int16_t len);
     virtual size_t writeToSoket(uint8_t soket, const uint8_t *buffer, size_t size);

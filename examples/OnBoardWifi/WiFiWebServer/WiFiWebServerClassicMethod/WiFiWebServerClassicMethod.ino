@@ -41,21 +41,8 @@ void setup()
   while (!Serial)
   {
   }
-  Serial.print("Архитектура - ");
-#if defined(RT_HW_ARCH_NAME)
-  Serial.println(RT_HW_ARCH_NAME);
-#else
-  Serial.println("Архитектура не определенна!");
-#endif
 
-  Serial.print("Плата - ");
-#if defined(RT_HW_BOARD_NAME)
-  Serial.println(RT_HW_BOARD_NAME);
-#else
-  Serial.println("Плата не определенна!");
-#endif
-
-  flprog::printConsole();
+  flprog::printConsole(" Тест проверки WIFI Web сервера по классической схеме ");
 
   WifiInterface.clientOn();
   WifiInterface.apOn();

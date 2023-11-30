@@ -17,3 +17,11 @@ uint8_t FLProgAbstactEthernetChanel::checkReadySourse()
     _status = FLPROG_NOT_REDY_STATUS;
     return FLPROG_ERROR;
 }
+
+void FLProgAbstactEthernetChanel::readToNull(uint16_t count)
+{
+    for (uint16_t i = 0; i < count; i++)
+    {
+        read();
+    }
+}

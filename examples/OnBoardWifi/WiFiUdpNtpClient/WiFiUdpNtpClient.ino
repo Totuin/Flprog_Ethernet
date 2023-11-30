@@ -8,31 +8,18 @@
 
 /*
   -------------------------------------------------------------------------------------------------
-        Создание интерфейса для работы с чипом W5100(W5200,W5500)
-        Шина SPI и пин CS берутся из  RT_HW_Base.device.spi.busETH и RT_HW_Base.device.spi.csETH
+        Создание интерфейса для работы с Wifi интерфейсом
+
   -------------------------------------------------------------------------------------------------
 */
-FLProgWiznetInterface WiznetInterface;
+FLProgOnBoardWifiInterface WifiInterface;
 
 /*
   -------------------------------------------------------------------------------------------------
-        Второй вариант cоздания интерфейса для работы с чипом W5100(W5200,W5500).
-       С непосредственной привязкой  пину.
-        Пин CS - 10
-        Шина SPI берётся из RT_HW_Base.device.spi.busETH
-  -------------------------------------------------------------------------------------------------
+         Создание объекта UDP для отправки и получения пакетов по UDP с привязкой к интерфейсу
+  ------------------------------------------------------------------------------------------------
 */
-// FLProgWiznetInterface WiznetInterface(10);
-
-/*
-  -------------------------------------------------------------------------------------------------
-        Третий вариант cоздания интерфейса для работы с чипом W5100(W5200,W5500).
-        С непосредственной привязкой  пину и шине.
-       Пин CS - 10
-       Шина SPI - 0
-  -------------------------------------------------------------------------------------------------
-*/
-// FLProgWiznetInterface WiznetInterface(10, 0);
+FLProgUdpClient Udp(&WifiInterface); //--Создание UDP клиента;
 
 /*
   -------------------------------------------------------------------------------------------------
@@ -42,23 +29,15 @@ FLProgWiznetInterface WiznetInterface;
 
 uint32_t localPort = 8888; //--Определение порта для UDP пакетов (используется стандартный номер);
 
-const char *timeServer = "time.nist.gov"; //--Имя NTP сервера - сервер точного времени;
-                                          // const char *timeServer = "ntp1.vniiftri.ru";
+//const char *timeServer = "time.nist.gov"; //--Имя NTP сервера - сервер точного времени;
+// const char *timeServer = "ntp1.vniiftri.ru";
 // const char *timeServer = "128.138.140.44";
 // IPAddress  timeServer = IPAddress(128, 138, 140, 44);
+ IPAddress  timeServer = IPAddress(192, 168, 137, 1);
 
 const int NTP_PACKET_SIZE = 48;        //--Установка размера буфера (отметка времени NTP находится в первых 48 байтах сообщения);
 uint8_t packetBuffer[NTP_PACKET_SIZE]; //--Создание буфера для хранения входящих и исходящих пакетов;
 uint16_t cntGettingNTP = 0;            //--Cчетчик принятых пакетов;
-bool isNeedSendConnectMessage = true;
-bool isNeedSendDisconnectMessage = true;
-
-/*
-  -------------------------------------------------------------------------------------------------
-         Создание объекта UDP для отправки и получения пакетов по UDP с привязкой к интерфейсу
-  ------------------------------------------------------------------------------------------------
-*/
-FLProgUdpClient Udp(&WiznetInterface); //--Создание UDP клиента;
 
 /*
   -----------------------------------------------------------------------------------------
@@ -75,56 +54,73 @@ uint8_t ethernetError = 255;
 uint8_t udpStatus = 255;
 uint8_t udpError = 255;
 
+bool isNeedClientSendConnectMessage = true;
+bool isNeedClientSendDisconnectMessage = true;
+
+bool isNeedApSendConnectMessage = true;
+bool isNeedApSendDisconnectMessage = true;
+
 uint32_t blinkStartTime = 0;
 uint32_t printPointTime = 0;
 
 //=================================================================================================
 void setup()
 {
+  pinMode(LED_BUILTIN, OUTPUT);
+
   Serial.begin(115200);
   while (!Serial)
   {
   }
 
-  flprog::printConsole(" Тест WizNet UDP клиента ");
+  flprog::printConsole(" Тест WIFI UDP клиента ");
 
-  Serial.print("CS - ");
-  Serial.println(WiznetInterface.pinCs());
-  Serial.print("SPI BUS - ");
-  Serial.println(WiznetInterface.spiBus());
+  WifiInterface.clientOn();
+  WifiInterface.apOn();
+  WifiInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x28);
+  WifiInterface.setApSsid("Test-Esp-FLProg");
+  WifiInterface.setApPassword("12345678");
 
-  WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40); //--Установка MAC-адрес контроллера
-  // WiznetInterface.localIP(192, 168, 199, 155);
-  // WiznetInterface.resetDhcp();
+  WifiInterface.setClientSsidd("Micro");
+  //WifiInterface.setClientSsidd("totuin-router");
+
+  WifiInterface.setClientPassword("12345678");
 
   Udp.setDnsCacheStorageTime(600000); // Устанавливаем клиенту время хранаения DNS кэша 10 минут
-
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH);
 }
 
 //=================================================================================================
 void loop()
 {
-  WiznetInterface.pool();
+  WifiInterface.pool();
   printStatusMessages();
   blinkLed();
   workInUDP();
 }
 
 //=================================================================================================
+
+void blinkLed()
+{
+  if (flprog::isTimer(blinkStartTime, 50))
+  {
+    blinkStartTime = millis();
+    digitalWrite(LED_BUILTIN, !(digitalRead(LED_BUILTIN)));
+  }
+}
+
 void printStatusMessages()
 {
-  if (WiznetInterface.getStatus() != ethernetStatus)
+  if (WifiInterface.getStatus() != ethernetStatus)
   {
-    ethernetStatus = WiznetInterface.getStatus();
+    ethernetStatus = WifiInterface.getStatus();
     Serial.println();
     Serial.print("Статус интерфейса - ");
     Serial.println(flprog::flprogStatusCodeName(ethernetStatus));
   }
-  if (WiznetInterface.getError() != ethernetError)
+  if (WifiInterface.getError() != ethernetError)
   {
-    ethernetError = WiznetInterface.getError();
+    ethernetError = WifiInterface.getError();
     if (ethernetError != FLPROG_NOT_ERROR)
     {
       Serial.println();
@@ -147,64 +143,106 @@ void printStatusMessages()
       Serial.println(flprog::flprogErrorCodeName(udpError));
     }
   }
-  printConnectMessages();
-  printDisconnectMessages();
+
+  printClientConnectMessages();
+  printClientDisconnectMessages();
+  printApConnectMessages();
+  printApDisconnectMessages();
 }
 
-void printConnectMessages()
+void printClientConnectMessages()
 {
-  if (!WiznetInterface.isReady())
+  if (!WifiInterface.clientIsReady())
   {
     return;
   }
-  if (!isNeedSendConnectMessage)
+  if (!isNeedClientSendConnectMessage)
   {
     return;
   }
-  Serial.println("Ethernet подключён!");
+  Serial.println("WiFiClient подключён!");
+  Serial.print("Ssid - ");
+  Serial.println(WifiInterface.clientSsid());
   Serial.print("Ip - ");
-  Serial.println(WiznetInterface.localIP());
+  Serial.println(WifiInterface.localIP());
   Serial.print("DNS - ");
-  Serial.println(WiznetInterface.dns());
+  Serial.println(WifiInterface.dns());
   Serial.print("Subnet - ");
-  Serial.println(WiznetInterface.subnet());
+  Serial.println(WifiInterface.subnet());
   Serial.print("Gateway - ");
-  Serial.println(WiznetInterface.gateway());
-  isNeedSendConnectMessage = false;
-  isNeedSendDisconnectMessage = true;
+  Serial.println(WifiInterface.gateway());
+  Serial.println();
+  isNeedClientSendConnectMessage = false;
+  isNeedClientSendDisconnectMessage = true;
 }
 
-void printDisconnectMessages()
+void printApConnectMessages()
 {
-  if (WiznetInterface.isReady())
+  if (!WifiInterface.apIsReady())
   {
     return;
   }
-  if (isNeedSendConnectMessage)
+  if (!isNeedApSendConnectMessage)
   {
     return;
   }
-  if (!isNeedSendDisconnectMessage)
-  {
-    return;
-  }
-  Serial.println("Ethernet отключён!");
-  isNeedSendConnectMessage = true;
-  isNeedSendDisconnectMessage = false;
+  Serial.println("WiFi точка включенна!");
+  Serial.print("Ssid - ");
+  Serial.println(WifiInterface.apSsid());
+  Serial.print("Ip - ");
+  Serial.println(WifiInterface.apLocalIP());
+  Serial.print("DNS - ");
+  Serial.println(WifiInterface.apDns());
+  Serial.print("Subnet - ");
+  Serial.println(WifiInterface.apSubnet());
+  Serial.print("Gateway - ");
+  Serial.println(WifiInterface.apGateway());
+  Serial.println();
+  isNeedApSendConnectMessage = false;
+  isNeedApSendDisconnectMessage = true;
 }
 
-void blinkLed()
+void printClientDisconnectMessages()
 {
-  if (flprog::isTimer(blinkStartTime, 50))
+  if (WifiInterface.clientIsReady())
   {
-    blinkStartTime = millis();
-    digitalWrite(LED_BUILTIN, !(digitalRead(LED_BUILTIN)));
+    return;
   }
+  if (isNeedClientSendConnectMessage)
+  {
+    return;
+  }
+  if (!isNeedClientSendDisconnectMessage)
+  {
+    return;
+  }
+  Serial.println("WiFiClient отключён!");
+  isNeedClientSendConnectMessage = true;
+  isNeedClientSendDisconnectMessage = false;
+}
+
+void printApDisconnectMessages()
+{
+  if (WifiInterface.apIsReady())
+  {
+    return;
+  }
+  if (isNeedApSendConnectMessage)
+  {
+    return;
+  }
+  if (!isNeedApSendDisconnectMessage)
+  {
+    return;
+  }
+  Serial.println("WiFi точка отключёна!");
+  isNeedApSendConnectMessage = true;
+  isNeedApSendDisconnectMessage = false;
 }
 
 void workInUDP()
 {
-  if (!WiznetInterface.isReady())
+  if (!WifiInterface.isReady())
   {
     isReplyInProcess = false;
     return;

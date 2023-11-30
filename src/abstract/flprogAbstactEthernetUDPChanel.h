@@ -9,9 +9,9 @@ class FLProgAbstactEthernetUDPChanel : public FLProgAbstactEthernetChanel
 public:
     virtual size_t write(const uint8_t *buffer, size_t size);
 
-    int read();
+    virtual int read();
     int read(uint8_t *buffer, size_t len);
-    virtual int available() { return _remaining; };
+    virtual int available();
     IPAddress remoteIP() { return _remoteIP; };
     uint16_t remotePort() { return _remotePort; };
     uint16_t localPort() { return _port; }

@@ -1,10 +1,10 @@
 #pragma once
 #include "flprogUtilites.h"
 
-#ifdef ARDUINO_ARCH_ESP8266
+// #ifdef ARDUINO_ARCH_ESP8266
 #define FLPROG_CAN_USE_WIFI_SOKET
 #include "ESP8266WiFi.h"
-#endif
+// #endif
 
 #ifdef ARDUINO_ARCH_ESP32
 #define FLPROG_CAN_USE_WIFI_SOKET
@@ -37,6 +37,8 @@ public:
     void disconnect();
     void close();
     void beServerTcp(uint16_t port);
+    void beUDP(uint16_t port);
+    void beCliendTcp(uint16_t port);
     bool isListen();
     uint8_t connected();
     int available();
@@ -44,6 +46,11 @@ public:
     int read(uint8_t *buf, int16_t len);
     size_t write(const uint8_t *buffer, size_t len);
     uint8_t peek();
+    int beginIpUDPPacket(uint8_t *addr, uint16_t port);
+    int endUDPPacket();
+    int parsePacket();
+    int connect(IPAddress ip, uint16_t port);
+    uint8_t status();
 
 private:
     bool _isUsed = false;
@@ -53,4 +60,4 @@ private:
     WiFiUDP _udp;
 };
 
- #endif
+#endif

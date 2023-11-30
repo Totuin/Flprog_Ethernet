@@ -1,6 +1,5 @@
 #include "flprogEsp8266Wifi.h"
-#ifdef ARDUINO_ARCH_ESP8266
-
+// #ifdef ARDUINO_ARCH_ESP8266
 
 //-----------------------------------------------FLProgOnBoardWifiInterface----------------------------------------------------------------
 
@@ -247,7 +246,22 @@ uint8_t FLProgOnBoardWifiInterface::getServerTCPSoket(uint16_t port)
     }
     _sokets[result].beServerTcp(port);
     return result;
-};
+}
+
+uint8_t FLProgOnBoardWifiInterface::getClientTCPSoket(uint16_t port)
+{
+    if (!isReady())
+    {
+        return FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM;
+    }
+    uint8_t result = getFreeSoketIndex();
+    if (result >= FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM)
+    {
+        return FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM;
+    }
+    _sokets[result].beCliendTcp(port);
+    return result;
+}
 
 bool FLProgOnBoardWifiInterface::isListenSoket(uint8_t soket)
 {
@@ -265,6 +279,52 @@ uint8_t FLProgOnBoardWifiInterface::soketConnected(uint8_t soket)
         return 0;
     }
     return _sokets[soket].connected();
+}
+
+uint8_t FLProgOnBoardWifiInterface::connectSoket(uint8_t soket, IPAddress ip, uint16_t port)
+{
+    if (!checkOnUseSoket(soket))
+    {
+        return 0;
+    }
+
+    return _sokets[soket].connect(ip, port);
+}
+
+uint8_t FLProgOnBoardWifiInterface::isConnectStatusSoket(uint8_t soket)
+{
+    if (!checkOnUseSoket(soket))
+    {
+        return false;
+    }
+    uint8_t status = _sokets[soket].status();
+    if (status == ESTABLISHED)
+    {
+        return true;
+    }
+    if (status == CLOSE_WAIT)
+    {
+        return true;
+    }
+    return false;
+}
+
+uint8_t FLProgOnBoardWifiInterface::isCosedStatusSoket(uint8_t soket)
+{
+    if (!checkOnUseSoket(soket))
+    {
+        return true;
+    }
+    return ((_sokets[soket].status()) == CLOSED);
+}
+
+uint8_t FLProgOnBoardWifiInterface::statusSoket(uint8_t soket)
+{
+    if (!checkOnUseSoket(soket))
+    {
+        return CLOSED;
+    }
+    return _sokets[soket].status();
 }
 
 int FLProgOnBoardWifiInterface::availableSoket(uint8_t soket)
@@ -312,6 +372,54 @@ uint8_t FLProgOnBoardWifiInterface::peekSoket(uint8_t soket)
     return _sokets[soket].peek();
 }
 
+uint8_t FLProgOnBoardWifiInterface::getUDPSoket(uint16_t port)
+{
+
+    if (!isReady())
+    {
+        return FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM;
+    }
+    uint8_t result = getFreeSoketIndex();
+    if (result >= FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM)
+    {
+        return FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM;
+    }
+    _sokets[result].beUDP(port);
+    return result;
+}
+
+uint8_t FLProgOnBoardWifiInterface::startUdpSoket(uint8_t soket, uint8_t *addr, uint16_t port)
+{
+    if (!checkOnUseSoket(soket))
+    {
+        return 0;
+    }
+    return _sokets[soket].beginIpUDPPacket(addr, port);
+}
+
+uint8_t FLProgOnBoardWifiInterface::sendUdpSoket(uint8_t soket)
+{
+    if (!checkOnUseSoket(soket))
+    {
+        return 0;
+    }
+    return _sokets[soket].endUDPPacket();
+}
+
+int FLProgOnBoardWifiInterface::parsePacketSocet(uint8_t soket)
+{
+    if (!checkOnUseSoket(soket))
+    {
+        return 0;
+    }
+    return _sokets[soket].parsePacket();
+}
+
+int FLProgOnBoardWifiInterface::recvSoket(uint8_t soket, uint8_t *buf, int16_t len)
+{
+    return readFromSoket(soket, buf, len);
+}
+
 uint8_t FLProgOnBoardWifiInterface::getFreeSoketIndex()
 {
     for (uint8_t i = 0; i < FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM; i++)
@@ -339,14 +447,6 @@ uint8_t FLProgOnBoardWifiInterface::resetToVoidVar(uint8_t soket)
     return 0;
 }
 
-uint8_t FLProgOnBoardWifiInterface::startUdpSoket(uint8_t soket, uint8_t *addr, uint16_t port)
-{
-    (void)soket;
-    (void)addr;
-    (void)port;
-    return 0;
-}
-
 uint16_t FLProgOnBoardWifiInterface::bufferDataSoket(uint8_t soket, uint16_t offset, const uint8_t *buf, uint16_t len)
 {
     (void)soket;
@@ -356,24 +456,8 @@ uint16_t FLProgOnBoardWifiInterface::bufferDataSoket(uint8_t soket, uint16_t off
     return 0;
 }
 
-int FLProgOnBoardWifiInterface::recvSoket(uint8_t soket, uint8_t *buf, int16_t len)
-{
-    (void)soket;
-    (void)buf;
-    (void)len;
-    return -1;
-}
-
 uint8_t FLProgOnBoardWifiInterface::beginMulticastSoket(IPAddress ip, uint16_t port)
 {
-    (void)port;
-    (void)ip;
-    return 0;
-}
-
-uint8_t FLProgOnBoardWifiInterface::connectSoket(uint8_t soket, IPAddress ip, uint16_t port)
-{
-    (void)soket;
     (void)port;
     (void)ip;
     return 0;
@@ -385,4 +469,4 @@ IPAddress FLProgOnBoardWifiInterface::remoteIPSoket(uint8_t soket)
     return FLPROG_INADDR_NONE;
 }
 
-#endif
+// #endif

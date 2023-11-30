@@ -2,68 +2,95 @@
 
 size_t FLProgAbstactEthernetUDPChanel::write(const uint8_t *buffer, size_t size)
 {
-    uint16_t bytes_written = _sourse->bufferDataSoket(_sockindex, _offset, buffer, size);
-    _offset += bytes_written;
-    return bytes_written;
+
+    if (_sourse->type() == FLPROG_ETHERNET_INTERFACE)
+    {
+        uint16_t bytes_written = _sourse->bufferDataSoket(_sockindex, _offset, buffer, size);
+        _offset += bytes_written;
+        return bytes_written;
+    }
+    return _sourse->writeToSoket(_sockindex, buffer, size);
 }
+
+int FLProgAbstactEthernetUDPChanel::available()
+{
+    if (_sourse->type() == FLPROG_ETHERNET_INTERFACE)
+    {
+        return _remaining;
+    }
+    return _sourse->availableSoket(_sockindex);
+};
 
 int FLProgAbstactEthernetUDPChanel::parsePacket()
 {
-    while (_remaining)
+    if (_sourse->type() == FLPROG_ETHERNET_INTERFACE)
     {
-        read((uint8_t *)NULL, _remaining);
-    }
-
-    if (_sourse->availableSoket(_sockindex) > 0)
-    {
-        uint8_t tmpBuf[8];
-        int ret = 0;
-        ret = _sourse->recvSoket(_sockindex, tmpBuf, 8);
-        if (ret > 0)
+        while (_remaining)
         {
-            _remoteIP = tmpBuf;
-            _remotePort = tmpBuf[4];
-            _remotePort = (_remotePort << 8) + tmpBuf[5];
-            _remaining = tmpBuf[6];
-            _remaining = (_remaining << 8) + tmpBuf[7];
-            ret = _remaining;
+            read((uint8_t *)NULL, _remaining);
         }
-        return ret;
+
+        if (_sourse->availableSoket(_sockindex) > 0)
+        {
+            uint8_t tmpBuf[8];
+            int ret = 0;
+            ret = _sourse->recvSoket(_sockindex, tmpBuf, 8);
+            if (ret > 0)
+            {
+                _remoteIP = tmpBuf;
+                _remotePort = tmpBuf[4];
+                _remotePort = (_remotePort << 8) + tmpBuf[5];
+                _remaining = tmpBuf[6];
+                _remaining = (_remaining << 8) + tmpBuf[7];
+                ret = _remaining;
+            }
+            return ret;
+        }
+        return 0;
     }
-    return 0;
+    return _sourse->parsePacketSocet(_sockindex);
 }
 
 int FLProgAbstactEthernetUDPChanel::read()
 {
-    uint8_t byte;
-    if ((_remaining > 0) && (_sourse->recvSoket(_sockindex, &byte, 1) > 0))
+    if (_sourse->type() == FLPROG_ETHERNET_INTERFACE)
     {
-        _remaining--;
-        return byte;
+        uint8_t byte;
+        if ((_remaining > 0) && (_sourse->recvSoket(_sockindex, &byte, 1) > 0))
+        {
+            _remaining--;
+            return byte;
+        }
+        return -1;
     }
-    return -1;
+    return _sourse->readFromSoket(_sockindex);
 }
 
 int FLProgAbstactEthernetUDPChanel::read(uint8_t *buffer, size_t len)
 {
-    if (_remaining > 0)
+    if (_sourse->type() == FLPROG_ETHERNET_INTERFACE)
     {
-        int got;
-        if (_remaining <= len)
+
+        if (_remaining > 0)
         {
-            got = _sourse->recvSoket(_sockindex, buffer, _remaining);
+            int got;
+            if (_remaining <= len)
+            {
+                got = _sourse->recvSoket(_sockindex, buffer, _remaining);
+            }
+            else
+            {
+                got = _sourse->recvSoket(_sockindex, buffer, len);
+            }
+            if (got > 0)
+            {
+                _remaining -= got;
+                return got;
+            }
         }
-        else
-        {
-            got = _sourse->recvSoket(_sockindex, buffer, len);
-        }
-        if (got > 0)
-        {
-            _remaining -= got;
-            return got;
-        }
+        return -1;
     }
-    return -1;
+    return _sourse->readFromSoket(_sockindex, buffer, len);
 }
 
 int FLProgAbstactEthernetUDPChanel::endPacket()
@@ -103,6 +130,7 @@ uint8_t FLProgAbstactEthernetUDPChanel::begin(uint16_t port)
             return FLPROG_SUCCESS;
         }
     }
+    _port = port;
     _sourse->closeSoket(_sockindex);
     _sockindex = _sourse->getUDPSoket(port);
     if (_sockindex >= _sourse->maxSoketNum())
@@ -111,7 +139,7 @@ uint8_t FLProgAbstactEthernetUDPChanel::begin(uint16_t port)
         _errorCode = FLPROG_ETHERNET_SOKET_INDEX_ERROR;
         return FLPROG_ERROR;
     }
-    _port = port;
+
     _remaining = 0;
 
     return FLPROG_SUCCESS;
@@ -119,9 +147,12 @@ uint8_t FLProgAbstactEthernetUDPChanel::begin(uint16_t port)
 
 int FLProgAbstactEthernetUDPChanel::peek()
 {
-    if (_sockindex >= _sourse->maxSoketNum() || _remaining == 0)
+    if (_sourse->type() == FLPROG_ETHERNET_INTERFACE)
     {
-        return -1;
+        if (_sockindex >= _sourse->maxSoketNum() || _remaining == 0)
+        {
+            return -1;
+        }
     }
     return _sourse->peekSoket(_sockindex);
 }

@@ -1,6 +1,12 @@
 #include "flprogAnonWifi.h"
 
 #ifdef FLPROG_ANON_WIFI_ON_BOARD_TCP_DEVICE
+
+int FLProgOnBoardWifiInterface::parsePacketSocet(uint8_t soket)
+{
+    (void)soket;
+    return 0;
+}
 uint8_t FLProgOnBoardWifiInterface::resetToVoidVar(uint8_t soket)
 {
     (void)soket;

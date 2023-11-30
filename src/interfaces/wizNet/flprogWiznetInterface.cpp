@@ -1,5 +1,11 @@
 #include "flprogWiznetInterface.h"
 
+int FLProgWiznetInterface::parsePacketSocet(uint8_t soket)
+{
+    (void)soket;
+    return 0;
+}
+
 FLProgWiznetInterface::FLProgWiznetInterface(int pinCs, uint8_t bus)
 {
     init(pinCs, bus);

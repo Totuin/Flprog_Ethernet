@@ -60,6 +60,7 @@ public:
   virtual uint16_t localPortSoket(uint8_t soket) { return _hardware.localPort(soket); };
   virtual IPAddress remoteIPSoket(uint8_t soket) { return _hardware.remoteIP(soket); };
   virtual uint16_t remotePortSoket(uint8_t soket) { return _hardware.remotePort(soket); };
+   virtual int parsePacketSocet(uint8_t soket);
 
   uint8_t begin(IPAddress ip);
   uint8_t begin(IPAddress ip, IPAddress dns);

@@ -1,5 +1,5 @@
 #pragma once
-#ifdef ARDUINO_ARCH_ESP8266
+// #ifdef ARDUINO_ARCH_ESP8266
 #include "flprogUtilites.h"
 #include "../../../flprogWifiSoket.h"
 #include "../../../flprogOnBoardWifiInterface.h"
@@ -24,25 +24,28 @@ public:
     virtual int readFromSoket(uint8_t soket, uint8_t *buf, int16_t len);
     virtual size_t writeToSoket(uint8_t soket, const uint8_t *buffer, size_t size);
     virtual uint8_t peekSoket(uint8_t soket);
-
-    virtual uint8_t getClientTCPSoket(uint16_t port) { return resetToVoidVar(port); };
-    virtual uint8_t getUDPSoket(uint16_t port) { return resetToVoidVar(port); };
-
+    virtual uint8_t getUDPSoket(uint16_t port);
     virtual uint8_t startUdpSoket(uint8_t soket, uint8_t *addr, uint16_t port);
-    virtual uint8_t sendUdpSoket(uint8_t soket) { return resetToVoidVar(soket); };
+    virtual uint8_t sendUdpSoket(uint8_t soket);
+    int parsePacketSocet(uint8_t soket);
+    virtual uint8_t getClientTCPSoket(uint16_t port);
+    virtual uint8_t connectSoket(uint8_t soket, IPAddress ip, uint16_t port);
+    virtual uint8_t statusSoket(uint8_t soket);
+    virtual uint8_t isConnectStatusSoket(uint8_t soket);
+    virtual uint8_t isCosedStatusSoket(uint8_t soket);
+
+    virtual uint8_t maxSoketNum() { return FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM; };
+    virtual bool isInit() { return true; };
+
+    // Необходимые заглушки
     virtual uint16_t bufferDataSoket(uint8_t soket, uint16_t offset, const uint8_t *buf, uint16_t len);
     virtual int recvSoket(uint8_t soket, uint8_t *buf, int16_t len);
 
+    // Заглушки которые надо допилить.....
     virtual uint8_t beginMulticastSoket(IPAddress ip, uint16_t port);
-    virtual uint8_t connectSoket(uint8_t soket, IPAddress ip, uint16_t port);
-    virtual uint8_t isConnectStatusSoket(uint8_t soket) { return resetToVoidVar(soket); };
-    virtual uint8_t isCosedStatusSoket(uint8_t soket) { return resetToVoidVar(soket); };
-    virtual uint8_t statusSoket(uint8_t soket) { return resetToVoidVar(soket); };
     virtual uint16_t localPortSoket(uint8_t soket) { return resetToVoidVar(soket); };
     virtual IPAddress remoteIPSoket(uint8_t soket);
     virtual uint16_t remotePortSoket(uint8_t soket) { return resetToVoidVar(soket); };
-    virtual uint8_t maxSoketNum() { return FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM; };
-    virtual bool isInit() { return true; };
 
 private:
     uint8_t connect();
@@ -61,4 +64,4 @@ private:
     FLProgWifiSoket _sokets[FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM];
 };
 
-#endif
+// #endif

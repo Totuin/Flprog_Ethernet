@@ -282,7 +282,7 @@ uint8_t FLProgDhcp::parseDHCPResponse(uint32_t responseTimeout)
 			return FLPROG_DHCP_ERROR_ID_MESSAGE_TYPE;
 		}
 		memcpy(_dhcpLocalIp, fixedMsg.yiaddr, 4);
-		read((uint8_t *)NULL, 240 - (int)sizeof(FLPROG_RIP_MSG_FIXED));
+		readToNull(240 - (int)sizeof(FLPROG_RIP_MSG_FIXED));
 		while (available() > 0)
 		{
 			switch (read())
@@ -306,13 +306,13 @@ uint8_t FLProgDhcp::parseDHCPResponse(uint32_t responseTimeout)
 			case FLPROG_DHCP_ROUTERS_ON_SUBNET_MASK_OPTION:
 				opt_len = read();
 				read(_dhcpGatewayIp, 4);
-				read((uint8_t *)NULL, opt_len - 4);
+				readToNull(opt_len - 4);
 				break;
 
 			case FLPROG_DHCP_DNS_OPTION:
 				opt_len = read();
 				read(_dhcpDnsServerIp, 4);
-				read((uint8_t *)NULL, opt_len - 4);
+				readToNull(opt_len - 4);
 				break;
 
 			case FLPROG_DHCP_SERVER_IDENTIFIER_OPTION:
@@ -324,7 +324,7 @@ uint8_t FLProgDhcp::parseDHCPResponse(uint32_t responseTimeout)
 				}
 				else
 				{
-					read((uint8_t *)NULL, opt_len);
+					readToNull(opt_len);
 				}
 				break;
 
@@ -349,7 +349,7 @@ uint8_t FLProgDhcp::parseDHCPResponse(uint32_t responseTimeout)
 
 			default:
 				opt_len = read();
-				read((uint8_t *)NULL, opt_len);
+				readToNull(opt_len);
 				break;
 			}
 		}

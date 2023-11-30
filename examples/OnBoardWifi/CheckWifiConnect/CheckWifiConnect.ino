@@ -32,25 +32,12 @@ void setup()
     while (!Serial)
     {
     }
-    Serial.print("Архитектура - ");
-#if defined(RT_HW_ARCH_NAME)
-    Serial.println(RT_HW_ARCH_NAME);
-#else
-    Serial.println("Архитектура не определенна!");
-#endif
 
-    Serial.print("Плата - ");
-#if defined(RT_HW_BOARD_NAME)
-    Serial.println(RT_HW_BOARD_NAME);
-#else
-    Serial.println("Плата не определенна!");
-#endif
-
-    flprog::printConsole();
+    flprog::printConsole(" Тест проверки соеденения WIFI ");
 
     WifiInterface.clientOn();
     WifiInterface.apOn();
-    WifiInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x28); //--Установка MAC-адрес контроллера (лучше адрес прошитый производителем);
+    WifiInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x28); 
     WifiInterface.setApSsid("Test-Esp-FLProg");
     WifiInterface.setApPassword("12345678");
     WifiInterface.setClientSsidd("totuin-router");

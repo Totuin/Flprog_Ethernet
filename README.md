@@ -1,69 +1,58 @@
-Библиотека FLPROG Ethernet
-===
+# Библиотека FLPROG Ethernet
 
 Предназначена для реализации работы по сети Ethernet
 
 ## Контактная информация
 
-- Title:  `FLPROG Ethernet`
-- Authors: [`Глушенко Сергей`](@Totuin)
-- Сайт: [FLProg](http://flprog.ru)
-- Почта: [support@flprog.ru](mailto:support@flprog.ru)
+-   Title: `FLPROG Ethernet`
+-   Authors: [Глушенко Сергей](@Totuin)
+-   Сайт: [FLProg](http://flprog.ru)
+-   Почта: [support@flprog.ru](mailto:support@flprog.ru)
 
 ## Зависимости
 
-- [Flprog_Utilites](https://github.com/Totuin/Flprog_Utilites)
-- RT_00_HW_BASE
+-   [Flprog_Utilites](https://github.com/Totuin/Flprog_Utilites)
+-   RT_00_HW_BASE
 
 ## Поддерживаемые контроллеры
 
-- **Atmega328**
-- **Mega2560**
-- **STM32**
-- **Raspberry Pi Pico** *(RP 2040)*
-- **ESP8266**
-<br>
+-   **Atmega328**
+-   **Mega2560**
+-   **STM32**
+-   **Raspberry Pi Pico** *(RP 2040)*
+-   **ESP8266**
 
-<br>
+# Реализация интерфейсов
 
 ## Класс FLProgWiznetInterface
 
-### **Конструктор**  
+### Конструктор
 
 **Создание интерфейса для работы с чипом W5100 (W5200, W5500)**
 
-- *Шина SPI и пин CS берутся из  **RT_HW_Base.device.spi.busETH** и **RT_HW_Base.device.spi.csETH**.*
+-   *Шина SPI и пин CS берутся из* **RT_HW_Base.device.spi.busETH** *и* **RT_HW_Base.device.spi.csETH**\*.\*
 
- ```cpp
+```c
 FLProgWiznetInterface WiznetInterface;
 ```
 
-<br>
+-   *С непосредственной привязкой пину. Пин CS - 10. Шина SPI берётся из* **RT_HW_Base.device.spi.busETH**\*.\*
 
-- *С непосредственной привязкой  пину.<br>
-Пин CS - 10.<br>
-Шина SPI берётся из **RT_HW_Base.device.spi.busETH**.*
-
-```cpp
+```c
 FLProgWiznetInterface WiznetInterface(10);
 ```
 
-<br>
+-   *С непосредственной привязкой пину и шине. Пин CS - 10. Шина SPI - 0.*
 
-- *С непосредственной привязкой  пину и шине. <br>
-Пин CS - 10.<br>
-Шина SPI - 0.*
-
-```cpp
+```c
 FLProgWiznetInterface WiznetInterface(10, 0);
 ```
 
-### **Настройка интерфейса**
+### Настройка интерфейса
 
-- *Установка MAC-адрес контроллера.<br>
-Обязательно вызывается в секции setup().*
+-   *Установка MAC-адрес контроллера. Обязательно вызывается в секции setup().*
 
-```cpp
+```c
 // Установка непосредственно числами
 WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40);
 
@@ -72,21 +61,15 @@ uint8_t macAddr[6] = {0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40};
 WiznetInterface.mac(macAddr);
 ```
 
-<br>
+-   *Получение текущего MAC-адрес контроллера. Возврщает ссылку на массив из 6 элементов типа* **uint8_t**\*.\*
 
-- *Получение текущего MAC-адрес контроллера.<br>
-Возврщает ссылку на массив из 6 элементов типа **uint8_t**.*
-
-```cpp
+```c
 uint8_t *macAddres = WiznetInterface.mac();
 ```
 
-<br>
+-   *Задание пина Cs и получение текущего значения этого пина. Может вызываться в любой момент времени.*
 
-- *Задание пина Cs и получение текущего значения этого пина.<br>
-Может вызываться в любой момент времени.*
-
-```cpp
+```c
 // Задание пина
 WiznetInterface.setPinCs(10);
   
@@ -94,38 +77,29 @@ WiznetInterface.setPinCs(10);
 int16_t pin = WiznetInterface.pinCs() ;
 ```
 
-<br>
+-   *Задание номера шины SPI, и получение текущего значение номера шины. Может вызываться в любой момент времени.*
 
-- *Задание номера шины SPI, и получение текущего значение номера шины.<br>
-Может вызываться в любой момент времени.*
-
-```cpp
+```c
 // Задание номера шины
 WiznetInterface.setSpiBus(0);
 
 // Получение номера шины
 uint8_t bus = WiznetInterface.spiBus()
- ```
+```
 
-<br>
+-   *Задание и получение значения периода проверки соеденения и состояния чипа в миллисекундах. Может вызываться в любой момент времени. Значение по умолчанию - 1000.*
 
-- *Задание и получение значения  периода проверки  соеденения и состояния чипа в миллисекундах.<br>
-Может вызываться в любой момент времени.<br>
-Значение по умолчанию - 1000.*
-
-```cpp
+```c
 // Задание периода
 WiznetInterface.setCheckStatusPeriod(2000);
 
 // Получение периода
 uint32_t period = WiznetInterface.checkStatusPeriod();
- ```
+```
 
-<br>
+-   *Настройка и получение параметров DHCP*
 
-- *Настройка и получение параметров DHCP*
-
-```cpp
+```c
 // Задание  значения периода попыток переподлючения при отсутствии соеденения с DHCP сервером в миллисекундах.
 // Может вызываться в любой момент времени.
 // Значение по умолчанию - 5000
@@ -171,11 +145,9 @@ WiznetInterface.dhcpMode(true);
 bool mode =  WiznetInterface.isDhcp();
 ```
 
-<br>
+-   *Доступ к параметрам соеденения.*
 
-- *Доступ к параметрам соеденения.*
-
-```cpp
+```c
 // Внимание если не отключить режим DHCP то заданные IP адреса при соеденении будут замененны полученными от сервера DHCP!
 
 // Задание Ip адреса устройства.
@@ -214,11 +186,10 @@ WiznetInterface.subnet(255, 255, 255, );
 // Возвращает объект класса IPAddress
 IPAddress ip = WiznetInterface.subnet();
 ```
-<br>
 
-### **Управление интерфейсом**
+### Управление интерфейсом
 
-```cpp
+```c
 // Цикл работы интерфейса. 
 // Обязательно вызывать один раз в секции loop().
 // Возвращает результат выполнения цикла (описания значений результатов ниже).
@@ -235,4 +206,23 @@ uint8_t type = WiznetInterface.getStatus();
 
 // Получение текущей ошибка интерфейса (описания значений кодов ошибок ниже).
 uint8_t type = WiznetInterface.getError();
- ```
+```
+
+# Pабота с TCP
+
+## Класс FLProgEthernetServer
+
+### Конструктор
+
+-   *Инстанс сервера создается на основе ссылки на экземпляр интерфейса на котором он будет слушать порт*
+
+```c
+// Создание сервера с непосредственным указанием порта
+FLProgEthernetServer Server(&WiznetInterface, 80); 
+
+// Создание сервера с на порту по умолчанию (порт по умолчанию 80)
+FLProgEthernetServer Server(&WiznetInterface); 
+```
+
+<br>
+

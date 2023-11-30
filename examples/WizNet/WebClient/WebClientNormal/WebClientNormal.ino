@@ -79,25 +79,13 @@ void setup()
   while (!Serial)
   {
   }
-  Serial.print("Архитектура - ");
-#if defined(RT_HW_ARCH_NAME)
-  Serial.println(RT_HW_ARCH_NAME);
-#else
-  Serial.println("Архитектура не определенна!");
-#endif
 
-  Serial.print("Плата - ");
-#if defined(RT_HW_BOARD_NAME)
-  Serial.println(RT_HW_BOARD_NAME);
-#else
-  Serial.println("Плата не определенна!");
-#endif
+  flprog::printConsole(" Тест WizNet Web клиента ");
+
   Serial.print("CS - ");
   Serial.println(WiznetInterface.pinCs());
   Serial.print("SPI BUS - ");
   Serial.println(WiznetInterface.spiBus());
-
-  flprog::printConsole();
 
   WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40); //--Установка MAC-адрес контроллера
   // WiznetInterface.localIP(192, 168, 199, 155);

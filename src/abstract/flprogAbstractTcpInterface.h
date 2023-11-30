@@ -48,6 +48,7 @@ public:
     virtual int readFromSoket(uint8_t soket) = 0;
     virtual int readFromSoket(uint8_t soket, uint8_t *buf, int16_t len) = 0;
     virtual size_t writeToSoket(uint8_t soket, const uint8_t *buffer, size_t size) = 0;
+    virtual int parsePacketSocet(uint8_t soket) = 0;
     virtual int availableSoket(uint8_t soket) = 0;
     virtual void disconnecSoket(uint8_t soket) = 0;
     virtual uint8_t getClientTCPSoket(uint16_t port) = 0;

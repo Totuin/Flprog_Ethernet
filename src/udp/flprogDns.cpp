@@ -1,9 +1,5 @@
 #include "flprogDns.h"
 
-
-
-
-
 bool FLProgDNSClient::checkCach(const char *aHostname, uint8_t *aResult)
 {
 	if (flprog::isTimer(_startCachTime, _cacheStorageTime))
@@ -167,7 +163,8 @@ uint16_t FLProgDNSClient::processResponse(uint16_t aTimeout, const char *aHostna
 		uint8_t byte[FLPROG_DNS_HEADER_SIZE];
 		uint16_t word[FLPROG_DNS_HEADER_SIZE / 2];
 	} header;
-	if (_remaining < FLPROG_DNS_HEADER_SIZE)
+
+	if (available() < FLPROG_DNS_HEADER_SIZE)
 	{
 		_errorCode = FLPROG_ETHERNET_DNS_TRUNCATED;
 		_status = FLPROG_READY_STATUS;
@@ -195,43 +192,37 @@ uint16_t FLProgDNSClient::processResponse(uint16_t aTimeout, const char *aHostna
 		_status = FLPROG_READY_STATUS;
 		return FLPROG_ERROR;
 	}
+	uint8_t tempRead;
 	for (uint16_t i = 0; i < flprogEthernetHtons(header.word[2]); i++)
 	{
-		uint8_t len;
 		do
 		{
-			read(&len, sizeof(len));
-			if (len > 0)
-			{
-				read((uint8_t *)NULL, (size_t)len);
-			}
-		} while (len != 0);
-		read((uint8_t *)NULL, 4);
+			tempRead = read();
+
+		} while (tempRead != 0);
+		readToNull(4);
 	}
 	for (uint16_t i = 0; i < answerCount; i++)
 	{
-		uint8_t len;
-		do
+		tempRead = read();
+		if ((tempRead & FLPROG_DNS_LABEL_COMPRESSION_MASK) == 0)
 		{
-			read(&len, sizeof(len));
-			if ((len & FLPROG_DNS_LABEL_COMPRESSION_MASK) == 0)
+			do
 			{
-				if (len > 0)
-				{
-					read((uint8_t *)NULL, len);
-				}
-			}
-			else
-			{
-				read((uint8_t *)NULL, 1); // we don't care about the byte
-				len = 0;
-			}
-		} while (len != 0);
+				tempRead = read();
+
+			} while (tempRead != 0);
+		}
+		else
+		{
+			read();
+		}
 		uint16_t answerType;
 		uint16_t answerClass;
 		read((uint8_t *)&answerType, sizeof(answerType));
 		read((uint8_t *)&answerClass, sizeof(answerClass));
-		read((uint8_t *)NULL, FLPROG_DNS_TTL_SIZE); // don't care about the returned bytes
+
+		readToNull(FLPROG_DNS_TTL_SIZE); // don't care about the returned bytes
 		read((uint8_t *)&header_flags, sizeof(header_flags));
 		if ((flprogEthernetHtons(answerType) == FLPROG_DNS_TYPE_A) && (flprogEthernetHtons(answerClass) == FLPROG_DNS_CLASS_IN))
 		{
@@ -249,7 +240,7 @@ uint16_t FLProgDNSClient::processResponse(uint16_t aTimeout, const char *aHostna
 		}
 		else
 		{
-			read((uint8_t *)NULL, flprogEthernetHtons(header_flags));
+			readToNull(flprogEthernetHtons(header_flags));
 		}
 	}
 	_errorCode = FLPROG_ETHERNET_DNS_INVALID_RESPONSE;
