@@ -223,7 +223,7 @@ FLProgOnBoardWifiInterface WifiInterface;
 
 -   *Установка MAC-адреса точки доступа и клиента.*
 
-```
+```c
 // Установка непосредственно числами
 WifiInterface.apMac (0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40); // Точка
 WifiInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40); // Клиент
