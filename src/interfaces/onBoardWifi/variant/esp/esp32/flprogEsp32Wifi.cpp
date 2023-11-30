@@ -79,22 +79,24 @@ uint8_t FLProgOnBoardWifiInterface::connect()
     {
         if (_clientWorkStatus)
         {
-            _mode = WIFI_AP_STA;
+            _mode = WIFI_MODE_APSTA; /**< WiFi station + soft-AP mode */
+            
         }
         else
         {
-            _mode = WIFI_AP;
+            _mode = WIFI_MODE_AP;
         }
     }
     else
     {
         if (_clientWorkStatus)
         {
-            _mode = WIFI_STA;
+            _mode = WIFI_MODE_STA;
         }
         else
         {
-            _mode = WIFI_OFF;
+            _mode = WIFI_MODE_NULL; /**< null mode */
+            
         }
     }
     WiFi.mode(_mode);
@@ -106,7 +108,7 @@ uint8_t FLProgOnBoardWifiInterface::clientReconnect()
 {
     if (_status == FLPROG_WAIT_WIFI_CLIENT_CONNECT_STATUS)
     {
-        if (_mode == WIFI_AP)
+        if (_mode == WIFI_MODE_AP)
         {
             if (_clientCurrentStatus)
             {
@@ -129,7 +131,7 @@ uint8_t FLProgOnBoardWifiInterface::clientReconnect()
         }
         return FLPROG_WITE;
     }
-    if (_mode == WIFI_AP)
+    if (_mode == WIFI_MODE_AP)
     {
         if (_clientCurrentStatus)
         {
@@ -175,7 +177,7 @@ uint8_t FLProgOnBoardWifiInterface::clientReconnect()
 
 uint8_t FLProgOnBoardWifiInterface::apReconnect()
 {
-    if (_mode == WIFI_STA)
+    if (_mode == WIFI_MODE_STA)
     {
         if (_apiCurrentStatus)
         {
