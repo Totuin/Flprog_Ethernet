@@ -14,6 +14,8 @@ public:
     void stopConnection();
     void setCallback(void (*func)(void)) { _callbackFunction = func; };
 
+    virtual void stop();
+
 private:
     uint16_t _port = 0;
     void (*_callbackFunction)(void) = 0;

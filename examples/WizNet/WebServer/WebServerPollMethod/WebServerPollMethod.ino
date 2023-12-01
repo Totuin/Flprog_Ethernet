@@ -1,4 +1,8 @@
 #include "flprogEthernet.h"
+#ifndef LED_BUILTIN
+#define LED_BUILTIN 2
+#endif
+
 
 /*
   -------------------------------------------------------------------------------------------------

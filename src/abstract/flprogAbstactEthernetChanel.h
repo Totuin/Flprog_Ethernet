@@ -24,7 +24,7 @@ public:
     uint8_t getStatus() { return _status; };
     uint8_t getError() { return _errorCode; };
 
-    void stop();
+    virtual void stop();
     void flush(){};
 
     virtual size_t write(const uint8_t *buf, size_t size) = 0;

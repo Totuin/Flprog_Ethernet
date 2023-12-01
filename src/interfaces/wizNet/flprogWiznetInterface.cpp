@@ -28,6 +28,7 @@ uint8_t FLProgWiznetInterface::pool()
     {
         return initHarware();
     }
+
     if (_status == FLPROG_WAIT_ETHERNET_LINK_ON_STATUS)
     {
         return checkHarwareLinkStatus();
@@ -123,7 +124,7 @@ uint8_t FLProgWiznetInterface::checkHardware()
         return FLPROG_SUCCESS;
     }
     _lastCheckEthernetStatusTime = millis();
-    if (_hardware.getChip() == FLPROG_ETHERNET_NO_HARDWARE)
+    if (_hardware.checkHardware() == FLPROG_ERROR)
     {
         _status = FLPROG_WAIT_ETHERNET_HARDWARE_INIT_STATUS;
         _errorCode = _hardware.getError();

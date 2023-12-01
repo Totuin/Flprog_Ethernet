@@ -1,5 +1,11 @@
 #include "flprogDhcp.h"
 
+void FLProgDhcp::stop()
+{
+	_sourse->closeSoket(_sockindex);
+	_sockindex = _sourse->maxSoketNum();
+}
+
 void FLProgDhcp::setSourse(FLProgAbstractTcpInterface *sourse)
 {
 	_sourse = sourse;
@@ -10,10 +16,9 @@ uint8_t FLProgDhcp::beginWithDHCP(uint32_t timeout, uint32_t responseTimeout)
 {
 	if (_status == FLPROG_NOT_REDY_STATUS)
 	{
-		_errorCode = FLPROG_ETHERNET_DHCP_NOT_DEFINED_ERROR;
+		_errorCode = FLPROG_ETHERNET_DHCP_NOT_READY_ERROR;
 		return FLPROG_ERROR;
 	}
-
 	if (_status == FLPROG_WAIT_ETHERNET_DHCP_STATUS)
 	{
 		if (flprog::isTimer(_sartFullDhcpReqestTime, timeout))
@@ -56,7 +61,7 @@ uint8_t FLProgDhcp::request_DHCP_lease(uint32_t responseTimeout)
 			return FLPROG_ERROR;
 		}
 	}
-	uint8_t result = cheskStateMashine(responseTimeout);
+	uint8_t result = cheskStateMashine(responseTimeout);;
 	if (result == FLPROG_WITE)
 	{
 		return FLPROG_WITE;
@@ -254,6 +259,7 @@ void FLProgDhcp::send_DHCP_MESSAGE(uint8_t messageType)
 
 uint8_t FLProgDhcp::parseDHCPResponse(uint32_t responseTimeout)
 {
+
 	if (flprog::isTimer(_startDhcpReqestTime, responseTimeout))
 	{
 		return FLPROG_DHCP_TIMEOUT_MESSAGE_TYPE;
@@ -267,6 +273,7 @@ uint8_t FLProgDhcp::parseDHCPResponse(uint32_t responseTimeout)
 		_lastCheckDhcpReqestTime = millis();
 		return FLPROG_DHCP_WITE_CHECK_REQEST_MESSAGE_TYPE;
 	}
+
 	uint8_t type = 0;
 	uint8_t opt_len = 0;
 	FLPROG_RIP_MSG_FIXED fixedMsg;

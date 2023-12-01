@@ -93,6 +93,7 @@ public:
 	IPAddress getDhcpServerIp();
 	IPAddress getDnsServerIp();
 	uint8_t beginWithDHCP(uint32_t timeout = 20000, uint32_t responseTimeout = 4000);
+	virtual void stop();
 
 private:
 	uint8_t request_DHCP_lease(uint32_t responseTimeout);

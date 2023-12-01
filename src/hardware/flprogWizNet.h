@@ -101,6 +101,7 @@ public:
 
   virtual uint8_t getLinkStatus();
   virtual uint8_t getChip();
+  uint8_t checkHardware();
 
   uint8_t soketConnected(uint8_t soket);
   int readFromSoket(uint8_t soket);
@@ -191,7 +192,7 @@ public:
   virtual uint8_t socketSendUDP(uint8_t s);
   virtual uint8_t maxSoketNum() { return FLPROG_WIZNET_MAX_SOCK_NUM; };
   uint8_t getClientTCPSoket(uint16_t port){return getTCPSoket(port);};
-  uint8_t getServerTCPSoket(uint16_t port){return getTCPSoket(port);};
+  uint8_t getServerTCPSoket(uint16_t port);
   virtual uint8_t getUDPSoket(uint16_t port) { return socketBegin(FLPROG_WIZNET_SN_MR_UDP, port); };
   virtual uint8_t beginMulticastSoket(IPAddress ip, uint16_t port) { return socketBeginMulticast((FLPROG_WIZNET_SN_MR_UDP | FLPROG_WIZNET_SN_MR_MULTI), ip, port); };
 

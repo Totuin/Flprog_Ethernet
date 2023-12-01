@@ -44,7 +44,8 @@ public:
   virtual uint8_t getClientTCPSoket(uint16_t port) { return _hardware.getClientTCPSoket(port); };
   virtual uint8_t getServerTCPSoket(uint16_t port) { return _hardware.getServerTCPSoket(port); };
   virtual uint8_t getUDPSoket(uint16_t port) { return _hardware.getUDPSoket(port); };
-  virtual bool isListenSoket(uint8_t soket) { return _hardware.socketListen(soket); };
+  virtual bool isListenSoket(uint8_t soket) { return (_hardware.socketListen(soket) == FLPROG_SUCCESS); };
+
   virtual void closeSoket(uint8_t soket) { _hardware.socketClose(soket); };
   virtual uint8_t sendUdpSoket(uint8_t soket) { return _hardware.socketSendUDP(soket); };
   virtual uint8_t startUdpSoket(uint8_t soket, uint8_t *addr, uint16_t port) { return _hardware.socketStartUDP(soket, addr, port); };
@@ -60,7 +61,7 @@ public:
   virtual uint16_t localPortSoket(uint8_t soket) { return _hardware.localPort(soket); };
   virtual IPAddress remoteIPSoket(uint8_t soket) { return _hardware.remoteIP(soket); };
   virtual uint16_t remotePortSoket(uint8_t soket) { return _hardware.remotePort(soket); };
-   virtual int parsePacketSocet(uint8_t soket);
+  virtual int parsePacketSocet(uint8_t soket);
 
   uint8_t begin(IPAddress ip);
   uint8_t begin(IPAddress ip, IPAddress dns);
@@ -77,12 +78,13 @@ public:
   virtual uint8_t type() { return FLPROG_ETHERNET_INTERFACE; }
   virtual uint8_t maxSoketNum() { return _hardware.maxSoketNum(); };
   virtual bool isInit() { return _hardware.isInit(); };
+    uint8_t initHarware();
+    uint8_t connect();
 
 private:
   uint8_t checkHarwareLinkStatus();
   uint8_t checkHardware();
-  uint8_t initHarware();
-  uint8_t connect();
+  
 
   FLProgWiznetClass _hardware;
   FLProgDhcp _dhcp;

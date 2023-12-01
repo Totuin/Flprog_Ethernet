@@ -27,7 +27,7 @@ int FLProgAbstactEthernetUDPChanel::parsePacket()
     {
         while (_remaining)
         {
-            read((uint8_t *)NULL, _remaining);
+            readToNull(_remaining);
         }
 
         if (_sourse->availableSoket(_sockindex) > 0)

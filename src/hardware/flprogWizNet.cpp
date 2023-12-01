@@ -15,6 +15,24 @@ uint8_t FLProgWiznetClass::init()
 	return FLPROG_WITE;
 }
 
+uint8_t FLProgWiznetClass::getServerTCPSoket(uint16_t port)
+{
+	uint8_t sockindex = socketBegin(FLPROG_WIZNET_SN_MR_TCP, port);
+	if (sockindex < FLPROG_WIZNET_MAX_SOCK_NUM)
+	{
+		if (socketListen(sockindex))
+		{
+			return sockindex;
+		}
+		else
+		{
+			socketDisconnect(sockindex);
+			return FLPROG_WIZNET_MAX_SOCK_NUM;
+		}
+	}
+	return FLPROG_WIZNET_MAX_SOCK_NUM;
+}
+
 uint8_t FLProgWiznetClass::soketConnected(uint8_t soket)
 {
 	if (soket < FLPROG_WIZNET_MAX_SOCK_NUM)
@@ -372,6 +390,34 @@ uint8_t FLProgWiznetClass::softReset(void)
 		delay(1);
 	} while (++count < 20);
 	return 0;
+}
+
+uint8_t FLProgWiznetClass::checkHardware()
+{
+	if (_chip == FLPROG_ETHERNET_W5100)
+	{
+		return FLPROG_SUCCESS;
+	}
+	int ver;
+	if (_chip == FLPROG_ETHERNET_W5200)
+	{
+		ver = read(FLPROG_WIZNET_VERSIONR_W5200);
+		if (ver == 3)
+		{
+			return FLPROG_SUCCESS;
+		}
+	}
+	if (_chip == FLPROG_ETHERNET_W5500)
+	{
+		ver = read(FLPROG_WIZNET_VERSIONR_W5500);
+		if (ver == 4)
+		{
+			return FLPROG_SUCCESS;
+		}
+	}
+	_status = FLPROG_NOT_REDY_STATUS;
+	_errorCode = FLPROG_ETHERNET_HARDWARE_INIT_ERROR;
+	return FLPROG_ERROR;
 }
 
 uint8_t FLProgWiznetClass::isW5100(void)
@@ -864,6 +910,7 @@ uint8_t FLProgWiznetClass::socketDisconnect(uint8_t s)
 		execCmdSn(s, FLPROG_WIZNET_SOCK_CMD_DISCON);
 		endTransaction();
 	}
+
 	return FLPROG_SUCCESS;
 }
 
