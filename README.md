@@ -355,6 +355,20 @@ String name = WifiInterface.clientPassword();
 // Возвращает результат выполнения цикла (описания значений результатов ниже).
 uint8_t result = WifiInterface.pool();
 
+// Управление точкой доступа
+WifiInterface.apOn(); // Включить точку
+WifiInterface.apOff(); //Выключить точку
+WifiInterface.apMode(true); //Управление (true - включить, false - выключить)
+bool  mode = WifiInterface.apMode() // Текущий режим работы (true - вкл, false - выкл)
+bool  status = WifiInterface.apIsReady() // Текущее состояние готовности
+
+// Управление клиентом
+WifiInterface.clientOn(); // Включить клиетна
+WifiInterface.clientOff(); //Выключить клиетна
+WifiInterface.clientMode(true); //Управление (true - включить, false - выключить)
+bool  mode = WifiInterface.clientMode() // Текущий режим работы (true - вкл, false - выкл)
+bool  status = WifiInterface.clientIsReady() // Текущее состояние готовности
+
 // Получение типа интерфейса (описания значений типов интерфейса ниже).
 uint8_t type = WifiInterface.type();
 
@@ -383,3 +397,73 @@ FLProgEthernetServer Server(&WiznetInterface, 80);
 // Создание сервера с на порту по умолчанию (порт по умолчанию 80)
 FLProgEthernetServer Server(&WiznetInterface); 
 ```
+
+### Задание параметров
+
+- *Задание номера порта который будет слушать сервер* <br>
+*может вызываься в любой момент времени*
+
+```c
+Server.setPort(port);
+```
+
+- *Задание имени функции которая будет вызвана при приходе запроса на сервер* <br>
+*может вызываься в любой момент времени*<br>
+*формат функции void funk(void)*<br>
+*вызов функции произойдёт только если в секции loop() будет вызыватся метод pool()  сервера*
+
+```c
+// Синтаксис
+Server.setCallback(funk);
+
+// Пример конструкции
+#include "flprogEthernet.h"
+FLProgWiznetInterface WiznetInterface;
+FLProgEthernetServer server(&WiznetInterface);
+
+void setup()
+{
+  WiznetInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x40);
+  server.setCallback(callBack);
+}
+
+void loop()
+{
+  WiznetInterface.pool();
+  server.pool();
+}
+
+void callBack()
+{
+  // Читаем содержимое запроса
+  while (server.available())
+  {
+    uint8_t  byte = server.read();
+    // ..........
+  }
+  // Отправляем ответ
+  server.write(100);
+  // ..........
+
+  // Закрываем соеденение
+  server.stopConnection();
+}
+```
+
+    uint8_t pool();
+    uint8_t connected();
+    void stopConnection();
+    void setCallback(void (*func)(void)) { _callbackFunction = func; };
+     int available() { return _sourse->availableSoket(_sockindex); }
+
+    virtual size_t write(const uint8_t *buf, size_t size) 
+
+    int read() { return _sourse->readFromSoket(_sockindex); };
+    int read(uint8_t *buf, size_t size) { return _sourse->readFromSoket(_sockindex, buf, size); };
+    int peek() { return _sourse->peekSoket(_sockindex); };
+
+    uint16_t localPort() { return _sourse->localPortSoket(_sockindex); };
+    IPAddress remoteIP() { return _sourse->remoteIPSoket(_sockindex); };
+    uint16_t remotePort() { return _sourse->remotePortSoket(_sockindex); };
+       uint8_t getStatus() { return _status; };
+    uint8_t getError() { return _errorCode; };
