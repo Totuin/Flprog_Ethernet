@@ -34,6 +34,8 @@
 class FLProgDNSClient : public FLProgAbstactEthernetUDPChanel
 {
 public:
+	virtual void setSourse(FLProgAbstractTcpInterface *sourse);
+	virtual void stop();
 	int getHostByName(const char *aHostname, uint8_t *aResult, uint16_t timeout = 5000);
 	void setDnsCacheStorageTime(uint32_t time) { _cacheStorageTime = time; };
 

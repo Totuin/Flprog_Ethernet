@@ -9,7 +9,6 @@
 #define LED_BUILTIN 2
 #endif
 
-
 /*
   -------------------------------------------------------------------------------------------------
         Создание интерфейса для работы с чипом W5100(W5200,W5500)
@@ -47,7 +46,8 @@ FLProgWiznetInterface WiznetInterface;
 uint32_t localPort = 8888; //--Определение порта для UDP пакетов (используется стандартный номер);
 
 const char *timeServer = "time.nist.gov"; //--Имя NTP сервера - сервер точного времени;
-                                          // const char *timeServer = "ntp1.vniiftri.ru";
+
+// const char *timeServer = "ntp1.vniiftri.ru";
 // const char *timeServer = "128.138.140.44";
 // IPAddress  timeServer = IPAddress(128, 138, 140, 44);
 

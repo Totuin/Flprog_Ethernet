@@ -1,5 +1,18 @@
 #include "flprogDns.h"
 
+void FLProgDNSClient::setSourse(FLProgAbstractTcpInterface *sourse)
+{
+	_sourse = sourse;
+	_status = FLPROG_READY_STATUS;
+}
+
+void FLProgDNSClient::stop()
+{
+	_sourse->closeSoket(_sockindex);
+	_sockindex = _sourse->maxSoketNum();
+	_status = FLPROG_NOT_REDY_STATUS;
+}
+
 bool FLProgDNSClient::checkCach(const char *aHostname, uint8_t *aResult)
 {
 	if (flprog::isTimer(_startCachTime, _cacheStorageTime))

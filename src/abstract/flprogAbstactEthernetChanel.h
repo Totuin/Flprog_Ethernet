@@ -17,14 +17,12 @@ class FLProgAbstactEthernetChanel : public Print
 {
 public:
     virtual void setSourse(FLProgAbstractTcpInterface *sourse) { _sourse = sourse; };
-
     virtual size_t write(uint8_t byte) { return write(&byte, 1); };
-
+    virtual void stop();
     // int read(char *buffer, size_t len) { return read((uint8_t *)buffer, len); };
     uint8_t getStatus() { return _status; };
     uint8_t getError() { return _errorCode; };
 
-    virtual void stop();
     void flush(){};
 
     virtual size_t write(const uint8_t *buf, size_t size) = 0;

@@ -78,13 +78,11 @@ uint8_t FLProgDhcp::request_DHCP_lease(uint32_t responseTimeout)
 
 void FLProgDhcp::sendDiscoverMessage()
 {
-	Serial.println("sendDiscoverMessage 1");
 	_dhcpTransactionId++;
 	send_DHCP_MESSAGE(FLPROG_DHCP_DISCOVER);
 	_startDhcpReqestTime = millis();
 	_lastCheckDhcpReqestTime = flprog::timeBack(100);
 	_dhcp_state = FLPROG_STATE_DHCP_DISCOVER;
-	Serial.println("sendDiscoverMessage 2");
 }
 
 void FLProgDhcp::sendReqestMessage()
