@@ -31,7 +31,7 @@ public:
 
 protected:
     uint8_t checkReadySourse();
-    FLProgAbstractTcpInterface *_sourse;
+    FLProgAbstractTcpInterface *_sourse = 0;
     uint8_t _errorCode = FLPROG_NOT_ERROR;
     uint8_t _status = FLPROG_NOT_REDY_STATUS;
     uint8_t _sockindex = 255;

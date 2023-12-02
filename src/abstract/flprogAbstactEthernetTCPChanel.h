@@ -7,9 +7,9 @@
 class FLProgAbstactEthernetTCPChanel : public FLProgAbstactEthernetChanel
 {
 public:
-    int available() { return _sourse->availableSoket(_sockindex); }
+    int available();
 
-    virtual size_t write(const uint8_t *buf, size_t size) { return _sourse->writeToSoket(_sockindex, buf, size); };
+    virtual size_t write(const uint8_t *buf, size_t size);
 
     int read() { return _sourse->readFromSoket(_sockindex); };
     int read(uint8_t *buf, size_t size) { return _sourse->readFromSoket(_sockindex, buf, size); };
