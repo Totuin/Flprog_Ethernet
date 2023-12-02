@@ -32,11 +32,11 @@ FLProgUdpClient Udp(&WifiInterface); //--Создание UDP клиента;
 
 uint32_t localPort = 8888; //--Определение порта для UDP пакетов (используется стандартный номер);
 
-//const char *timeServer = "time.nist.gov"; //--Имя NTP сервера - сервер точного времени;
-// const char *timeServer = "ntp1.vniiftri.ru";
-// const char *timeServer = "128.138.140.44";
-// IPAddress  timeServer = IPAddress(128, 138, 140, 44);
- IPAddress  timeServer = IPAddress(192, 168, 137, 1);
+// const char *timeServer = "time.nist.gov"; //--Имя NTP сервера - сервер точного времени;
+//  const char *timeServer = "ntp1.vniiftri.ru";
+//  const char *timeServer = "128.138.140.44";
+//  IPAddress  timeServer = IPAddress(128, 138, 140, 44);
+IPAddress timeServer = IPAddress(192, 168, 137, 1);
 
 const int NTP_PACKET_SIZE = 48;        //--Установка размера буфера (отметка времени NTP находится в первых 48 байтах сообщения);
 uint8_t packetBuffer[NTP_PACKET_SIZE]; //--Создание буфера для хранения входящих и исходящих пакетов;
@@ -84,10 +84,11 @@ void setup()
   WifiInterface.setApSsid("Test-Esp-FLProg");
   WifiInterface.setApPassword("12345678");
 
-  WifiInterface.setClientSsidd("Micro");
-  //WifiInterface.setClientSsidd("totuin-router");
-
+  WifiInterface.setClientSsidd("totuin-router");
   WifiInterface.setClientPassword("12345678");
+
+  // WifiInterface.localIP(192, 168, 199, 196);
+  // WifiInterface.resetDhcp();
 
   Udp.setDnsCacheStorageTime(600000); // Устанавливаем клиенту время хранаения DNS кэша 10 минут
 }

@@ -55,6 +55,9 @@ void setup()
   WifiInterface.setClientSsidd("totuin-router");
   WifiInterface.setClientPassword("12345678");
 
+  // WifiInterface.localIP(192, 168, 199, 196);
+  // WifiInterface.resetDhcp();
+
   server.setCallback(callBack);
 
   pinMode(LED_BUILTIN, OUTPUT);

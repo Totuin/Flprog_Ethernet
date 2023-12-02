@@ -38,6 +38,13 @@ bool FLProgDNSClient::checkCach(const char *aHostname, uint8_t *aResult)
 
 int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint16_t timeout)
 {
+	if (!_sourse->isReadyForDNS())
+	{
+
+		_status = FLPROG_READY_STATUS;
+		_errorCode = FLPROG_NOT_ERROR;
+		return FLPROG_WITE;
+	}
 	if (checkCach(aHostname, aResult))
 	{
 		_status = FLPROG_READY_STATUS;

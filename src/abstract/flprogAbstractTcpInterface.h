@@ -38,6 +38,7 @@ public:
     uint8_t getStatus() { return _status; };
     uint8_t getError() { return _errorCode; };
     virtual bool isReady() { return _status == FLPROG_READY_STATUS; };
+    virtual bool isReadyForDNS() { return isReady(); };
 
     // Внутрение методы библиотеки
     bool checkMac(uint8_t *mac);

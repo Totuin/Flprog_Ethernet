@@ -65,7 +65,7 @@ void setup()
     while (!Serial)
     {
     }
-    
+
     flprog::printConsole(" Тест WIFI Web клиента ");
 
     WifiInterface.clientOn();
@@ -75,6 +75,9 @@ void setup()
     WifiInterface.setApPassword("12345678");
     WifiInterface.setClientSsidd("totuin-router");
     WifiInterface.setClientPassword("12345678");
+
+    // WifiInterface.localIP(192, 168, 199, 196);
+    // WifiInterface.resetDhcp();
 
     client.setDnsCacheStorageTime(600000); // Устанавливаем клиенту время хранаения DNS кэша 10 минут
 

@@ -13,6 +13,7 @@ class FLProgUdpClient : public FLProgAbstactEthernetUDPChanel
 public:
 	FLProgUdpClient(){};
 	FLProgUdpClient(FLProgAbstractTcpInterface *sourse);
+	virtual void stop();
 	virtual void setSourse(FLProgAbstractTcpInterface *sourse);
 	virtual uint8_t beginMulticast(IPAddress, uint16_t);
 	int beginPacket(IPAddress ip, uint16_t port) { return beginIpPacket(ip, port); };

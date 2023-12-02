@@ -34,6 +34,7 @@ public:
     void clientMode(bool val);
     bool clientMode() { return _clientWorkStatus; };
     virtual bool clientIsReady() { return false; };
+    virtual bool isReadyForDNS() { return clientIsReady(); };
     virtual bool apIsReady() { return false; };
     virtual void apOn();
     void apOff();

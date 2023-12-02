@@ -6,10 +6,17 @@ FLProgUdpClient::FLProgUdpClient(FLProgAbstractTcpInterface *sourse)
 	setSourse(sourse);
 }
 
+void FLProgUdpClient::stop()
+{
+	_sourse->closeSoket(_sockindex);
+	_sockindex = _sourse->maxSoketNum();
+}
+
 void FLProgUdpClient::setSourse(FLProgAbstractTcpInterface *sourse)
 {
 	_sourse = sourse;
 	_dns.setSourse(sourse);
+	_status = FLPROG_READY_STATUS;
 }
 
 int FLProgUdpClient::beginPacket(const char *host, uint16_t port)
