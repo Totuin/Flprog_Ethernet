@@ -265,44 +265,86 @@ bool mode =  WifiInterface.isDhcp();
 // Задание Ip адреса  точки доступа и клиента.
 // В качестве значения могут передаваться как объект IPAddress так и четыре цифры
 WifiInterface.apLocalIP(IPAddress(192, 168, 1, 100)); // Точка
-WifiInterface.apLocalIP(192, 168, 1, 100); // Точка
+WifiInterface.apLocalIP(192, 168, 1, 100);            // Точка
 
 WifiInterface.localIP(IPAddress(192, 168, 1, 100)); // Клиент
-WifiInterface.localIP(192, 168, 1, 100); // Клиент
+WifiInterface.localIP(192, 168, 1, 100);            // Клиент
 
 
 // Получение IP адреса точки доступа и клиента.
 // Возвращает объект класса IPAddress
-IPAddress ip = WiznetInterface.apLocalIP();// Точка
-IPAddress ip = WiznetInterface.localIP(); // Клиент
+IPAddress ip = WifiInterface.apLocalIP(); // Точка
+IPAddress ip = WifiInterface.localIP();   // Клиент
 
 
 // Задание Ip адреса DNS сервера.
 // В качестве значения могут передаваться как объект IPAddress так и четыре цифры
-WiznetInterface.dns(IPAddress(192, 168, 1, 1));
-WiznetInterface.dns(192, 168, 1, 1);
+WifiInterface.apDns(IPAddress(192, 168, 1, 1)); // Точка
+WifiInterface.apDns(192, 168, 1, 1);            // Точка
+
+WifiInterface.dns(IPAddress(192, 168, 1, 1)); // Клиент
+WifiInterface.dns(192, 168, 1, 1);            // Клиент
 
 // Получение IP адреса DNS сервера
 // Возвращает объект класса IPAddress
-IPAddress ip = WiznetInterface.dns();
+IPAddress ip = WifiInterface.apDns(); // Точка
+IPAddress ip = WifiInterface.dns();   // Клиент
+
 
 // Задание Ip адреса шлюза.
 // В качестве значения могут передаваться как объект IPAddress так и четыре цифры
-WiznetInterface.gateway(IPAddress(192, 168, 1, 1));
-WiznetInterface.gateway(192, 168, 1, 1);
+WifiInterface.apGateway(IPAddress(192, 168, 1, 1)); // Точка
+WifiInterface.apGateway(192, 168, 1, 1);            // Точка
+
+WifiInterface.gateway(IPAddress(192, 168, 1, 1)); // Клиент
+WifiInterface.gateway(192, 168, 1, 1);            // Клиент
 
 // Получение IP адреса шлюза
 // Возвращает объект класса IPAddress
-IPAddress ip = WiznetInterface.gateway();
+IPAddress ip = WifiInterface.apGateway(); // Точка
+IPAddress ip = WifiInterface.gateway();   // Клиент
 
 // Задание маски подсети. По умолчанию установлена 255.255.255.0
 // В качестве значения могут передаваться как объект IPAddress так и четыре цифры
-WiznetInterface.subnet(IPAddress(255, 255, 255, 0));
-WiznetInterface.subnet(255, 255, 255, );
+WifiInterface.apSubnet(IPAddress(255, 255, 255, 0)); // Точка
+WifiInterface.apSubnet(255, 255, 255, );             // Точка
+
+WifiInterface.subnet(IPAddress(255, 255, 255, 0)); // Клиент
+WifiInterface.subnet(255, 255, 255, );             // Клиент
 
 // Получение маски подсети
 // Возвращает объект класса IPAddress
-IPAddress ip = WiznetInterface.subnet();
+IPAddress ip = WifiInterface.apSubnet(); // Точка
+IPAddress ip = WifiInterface.subnet();   // Клиент
+
+// Задание имени сети (SSID) для точки доступа (передается строка)
+// Может вызываться в любой момент времени, точка будет пересозданна
+WifiInterface.setApSsid("Test_Esp_Net");
+ 
+// Получение текущего значения имени сети (SSID) для точки доступа
+String name = WifiInterface.apSsid();
+
+// Задание  пароля для точки доступа (передается строка)
+// Может вызываться в любой момент времени, точка будет пересозданна
+WifiInterface.setApPassword("password");
+
+// Получение текущего значения пароля для точки доступа
+String name = WifiInterface.apPassworid();
+    
+// Задание имени сети (SSID) для клиента (передается строка)
+// Может вызываться в любой момент времени, клиент переподключится
+WifiInterface.setClientSsidd("Test_Net");
+ 
+// Получение текущего значения имени сети (SSID) для клиента
+String name = WifiInterface.clientSsid();
+
+// Задание  пароля для клиента (передается строка)
+// Может вызываться в любой момент времени, клиент переподключится
+WifiInterface.setClientPassword("password");
+
+// Получение текущего значения пароля для клиента
+String name = WifiInterface.clientPassword();
+
 ```
 
 ### Управление интерфейсом
@@ -311,19 +353,19 @@ IPAddress ip = WiznetInterface.subnet();
 // Цикл работы интерфейса. 
 // Обязательно вызывать один раз в секции loop().
 // Возвращает результат выполнения цикла (описания значений результатов ниже).
-uint8_t result = WiznetInterface.pool();
+uint8_t result = WifiInterface.pool();
 
 // Получение типа интерфейса (описания значений типов интерфейса ниже).
-uint8_t type = WiznetInterface.type();
+uint8_t type = WifiInterface.type();
 
 // Флаг, указывающий что используемый интерфейс не поддерживается на данной платформе (true - интерфейс не поддерживается) 
-bool isImitation = WiznetInterface.isImitation();
+bool isImitation = WifiInterface.isImitation();
 
 // Получение текущего статуса интерфейса (описания значений статусов ниже).
-uint8_t type = WiznetInterface.getStatus();
+uint8_t type = WifiInterface.getStatus();
 
 // Получение текущей ошибка интерфейса (описания значений кодов ошибок ниже).
-uint8_t type = WiznetInterface.getError();
+uint8_t type = WifiInterface.getError();
 ```
 
 # Pабота с TCP

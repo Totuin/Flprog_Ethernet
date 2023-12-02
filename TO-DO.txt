@@ -37,3 +37,5 @@
 На расбери не выводится консоль почему то!!!!
 
 Не работает перезапрос DHCP (Montain)
+
+Для ESP32  не заданны RT_HW_Base.device.spi.csETH и RT_HW_Base.device.spi.busETH

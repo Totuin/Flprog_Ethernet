@@ -78,13 +78,12 @@ public:
   virtual uint8_t type() { return FLPROG_ETHERNET_INTERFACE; }
   virtual uint8_t maxSoketNum() { return _hardware.maxSoketNum(); };
   virtual bool isInit() { return _hardware.isInit(); };
-    uint8_t initHarware();
-    uint8_t connect();
+  uint8_t initHarware();
+  uint8_t connect();
 
 private:
   uint8_t checkHarwareLinkStatus();
   uint8_t checkHardware();
-  
 
   FLProgWiznetClass _hardware;
   FLProgDhcp _dhcp;

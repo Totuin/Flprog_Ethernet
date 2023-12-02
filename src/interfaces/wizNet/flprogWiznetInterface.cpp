@@ -31,16 +31,9 @@ uint8_t FLProgWiznetInterface::pool()
 
     if (_status == FLPROG_WAIT_ETHERNET_LINK_ON_STATUS)
     {
-        return checkHarwareLinkStatus();
+        return checkHardware();
     }
-    if (_status != FLPROG_READY_STATUS)
-    {
-        return connect();
-    }
-    if (checkHardware() == FLPROG_ERROR)
-    {
-        return FLPROG_ERROR;
-    }
+
     if (_isNeedReconect)
     {
         _lastReconnectTime = flprog::timeBack(_reconnectEthernetPeriod);
@@ -48,6 +41,17 @@ uint8_t FLProgWiznetInterface::pool()
         _isNeedReconect = false;
         return connect();
     }
+
+    if (_status != FLPROG_READY_STATUS)
+    {
+        return connect();
+    }
+
+    if (checkHardware() == FLPROG_ERROR)
+    {
+        return FLPROG_ERROR;
+    }
+
     return maintain();
 }
 
@@ -81,6 +85,7 @@ uint8_t FLProgWiznetInterface::connect()
                 return FLPROG_WITE;
             }
             _hardware.setMACAddress(_macAddress);
+            _hardware.setOnlyLocalIP(FLPROG_INADDR_NONE);
         }
         return begin();
     }
@@ -98,25 +103,6 @@ uint8_t FLProgWiznetInterface::connect()
     return begin(_ip, _dnsIp, _gatewayIp, _subnetIp);
 }
 
-uint8_t FLProgWiznetInterface::checkHarwareLinkStatus()
-{
-    if (_hardware.getLinkStatus() == FLPROG_ETHERNET_LINK_ON)
-    {
-        if (_status != FLPROG_READY_STATUS)
-        {
-            _status = FLPROG_WAIT_ETHERNET_CONNECT_STATUS;
-        }
-        _errorCode = FLPROG_NOT_ERROR;
-        return FLPROG_SUCCESS;
-    }
-    _status = FLPROG_WAIT_ETHERNET_LINK_ON_STATUS;
-    if (_status == FLPROG_READY_STATUS)
-    {
-        _errorCode = FLPROG_ETHERNET_LINK_OFF_ERROR;
-    }
-    return FLPROG_ERROR;
-}
-
 uint8_t FLProgWiznetInterface::checkHardware()
 {
     if (!(flprog::isTimer(_lastCheckEthernetStatusTime, _checkEthernetStatusPeriod)))
@@ -131,6 +117,26 @@ uint8_t FLProgWiznetInterface::checkHardware()
         return FLPROG_ERROR;
     }
     return checkHarwareLinkStatus();
+}
+
+uint8_t FLProgWiznetInterface::checkHarwareLinkStatus()
+{
+    if (_hardware.getLinkStatus() == FLPROG_ETHERNET_LINK_ON)
+    {
+        if (_status != FLPROG_READY_STATUS)
+        {
+            _status = FLPROG_WAIT_ETHERNET_CONNECT_STATUS;
+        }
+        _errorCode = FLPROG_NOT_ERROR;
+        return FLPROG_SUCCESS;
+    }
+    _status = FLPROG_WAIT_ETHERNET_LINK_ON_STATUS;
+    _isNeedReconect = true;
+    if (_status == FLPROG_READY_STATUS)
+    {
+        _errorCode = FLPROG_ETHERNET_LINK_OFF_ERROR;
+    }
+    return FLPROG_ERROR;
 }
 
 uint8_t FLProgWiznetInterface::begin()

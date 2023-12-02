@@ -55,13 +55,17 @@ uint8_t FLProgDhcp::request_DHCP_lease(uint32_t responseTimeout)
 		_dhcpTransactionId = random(1UL, 2000UL);
 		_dhcpInitialTransactionId = _dhcpTransactionId;
 		stop();
+		_dhcpLeaseTime = 0;
+		_dhcpT1 = 0;
+		_dhcpT2 = 0;
 		if ((begin(FLPROG_DHCP_CLIENT_PORT)) != FLPROG_SUCCESS)
 		{
 			_status = FLPROG_READY_STATUS;
 			return FLPROG_ERROR;
 		}
 	}
-	uint8_t result = cheskStateMashine(responseTimeout);;
+	uint8_t result = cheskStateMashine(responseTimeout);
+	;
 	if (result == FLPROG_WITE)
 	{
 		return FLPROG_WITE;
@@ -74,11 +78,13 @@ uint8_t FLProgDhcp::request_DHCP_lease(uint32_t responseTimeout)
 
 void FLProgDhcp::sendDiscoverMessage()
 {
+	Serial.println("sendDiscoverMessage 1");
 	_dhcpTransactionId++;
 	send_DHCP_MESSAGE(FLPROG_DHCP_DISCOVER);
 	_startDhcpReqestTime = millis();
 	_lastCheckDhcpReqestTime = flprog::timeBack(100);
 	_dhcp_state = FLPROG_STATE_DHCP_DISCOVER;
+	Serial.println("sendDiscoverMessage 2");
 }
 
 void FLProgDhcp::sendReqestMessage()
@@ -100,9 +106,16 @@ uint8_t FLProgDhcp::cheskStateMashine(uint32_t responseTimeout)
 	}
 	if (_dhcp_state == FLPROG_STATE_DHCP_DISCOVER)
 	{
+
 		result = parseDHCPResponse(responseTimeout);
 		if (result == FLPROG_DHCP_TIMEOUT_MESSAGE_TYPE)
 		{
+			stop();
+			if ((begin(FLPROG_DHCP_CLIENT_PORT)) != FLPROG_SUCCESS)
+			{
+				_status = FLPROG_READY_STATUS;
+				return FLPROG_ERROR;
+			}
 			sendDiscoverMessage();
 			return FLPROG_WITE;
 		}

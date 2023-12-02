@@ -141,7 +141,6 @@ uint8_t FLProgAbstactEthernetUDPChanel::begin(uint16_t port)
     }
 
     _remaining = 0;
-
     return FLPROG_SUCCESS;
 }
 

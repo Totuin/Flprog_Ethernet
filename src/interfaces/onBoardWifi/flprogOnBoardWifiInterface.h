@@ -8,9 +8,11 @@ public:
     void setApSsid(String ssid);
     void setApPassword(String password);
     String apSsid() { return String(_apSsid); };
+    String apPassworid() { return String(_apPassword); };
     void setClientSsidd(String ssid);
     void setClientPassword(String password);
     String clientSsid() { return String(_clientSsid); };
+    String clientPassword() { return String(_clientPassword); };
 
     void apMac(uint8_t m0, uint8_t m1, uint8_t m2, uint8_t m3, uint8_t m4, uint8_t m5);
     uint8_t *apMac() { return _apMacaddress; };
@@ -68,7 +70,6 @@ extern "C"
 }
 #include "variant/esp/esp8266/flprogEsp8266Wifi.h"
 #endif
-
 
 #ifndef FLPROG_WIFI_ON_BOARD_TCP_DEVICE
 #ifdef ARDUINO_ARCH_ESP32
