@@ -1,12 +1,14 @@
 #include "flprogESP8266WifiSoket.h"
- #ifdef ARDUINO_ARCH_ESP8266
+#ifdef ARDUINO_ARCH_ESP8266
 
 void FLProgWifiSoket::disconnect()
 {
     if (_soketType == FLPROG_WIFI_SERVER_SOKET)
     {
         _client.stop();
-        _client = _server.accept();
+        while (_client)
+        {
+        };
         return;
     }
     close();
@@ -39,7 +41,7 @@ void FLProgWifiSoket::beUDP(uint16_t port)
 
 void FLProgWifiSoket::beCliendTcp(uint16_t port)
 {
-    close();
+    // close();
     _client.setLocalPortStart(port);
     _soketType = FLPROG_WIFI_CLIENT_SOKET;
     _isUsed = true;
@@ -66,13 +68,12 @@ uint8_t FLProgWifiSoket::connected()
     }
     if (_soketType == FLPROG_WIFI_SERVER_SOKET)
     {
-        if (_client.connected())
+        if (_client)
         {
-            return _client.connected();
+            return true;
         }
-        _client.stop();
-        _client = _server.accept();
-        return _client.available();
+        _client = _server.available();
+        return _client;
     }
     if (_soketType == FLPROG_WIFI_CLIENT_SOKET)
     {
@@ -136,16 +137,6 @@ int FLProgWifiSoket::available()
     {
         return _udp.available();
     }
-    if (_soketType == FLPROG_WIFI_CLIENT_SOKET)
-    {
-        return _client.available();
-    }
-    if (_client.available())
-    {
-        return _client.available();
-    }
-    _client.stop();
-    _client = _server.accept();
     return _client.available();
 }
 

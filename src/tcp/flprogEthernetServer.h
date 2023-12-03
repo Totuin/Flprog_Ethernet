@@ -20,4 +20,5 @@ public:
 private:
     uint16_t _port = 0;
     void (*_callbackFunction)(void) = 0;
+    bool _serverIsConnect = false;
 };

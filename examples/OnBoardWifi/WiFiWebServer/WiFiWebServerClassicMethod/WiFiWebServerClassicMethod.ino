@@ -37,6 +37,8 @@ bool isNeedClientSendDisconnectMessage = true;
 
 bool isNeedApSendConnectMessage = true;
 bool isNeedApSendDisconnectMessage = true;
+uint8_t counter = 0;
+
 //=================================================================================================
 void setup()
 {
@@ -85,47 +87,26 @@ void workServer()
   Serial.println("=====================================================================");
   Serial.println("Клиент подключился");
   Serial.println("=====================================================================");
-  bool currentLineIsBlank = true;
-  while (server.connected())
+  counter++;
+  while (server.available())
   {
-    if (server.available())
-    {
-      char c = server.read();
-      Serial.write(c);
-      if (c == '\n' && currentLineIsBlank)
-      {
-        // send a standard http response header
-        server.println("HTTP/1.1 200 OK");
-        server.println("Content-Type: text/html");
-        server.println("Connection: close");
-        server.println("Refresh: 5");
-        server.println();
-        server.println("<!DOCTYPE HTML>");
-        server.println("<html>");
-        // output the value of each analog input pin
-        for (int analogChannel = 0; analogChannel < 6; analogChannel++)
-        {
-          int sensorReading = analogRead(analogChannel);
-          server.print("analog input ");
-          server.print(analogChannel);
-          server.print(" is ");
-          server.print(sensorReading);
-          server.println("<br />");
-        }
-        server.println("</html>");
-        break;
-      }
-      if (c == '\n')
-      {
-        // you're starting a new line
-        currentLineIsBlank = true;
-      }
-      else if (c != '\r')
-      {
-        currentLineIsBlank = false;
-      }
-    }
+    char c = server.read();
+    Serial.write(c);
   }
+  server.println("HTTP/1.1 200 OK");
+  server.println("Content-Type: text/html");
+  server.println("Connection: close");
+  server.println("Refresh: 1");
+  server.println();
+  server.println("<!DOCTYPE HTML>");
+  server.println("<html>");
+  server.println("<h1>");
+  server.print("Reqest: ");
+  server.print(counter);
+  server.println("</h1><br />");
+  server.println("</html>");
+  server.println();
+  server.println();
   server.stopConnection();
   Serial.println("=====================================================================");
   Serial.println("Клиент отключён");

@@ -68,6 +68,11 @@ uint8_t FLProgEthernetServer::begin()
 		}
 		return FLPROG_ERROR;
 	}
+	if (_sockindex < _sourse->maxSoketNum())
+	{
+		_sourse->closeSoket(_sockindex);
+		_sockindex = _sourse->maxSoketNum();
+	}
 	_sockindex = _sourse->getServerTCPSoket(_port);
 	if (_sockindex >= _sourse->maxSoketNum())
 	{
@@ -87,10 +92,11 @@ uint8_t FLProgEthernetServer::connected()
 	{
 		_status = FLPROG_NOT_REDY_STATUS;
 		_errorCode = FLPROG_ETHERNET_HARDWARE_INIT_ERROR;
-		return FLPROG_ERROR;
+		return 0;
 	}
 	if (checkReadySourse() == FLPROG_ERROR)
 	{
+		_serverIsConnect = false;
 		_status = FLPROG_NOT_REDY_STATUS;
 		if (_sockindex < _sourse->maxSoketNum())
 		{
@@ -101,19 +107,34 @@ uint8_t FLProgEthernetServer::connected()
 	}
 	if (_status == FLPROG_NOT_REDY_STATUS)
 	{
+		_serverIsConnect = false;
 		begin();
 		return 0;
 	}
-	return _sourse->soketConnected(_sockindex);
+	if (_sourse->soketConnected(_sockindex))
+	{
+		_serverIsConnect = true;
+		return 1;
+	}
+	if (_serverIsConnect)
+	{
+		stopConnection();
+	}
+	return 0;
 }
 
 void FLProgEthernetServer::stopConnection()
 {
+	_serverIsConnect = false;
 	if (_sourse == 0)
 	{
 		return;
 	}
 	_sourse->disconnecSoket(_sockindex);
+	if (_sourse->type() != FLPROG_ETHERNET_INTERFACE)
+	{
+		return;
+	}
 	_sourse->closeSoket(_sockindex);
 	_sockindex = _sourse->maxSoketNum();
 	_sockindex = _sourse->getServerTCPSoket(_port);
@@ -123,4 +144,3 @@ void FLProgEthernetServer::stopConnection()
 		_errorCode = FLPROG_ETHERNET_SOKET_INDEX_ERROR;
 	}
 }
-
