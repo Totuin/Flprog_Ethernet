@@ -203,10 +203,10 @@ uint8_t type = WiznetInterface.type();
 bool isImitation = WiznetInterface.isImitation();
 
 // Получение текущего статуса интерфейса (описания значений статусов ниже).
-uint8_t type = WiznetInterface.getStatus();
+uint8_t status = WiznetInterface.getStatus();
 
 // Получение текущей ошибка интерфейса (описания значений кодов ошибок ниже).
-uint8_t type = WiznetInterface.getError();
+uint8_t error = WiznetInterface.getError();
 ```
 
 ## Класс FLProgOnBoardWifiInterface
