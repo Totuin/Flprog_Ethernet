@@ -376,10 +376,10 @@ uint8_t type = WifiInterface.type();
 bool isImitation = WifiInterface.isImitation();
 
 // Получение текущего статуса интерфейса (описания значений статусов ниже).
-uint8_t type = WifiInterface.getStatus();
+uint8_t status = WifiInterface.getStatus();
 
 // Получение текущей ошибка интерфейса (описания значений кодов ошибок ниже).
-uint8_t type = WifiInterface.getError();
+uint8_t error = WifiInterface.getError();
 ```
 
 # Pабота с TCP
@@ -450,20 +450,71 @@ void callBack()
 }
 ```
 
-    uint8_t pool();
-    uint8_t connected();
-    void stopConnection();
-    void setCallback(void (*func)(void)) { _callbackFunction = func; };
-     int available() { return _sourse->availableSoket(_sockindex); }
+### Управление сервером
 
-    virtual size_t write(const uint8_t *buf, size_t size) 
+- *Цикл работы сервера.* <br>
+*Вызывается один раз в секции loop().*<br>
+*Необходимо вызывать если заданна функция Callbac.*
 
-    int read() { return _sourse->readFromSoket(_sockindex); };
-    int read(uint8_t *buf, size_t size) { return _sourse->readFromSoket(_sockindex, buf, size); };
-    int peek() { return _sourse->peekSoket(_sockindex); };
+```c
+Server.pool();
+```
 
-    uint16_t localPort() { return _sourse->localPortSoket(_sockindex); };
-    IPAddress remoteIP() { return _sourse->remoteIPSoket(_sockindex); };
-    uint16_t remotePort() { return _sourse->remotePortSoket(_sockindex); };
-       uint8_t getStatus() { return _status; };
-    uint8_t getError() { return _errorCode; };
+- *Прверка наличия подключённого к серверу клиента.*
+
+```c
+bool hasClient = Server.connected();
+```
+
+- *Отключение от подключённого к серверу клиента.*
+
+```c
+ Server.stopConnection();
+```
+
+- *Количество байт полученных от клиента.*
+
+```c
+ int count = Server.available();
+```
+
+- *Чтение байт полученных от клиента*
+
+```c
+// Чтение одного байта
+ uint8_t data = Server.read();
+
+// Чтение нескольких байт в буфер
+uint8_t buffer[10];
+Server.read(buffer, 10);
+```
+
+- *Передача байт клиенту*
+
+```c
+// Передача одного байта
+ Server.write(100);
+
+// Передача нескольких байт через буфер
+uint8_t buffer[5] = {1, 3, 5, 2, 3};
+Server.write(buffer, 5);
+```
+
+- *Получение данных сервера*
+
+```c
+// Получени е текущего порта сервера
+  uint16_t port = Server.localPort();
+
+// Получение IP адреса подключенного клиента
+ IPAddress ip = Server.remoteIP();
+
+// Получение порта подключенного клиента
+uint16_t port = Server.remotePort(); 
+
+// Получение текущего статуса сервера (описания значений статусов ниже).
+uint8_t status = Server.getStatus();
+
+// Получение текущей ошибка сервера (описания значений кодов ошибок ниже).
+uint8_t error = Server.getError();
+```

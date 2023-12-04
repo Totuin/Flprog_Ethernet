@@ -41,3 +41,8 @@
 Для ESP32  не заданны RT_HW_Base.device.spi.csETH и RT_HW_Base.device.spi.busETH
 
 ********Определиться, нужно ли запускать DNS клиетна только при включённой точке доступа WIFI. И если да то в какую сеть пускать запрос. В обе?
+
+Реализовать для  On Board WIFI следующие методы
+            uint16_t localPort() 
+            IPAddress remoteIP() 
+            uint16_t remotePort() 
