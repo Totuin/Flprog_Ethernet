@@ -398,7 +398,7 @@ FLProgEthernetServer Server(&WiznetInterface, 80);
 FLProgEthernetServer Server(&WiznetInterface); 
 ```
 
-### Задание параметров
+### Настройка сервера
 
 - *Задание номера порта который будет слушать сервер* <br>
 *может вызываься в любой момент времени*
