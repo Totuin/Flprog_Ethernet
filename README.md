@@ -487,6 +487,9 @@ bool hasClient = Server.connected();
 // Чтение нескольких байт в буфер
 uint8_t buffer[10];
 Server.read(buffer, 10);
+
+// Чеуние нескольких байтов в никуда
+Server.readToNull(10);
 ```
 
 - *Передача байт клиенту*
@@ -518,3 +521,64 @@ uint8_t status = Server.getStatus();
 // Получение текущей ошибка сервера (описания значений кодов ошибок ниже).
 uint8_t error = Server.getError();
 ```
+
+## Класс FLProgEthernetClient
+
+### Конструктор
+
+- *Инстанс клиента создается на основе ссылки на экземпляр интерфейса, через который он будет соеденяться с сервером*
+
+```c
+FLProgEthernetClient client(&WiznetInterface);
+```
+
+### Настройка клиента
+
+- *Задание и получение текущего значения таймаута на время попытки соеденения с сервером в миллисекундах* <br>
+*Значение по умолчанию 1000 ms*
+
+```c
+// Задание значения
+client.setConnectionTimeout(2000);
+
+// Получение значения
+uint16_t imeout = client.getConnectionTimeout();
+```
+- *Задание и получение текущего значения времени хранения кэша DNS в миллисекундах* <br>
+*Значение по умолчанию 60000 ms*
+
+```c
+// Задание значения
+client.setDnsCacheStorageTime(200000);
+
+// Получение значения
+uint32_t time = client.getDnsCacheStorageTime();
+```
+### Управление клиентом
+
+
+
+   int connect(IPAddress ip, uint16_t port);
+    int connect(const char *host, uint16_t port);
+
+    uint8_t connected();
+   
+   
+
+     int available();
+
+    virtual size_t write(const uint8_t *buf, size_t size);
+
+    int read() { return _sourse->readFromSoket(_sockindex); };
+    int read(uint8_t *buf, size_t size) { return _sourse->readFromSoket(_sockindex, buf, size); };
+      void readToNull(uint16_t count);
+  
+
+    uint16_t localPort() { return _sourse->localPortSoket(_sockindex); };
+    IPAddress remoteIP() { return _sourse->remoteIPSoket(_sockindex); };
+    uint16_t remotePort() { return _sourse->remotePortSoket(_sockindex); };
+
+     uint8_t getStatus() { return _status; };
+    uint8_t getError() { return _errorCode; };
+
+     

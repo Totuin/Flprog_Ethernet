@@ -18,7 +18,9 @@ public:
     uint8_t connected();
     uint8_t getSocketNumber() const { return _sockindex; };
     void setConnectionTimeout(uint16_t timeout) { _timeout = timeout; };
+    uint16_t getConnectionTimeout() { return _timeout; };
     void setDnsCacheStorageTime(uint32_t time) { _dns.setDnsCacheStorageTime(time); };
+    uint32_t getDnsCacheStorageTime() { return _dns.getDnsCacheStorageTime(); };
 
 private:
     FLProgDNSClient _dns;

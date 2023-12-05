@@ -38,6 +38,7 @@ public:
 	virtual void stop();
 	int getHostByName(const char *aHostname, uint8_t *aResult, uint16_t timeout = 5000);
 	void setDnsCacheStorageTime(uint32_t time) { _cacheStorageTime = time; };
+	uint32_t getDnsCacheStorageTime() { return _cacheStorageTime; };
 
 private:
 	uint16_t buildRequest(const char *aName);
