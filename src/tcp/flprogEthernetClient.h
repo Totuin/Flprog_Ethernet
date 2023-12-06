@@ -10,6 +10,7 @@ public:
     FLProgEthernetClient(){};
     FLProgEthernetClient(FLProgAbstractTcpInterface *sourse);
 
+    virtual void setSourse(FLProgAbstractTcpInterface *sourse) { init(sourse); };
     void init(FLProgAbstractTcpInterface *sourse);
     uint8_t status();
     int connect(IPAddress ip, uint16_t port);
