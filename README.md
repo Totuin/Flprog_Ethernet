@@ -488,7 +488,7 @@ bool hasClient = Server.connected();
 uint8_t buffer[10];
 Server.read(buffer, 10);
 
-// Чеуние нескольких байтов в никуда
+// Чтение нескольких байтов в никуда
 Server.readToNull(10);
 ```
 
@@ -503,7 +503,7 @@ uint8_t buffer[5] = {1, 3, 5, 2, 3};
 Server.write(buffer, 5);
 ```
 
-- *Получение данных сервера*
+- *Получение информации о сервере*
 
 ```c
 // Получени е текущего порта сервера
@@ -544,6 +544,7 @@ client.setConnectionTimeout(2000);
 // Получение значения
 uint16_t imeout = client.getConnectionTimeout();
 ```
+
 - *Задание и получение текущего значения времени хранения кэша DNS в миллисекундах* <br>
 *Значение по умолчанию 60000 ms*
 
@@ -554,31 +555,70 @@ client.setDnsCacheStorageTime(200000);
 // Получение значения
 uint32_t time = client.getDnsCacheStorageTime();
 ```
+
 ### Управление клиентом
 
+- *Команда на подключение клиента к заданному IP  или хосту по заданному порту* <br>
+*Операция не блокирующая, после выполнения данной операции необходимо проверять статус коннекта*
 
+```c
+// Команда на подключение по Ip адресу
+client.connect(IPAddress(192, 168, 1, 1), 502);
 
-   int connect(IPAddress ip, uint16_t port);
-    int connect(const char *host, uint16_t port);
+// Команда на подключение по иимени хоста
+char host[10] = "yandex.ru";
+client.connect(host, 80);
 
-    uint8_t connected();
-   
-   
+// Проверка состояния подключения
+bool isConnect = client.connected();
+```
 
-     int available();
+- *Запрос количесва полученных от сервера байт*
 
-    virtual size_t write(const uint8_t *buf, size_t size);
+```c
+uint16_t = client.available();
+```
 
-    int read() { return _sourse->readFromSoket(_sockindex); };
-    int read(uint8_t *buf, size_t size) { return _sourse->readFromSoket(_sockindex, buf, size); };
-      void readToNull(uint16_t count);
-  
+- *Чтение данных полученных от сервера*
 
-    uint16_t localPort() { return _sourse->localPortSoket(_sockindex); };
-    IPAddress remoteIP() { return _sourse->remoteIPSoket(_sockindex); };
-    uint16_t remotePort() { return _sourse->remotePortSoket(_sockindex); };
+```c
+// Чтение одного байта
+uint8_t = client.read();
 
-     uint8_t getStatus() { return _status; };
-    uint8_t getError() { return _errorCode; };
+// Чтение нескольких байт в буфер
+uint8_t buffer[10];
+client.read(buffer, 10);
 
-     
+// Чтение нескольких байтов в никуда
+client.readToNull(10);
+```  
+
+- *Передача данных на сервер*
+
+```c
+// Передача одного байта
+ client.write(100);
+
+// Передача нескольких байт через буфер
+uint8_t buffer[5] = {1, 3, 5, 2, 3};
+client.write(buffer, 5);
+```
+
+- *Получение информации о клиенте*
+
+```c
+// Получени е текущего порта клиента
+  uint16_t port = Server.localPort();
+
+// Получение IP адреса подключенного сервера
+ IPAddress ip = client.remoteIP();
+
+// Получение порта подключенного сервера
+uint16_t port = client.remotePort(); 
+
+// Получение текущего статуса клиента (описания значений статусов ниже).
+uint8_t status = client.getStatus();
+
+// Получение текущей ошибка клиента (описания значений кодов ошибок ниже).
+uint8_t error = client.getError();
+```
