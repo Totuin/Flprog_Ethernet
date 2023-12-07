@@ -23,6 +23,8 @@
 - **ESP8266**
 - **ESP32**
 
+<br>
+
 # Реализация интерфейсов
 
 ## Класс FLProgWiznetInterface
@@ -382,6 +384,8 @@ uint8_t status = WifiInterface.getStatus();
 uint8_t error = WifiInterface.getError();
 ```
 
+<br>
+
 # Pабота с TCP
 
 ## Класс FLProgEthernetServer
@@ -470,6 +474,12 @@ bool hasClient = Server.connected();
 
 ```c
  Server.stopConnection();
+```
+
+- *Полная отановка сервера.*
+
+```c
+ Server.stop();
 ```
 
 - *Количество байт полученных от клиента.*
@@ -579,6 +589,12 @@ bool isConnect = client.connected();
 uint16_t = client.available();
 ```
 
+- *Отключение клиента от сервера.*
+
+```c
+ client.stop();
+```
+
 - *Чтение данных полученных от сервера*
 
 ```c
@@ -622,3 +638,18 @@ uint8_t status = client.getStatus();
 // Получение текущей ошибка клиента (описания значений кодов ошибок ниже).
 uint8_t error = client.getError();
 ```
+
+<br>
+
+# Pабота с UDP
+
+## Класс FLProgUdpClient
+
+### Конструктор
+
+- *Инстанс UDP клиента создается на основе ссылки на экземпляр интерфейса, на котором он будет работать*
+
+```c
+FLProgUdpClient Udp(&WiznetInterface);
+```
+
