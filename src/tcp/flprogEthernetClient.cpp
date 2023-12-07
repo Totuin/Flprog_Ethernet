@@ -52,53 +52,61 @@ int FLProgEthernetClient::connect(IPAddress ip, uint16_t port)
 		_errorCode = FLPROG_ETHERNET_INTERFACE_NOT_READY_ERROR;
 		return FLPROG_ERROR;
 	}
-	if (_status != FLPROG_WAIT_ETHERNET_CLIENT_CONNECT_STATUS)
+
+	if (_status == FLPROG_WAIT_ETHERNET_START_CLIENT_CONNECT_STATUS)
 	{
-		if (_sockindex < _sourse->maxSoketNum())
+		if (flprog::isTimer(_startConnectTime, 50))
 		{
+			_status = FLPROG_WAIT_ETHERNET_CLIENT_CONNECT_STATUS;
+		}
+		return FLPROG_WITE;
+	}
+	if (_status == FLPROG_WAIT_ETHERNET_CLIENT_CONNECT_STATUS)
+	{
+		if (flprog::isTimer(_startConnectTime, (_timeout + 50)))
+		{
+			_status = FLPROG_READY_STATUS;
+			_errorCode = FLPROG_ETHERNET_CLIENT_CONNECT_TIMEOUT_ERROR;
 			_sourse->closeSoket(_sockindex);
 			_sockindex = _sourse->maxSoketNum();
-		}
-		_sockindex = _sourse->getClientTCPSoket(0);
-		if (_sockindex >= _sourse->maxSoketNum())
-		{
-			_status = FLPROG_READY_STATUS;
-			_errorCode = FLPROG_ETHERNET_CLIENT_SOKET_START_ERROR;
 			return FLPROG_ERROR;
 		}
-		_sourse->connectSoket(_sockindex, ip, port);
-		_startConnectTime = millis();
-		_status = FLPROG_WAIT_ETHERNET_CLIENT_CONNECT_STATUS;
+		if (_sourse->soketConnected(_sockindex))
+		{
+			_status = FLPROG_READY_STATUS;
+			_errorCode = FLPROG_NOT_ERROR;
+			return FLPROG_SUCCESS;
+		}
+		return FLPROG_WITE;
 	}
-	if (flprog::isTimer(_startConnectTime, _timeout))
+	if (_sockindex < _sourse->maxSoketNum())
 	{
-		_status = FLPROG_READY_STATUS;
-		_errorCode = FLPROG_ETHERNET_CLIENT_CONNECT_TIMEOUT_ERROR;
 		_sourse->closeSoket(_sockindex);
 		_sockindex = _sourse->maxSoketNum();
-		return FLPROG_ERROR;
 	}
-	if (_sourse->isConnectStatusSoket(_sockindex))
+	_sockindex = _sourse->getClientTCPSoket(0);
+	if (_sockindex >= _sourse->maxSoketNum())
 	{
 		_status = FLPROG_READY_STATUS;
-		_errorCode = FLPROG_NOT_ERROR;
-		return FLPROG_SUCCESS;
+		_errorCode = FLPROG_ETHERNET_CLIENT_SOKET_START_ERROR;
+		return FLPROG_ERROR;
 	}
-	else
-	{
-		if (_sourse->isCosedStatusSoket(_sockindex))
-		{
-			stop();
-			_status = FLPROG_READY_STATUS;
-			_errorCode = FLPROG_ETHERNET_CLIENT_SOKET_CLOSED_ERROR;
-			return FLPROG_ERROR;
-		}
-	}
+	_sourse->connectSoket(_sockindex, ip, port);
+	_startConnectTime = millis();
+	_status = FLPROG_WAIT_ETHERNET_START_CLIENT_CONNECT_STATUS;
 	return FLPROG_WITE;
 }
 
 uint8_t FLProgEthernetClient::connected()
 {
+	if (!_sourse->isReady())
+	{
+		return 0;
+	}
+	if (_status != FLPROG_READY_STATUS)
+	{
+		return 0;
+	}
 	return _sourse->soketConnected(_sockindex);
 }
 
