@@ -96,6 +96,7 @@ getServerTCPSoket	KEYWORD2
 getSnRX_RSR	KEYWORD2
 getSnTX_FSR	KEYWORD2
 getSocketNumber	KEYWORD2
+getSourse	KEYWORD2
 getStatus	KEYWORD2
 getSubnetMask	KEYWORD2
 getUDPSoket	KEYWORD2
