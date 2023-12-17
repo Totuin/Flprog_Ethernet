@@ -92,7 +92,7 @@ class FLProgWiznetClass : public FLProgAbstractEthernetHardware
 {
 public:
   virtual uint8_t init();
-  virtual bool isInit() { return _status == FLPROG_READY_STATUS; };
+  virtual bool isInit() { return ((_status == FLPROG_READY_STATUS) || (_status == FLPROG_WAIT_SEND_UDP_PACAGE)); };
   int pinCs();
   uint8_t spiBus();
 
@@ -114,7 +114,7 @@ public:
   virtual IPAddress getGatewayIp();
   virtual void setSubnetMask(IPAddress addr);
   virtual IPAddress getSubnetMask();
-  virtual void setMACAddress(const uint8_t *addr) { write(FLPROG_WIZNET_SHAR, addr, 6); };
+  virtual void setMACAddress(const uint8_t *addr);
   virtual void getMACAddress(uint8_t *addr) { read(FLPROG_WIZNET_SHAR, addr, 6); };
   virtual void setIPAddress(IPAddress addr);
   virtual IPAddress getIPAddress();
@@ -191,7 +191,7 @@ public:
   virtual uint8_t socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port);
   virtual uint8_t socketSendUDP(uint8_t s);
   virtual uint8_t maxSoketNum() { return FLPROG_WIZNET_MAX_SOCK_NUM; };
-  uint8_t getClientTCPSoket(uint16_t port){return getTCPSoket(port);};
+  uint8_t getClientTCPSoket(uint16_t port) { return getTCPSoket(port); };
   uint8_t getServerTCPSoket(uint16_t port);
   virtual uint8_t getUDPSoket(uint16_t port) { return socketBegin(FLPROG_WIZNET_SN_MR_UDP, port); };
   virtual uint8_t beginMulticastSoket(IPAddress ip, uint16_t port) { return socketBeginMulticast((FLPROG_WIZNET_SN_MR_UDP | FLPROG_WIZNET_SN_MR_MULTI), ip, port); };

@@ -52,7 +52,6 @@ int FLProgEthernetClient::connect(IPAddress ip, uint16_t port)
 		_errorCode = FLPROG_ETHERNET_INTERFACE_NOT_READY_ERROR;
 		return FLPROG_ERROR;
 	}
-
 	if (_status == FLPROG_WAIT_ETHERNET_START_CLIENT_CONNECT_STATUS)
 	{
 		if (flprog::isTimer(_startConnectTime, 50))

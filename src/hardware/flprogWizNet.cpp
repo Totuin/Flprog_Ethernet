@@ -1148,6 +1148,12 @@ uint16_t FLProgWiznetClass::socketBufferData(uint8_t s, uint16_t offset, const u
 	return ret;
 }
 
+void FLProgWiznetClass::setMACAddress(const uint8_t *addr)
+{
+	write(FLPROG_WIZNET_SHAR, addr, 6);
+	_status = FLPROG_READY_STATUS;
+}
+
 uint8_t FLProgWiznetClass::socketStartUDP(uint8_t s, uint8_t *addr, uint16_t port)
 {
 	if (s >= FLPROG_WIZNET_MAX_SOCK_NUM)
@@ -1176,22 +1182,35 @@ uint8_t FLProgWiznetClass::socketSendUDP(uint8_t s)
 		_errorCode = FLPROG_ETHERNET_SOKET_INDEX_ERROR;
 		return FLPROG_ERROR;
 	}
-	beginTransaction();
-	execCmdSn(s, FLPROG_WIZNET_SOCK_CMD_SEND);
-	while ((readSn(s, FLPROG_WIZNET_SN_IR) & FLPROG_WIZNET_SN_IR_SEND_OK) != FLPROG_WIZNET_SN_IR_SEND_OK)
+	if (_status != FLPROG_WAIT_SEND_UDP_PACAGE)
 	{
-		if (readSn(s, FLPROG_WIZNET_SN_IR) & FLPROG_WIZNET_SN_IR_TIMEOUT)
-		{
-			writeSn(s, FLPROG_WIZNET_SN_IR, (FLPROG_WIZNET_SN_IR_SEND_OK | FLPROG_WIZNET_SN_IR_TIMEOUT));
-			endTransaction();
-			_errorCode = FLPROG_ETHERNET_SOKET_SEND_TIMEOUT_ERROR;
-			return FLPROG_ERROR;
-		}
+		beginTransaction();
+		execCmdSn(s, FLPROG_WIZNET_SOCK_CMD_SEND);
+		endTransaction();
+		_status = FLPROG_WAIT_SEND_UDP_PACAGE;
 	}
-	writeSn(s, FLPROG_WIZNET_SN_IR, FLPROG_WIZNET_SN_IR_SEND_OK);
+
+	beginTransaction();
+	uint8_t result = readSn(s, FLPROG_WIZNET_SN_IR);
+	if ((result & FLPROG_WIZNET_SN_IR_SEND_OK) == FLPROG_WIZNET_SN_IR_SEND_OK)
+	{
+		writeSn(s, FLPROG_WIZNET_SN_IR, FLPROG_WIZNET_SN_IR_SEND_OK);
+		endTransaction();
+		_status = FLPROG_READY_STATUS;
+		_errorCode = FLPROG_NOT_ERROR;
+		return FLPROG_SUCCESS;
+	}
+	if (result & FLPROG_WIZNET_SN_IR_TIMEOUT)
+	{
+		writeSn(s, FLPROG_WIZNET_SN_IR, (FLPROG_WIZNET_SN_IR_SEND_OK | FLPROG_WIZNET_SN_IR_TIMEOUT));
+		endTransaction();
+		_status = FLPROG_READY_STATUS;
+		_errorCode = FLPROG_ETHERNET_SOKET_SEND_TIMEOUT_ERROR;
+		return FLPROG_ERROR;
+	}
 	endTransaction();
 	_errorCode = FLPROG_NOT_ERROR;
-	return FLPROG_SUCCESS;
+	return FLPROG_WITE;
 }
 
 uint8_t FLProgWiznetClass::getChip()

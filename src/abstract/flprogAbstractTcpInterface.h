@@ -41,6 +41,10 @@ public:
     virtual bool isReadyForDNS() { return isReady(); };
 
     // Внутрение методы библиотеки
+    bool isBusy() { return _isBusy; };
+    void setBusy() { _isBusy = true; };
+    void resetBusy() { _isBusy = false; };
+    void isBusy(bool value) { _isBusy = value; };
     bool checkMac(uint8_t *mac);
 
     // API обязательное для реализации наследниками
@@ -74,6 +78,7 @@ public:
     virtual bool isInit() = 0;
 
 protected:
+    bool _isBusy = false;
     bool _isDhcp = true;
     uint8_t _status = FLPROG_NOT_REDY_STATUS;
     uint8_t _errorCode = FLPROG_NOT_ERROR;

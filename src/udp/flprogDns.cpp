@@ -38,6 +38,7 @@ bool FLProgDNSClient::checkCach(const char *aHostname, uint8_t *aResult)
 
 int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint16_t timeout)
 {
+	uint8_t result;
 	if (!_sourse->isReadyForDNS())
 	{
 
@@ -88,11 +89,20 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 			return FLPROG_ERROR;
 		}
 		buildRequest(aHostname);
-		if ((_sourse->sendUdpSoket(_sockindex)) != FLPROG_SUCCESS)
+		_status = FLPROG_WAIT_SEND_UDP_PACAGE;
+	}
+	if (_status == FLPROG_WAIT_SEND_UDP_PACAGE)
+	{
+		result = _sourse->sendUdpSoket(_sockindex);
+		if (result == FLPROG_ERROR)
 		{
 			_wait_retries = 0;
 			_errorCode = FLPROG_ETHERNET_UDP_SOKET_START_ERROR;
 			return FLPROG_ERROR;
+		}
+		if (result == FLPROG_WITE)
+		{
+			return FLPROG_WITE;
 		}
 		_startTime = millis();
 		_reqestStartTime = millis();
@@ -100,7 +110,7 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 		_errorCode = FLPROG_NOT_ERROR;
 		return FLPROG_WITE;
 	}
-	uint8_t result = processResponse(timeout, aHostname, aResult);
+	result = processResponse(timeout, aHostname, aResult);
 	if (result == FLPROG_WITE)
 	{
 		return FLPROG_WITE;
