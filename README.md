@@ -12,7 +12,7 @@
 ## Зависимости
 
 - [Flprog_Utilites](https://github.com/Totuin/Flprog_Utilites)
-- RT_00_HW_BASE
+- [RT_00_HW_BASE](https://github.com/ecoins1994/0010_GitHub_EIS/tree/main/RT_HW_0100_Library)
 
 ## Поддерживаемые контроллеры
 
