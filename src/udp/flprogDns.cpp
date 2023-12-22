@@ -44,7 +44,7 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 
 		_status = FLPROG_READY_STATUS;
 		_errorCode = FLPROG_NOT_ERROR;
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 	if (checkCach(aHostname, aResult))
 	{
@@ -100,20 +100,20 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 			_errorCode = FLPROG_ETHERNET_UDP_SOKET_START_ERROR;
 			return FLPROG_ERROR;
 		}
-		if (result == FLPROG_WITE)
+		if (result == FLPROG_WAIT)
 		{
-			return FLPROG_WITE;
+			return FLPROG_WAIT;
 		}
 		_startTime = millis();
 		_reqestStartTime = millis();
 		_status = FLPROG_WAIT_ETHERNET_UDP_STATUS;
 		_errorCode = FLPROG_NOT_ERROR;
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 	result = processResponse(timeout, aHostname, aResult);
-	if (result == FLPROG_WITE)
+	if (result == FLPROG_WAIT)
 	{
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 	stop();
 	_wait_retries = 0;
@@ -177,16 +177,16 @@ uint16_t FLProgDNSClient::processResponse(uint16_t aTimeout, const char *aHostna
 		_startTime = millis();
 		stop();
 		_status = FLPROG_READY_STATUS;
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 	if (!(flprog::isTimer(_reqestStartTime, 50)))
 	{
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 	_reqestStartTime = millis();
 	if (parsePacket() <= 0)
 	{
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 	union
 	{

@@ -220,7 +220,7 @@ void sendNTPpacket()
 
   Udp.begin(localPort);
   uint8_t result = Udp.beginPacket(timeServer, 123);
-  if (result == FLPROG_WITE)
+  if (result == FLPROG_WAIT)
   {
     return;
   }

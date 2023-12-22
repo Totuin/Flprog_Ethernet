@@ -167,7 +167,7 @@ void sendReqest()
   }
   uint8_t temp = client.connect(host, port);
 
-  if (temp == FLPROG_WITE)
+  if (temp == FLPROG_WAIT)
   {
     return;
   }

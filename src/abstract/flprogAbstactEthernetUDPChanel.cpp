@@ -95,7 +95,7 @@ int FLProgAbstactEthernetUDPChanel::read(uint8_t *buffer, size_t len)
 
 int FLProgAbstactEthernetUDPChanel::endPacket()
 {
-    while (_sourse->sendUdpSoket(_sockindex) == FLPROG_WITE)
+    while (_sourse->sendUdpSoket(_sockindex) == FLPROG_WAIT)
     {
     };
     return FLPROG_SUCCESS;

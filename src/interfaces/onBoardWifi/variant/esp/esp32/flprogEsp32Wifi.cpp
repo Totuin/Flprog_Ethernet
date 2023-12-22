@@ -129,7 +129,7 @@ uint8_t FLProgOnBoardWifiInterface::clientReconnect()
             _isNeedReconect = false;
             return FLPROG_SUCCESS;
         }
-        return FLPROG_WITE;
+        return FLPROG_WAIT;
     }
     if (_mode == WIFI_MODE_AP)
     {
@@ -172,7 +172,7 @@ uint8_t FLProgOnBoardWifiInterface::clientReconnect()
     WiFi.begin(_clientSsid, _clientPassword);
     _clientCurrentStatus = true;
     _status = FLPROG_WAIT_WIFI_CLIENT_CONNECT_STATUS;
-    return FLPROG_WITE;
+    return FLPROG_WAIT;
 }
 
 uint8_t FLProgOnBoardWifiInterface::apReconnect()

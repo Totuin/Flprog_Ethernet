@@ -12,7 +12,7 @@ uint8_t FLProgWiznetClass::init()
 	}
 	_status = FLPROG_WAIT_ETHERNET_HARDWARE_INIT_STATUS;
 	_startWhiteInitTime = millis();
-	return FLPROG_WITE;
+	return FLPROG_WAIT;
 }
 
 uint8_t FLProgWiznetClass::getServerTCPSoket(uint16_t port)
@@ -104,7 +104,7 @@ uint8_t FLProgWiznetClass::checkInit()
 	if (!(flprog::isTimer(_startWhiteInitTime, 600)))
 	{
 		_status = FLPROG_WAIT_ETHERNET_HARDWARE_INIT_STATUS;
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 #ifdef FLPROG_COMPACT_LIBRARY_MODE
 	SPI.begin();
@@ -1210,7 +1210,7 @@ uint8_t FLProgWiznetClass::socketSendUDP(uint8_t s)
 	}
 	endTransaction();
 	_errorCode = FLPROG_NOT_ERROR;
-	return FLPROG_WITE;
+	return FLPROG_WAIT;
 }
 
 uint8_t FLProgWiznetClass::getChip()

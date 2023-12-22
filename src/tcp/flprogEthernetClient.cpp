@@ -28,10 +28,10 @@ int FLProgEthernetClient::connect(const char *host, uint16_t port)
 	}
 	uint8_t remote_addr[4] = {0, 0, 0, 0};
 	uint8_t result = _dns.getHostByName(host, remote_addr);
-	if (result == FLPROG_WITE)
+	if (result == FLPROG_WAIT)
 	{
 		_status = FLPROG_WAIT_ETHERNET_DNS_STATUS;
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 	if (result == FLPROG_ERROR)
 	{
@@ -58,7 +58,7 @@ int FLProgEthernetClient::connect(IPAddress ip, uint16_t port)
 		{
 			_status = FLPROG_WAIT_ETHERNET_CLIENT_CONNECT_STATUS;
 		}
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 	if (_status == FLPROG_WAIT_ETHERNET_CLIENT_CONNECT_STATUS)
 	{
@@ -76,7 +76,7 @@ int FLProgEthernetClient::connect(IPAddress ip, uint16_t port)
 			_errorCode = FLPROG_NOT_ERROR;
 			return FLPROG_SUCCESS;
 		}
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 	if (_sockindex < _sourse->maxSoketNum())
 	{
@@ -93,7 +93,7 @@ int FLProgEthernetClient::connect(IPAddress ip, uint16_t port)
 	_sourse->connectSoket(_sockindex, ip, port);
 	_startConnectTime = millis();
 	_status = FLPROG_WAIT_ETHERNET_START_CLIENT_CONNECT_STATUS;
-	return FLPROG_WITE;
+	return FLPROG_WAIT;
 }
 
 uint8_t FLProgEthernetClient::connected()

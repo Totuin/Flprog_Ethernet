@@ -65,9 +65,9 @@ uint8_t FLProgWiznetInterface::initHarware()
         _errorCode = _hardware.getError();
         return FLPROG_ERROR;
     }
-    if (result == FLPROG_WITE)
+    if (result == FLPROG_WAIT)
     {
-        return FLPROG_WITE;
+        return FLPROG_WAIT;
     }
     _errorCode = FLPROG_NOT_ERROR;
     _status = FLPROG_WAIT_ETHERNET_LINK_ON_STATUS;
@@ -82,7 +82,7 @@ uint8_t FLProgWiznetInterface::connect()
         {
             if (!flprog::isTimer(_lastReconnectTime, _reconnectEthernetPeriod))
             {
-                return FLPROG_WITE;
+                return FLPROG_WAIT;
             }
             _hardware.setMACAddress(_macAddress);
             _hardware.setOnlyLocalIP(FLPROG_INADDR_NONE);
@@ -149,9 +149,9 @@ uint8_t FLProgWiznetInterface::begin()
         _errorCode = _dhcp.getError();
         return FLPROG_ERROR;
     }
-    if (result == FLPROG_WITE)
+    if (result == FLPROG_WAIT)
     {
-        return FLPROG_WITE;
+        return FLPROG_WAIT;
     }
     if ((_dhcp.getLocalIp()) == FLPROG_INADDR_NONE)
     {
@@ -196,7 +196,7 @@ uint8_t FLProgWiznetInterface::maintain()
         _startMaintainTime = millis();
         return FLPROG_ERROR;
     }
-    if (result == FLPROG_WITE)
+    if (result == FLPROG_WAIT)
     {
         return FLPROG_SUCCESS;
     }

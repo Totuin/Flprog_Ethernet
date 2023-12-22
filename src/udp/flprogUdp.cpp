@@ -23,10 +23,10 @@ int FLProgUdpClient::beginPacket(const char *host, uint16_t port)
 {
 	uint8_t remote_addr[4] = {0, 0, 0, 0};
 	uint8_t result = _dns.getHostByName(host, remote_addr);
-	if (result == FLPROG_WITE)
+	if (result == FLPROG_WAIT)
 	{
 		_status = FLPROG_WAIT_ETHERNET_DNS_STATUS;
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 	if (result == FLPROG_ERROR)
 	{

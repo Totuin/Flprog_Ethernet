@@ -66,9 +66,9 @@ uint8_t FLProgDhcp::request_DHCP_lease(uint32_t responseTimeout)
 	}
 	uint8_t result = cheskStateMashine(responseTimeout);
 	;
-	if (result == FLPROG_WITE)
+	if (result == FLPROG_WAIT)
 	{
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 	stop();
 	_dhcpTransactionId++;
@@ -100,7 +100,7 @@ uint8_t FLProgDhcp::cheskStateMashine(uint32_t responseTimeout)
 	if (_dhcp_state == FLPROG_STATE_DHCP_START)
 	{
 		sendDiscoverMessage();
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 	if (_dhcp_state == FLPROG_STATE_DHCP_DISCOVER)
 	{
@@ -115,7 +115,7 @@ uint8_t FLProgDhcp::cheskStateMashine(uint32_t responseTimeout)
 				return FLPROG_ERROR;
 			}
 			sendDiscoverMessage();
-			return FLPROG_WITE;
+			return FLPROG_WAIT;
 		}
 		if (result == FLPROG_DHCP_ERROR_ID_MESSAGE_TYPE)
 		{
@@ -127,14 +127,14 @@ uint8_t FLProgDhcp::cheskStateMashine(uint32_t responseTimeout)
 
 		if (result == FLPROG_DHCP_WITE_CHECK_REQEST_MESSAGE_TYPE)
 		{
-			return FLPROG_WITE;
+			return FLPROG_WAIT;
 		}
 
 		if (result == FLPROG_DHCP_OFFER)
 		{
 			sendReqestMessage();
 		}
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 
 	if (_dhcp_state == FLPROG_STATE_DHCP_REREQUEST)
@@ -143,7 +143,7 @@ uint8_t FLProgDhcp::cheskStateMashine(uint32_t responseTimeout)
 		_startDhcpReqestTime = millis();
 		send_DHCP_MESSAGE(FLPROG_DHCP_REQUEST);
 		_dhcp_state = FLPROG_STATE_DHCP_REQUEST;
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 
 	if (_dhcp_state == FLPROG_STATE_DHCP_REQUEST)
@@ -151,13 +151,13 @@ uint8_t FLProgDhcp::cheskStateMashine(uint32_t responseTimeout)
 		result = parseDHCPResponse(responseTimeout);
 		if (result == FLPROG_DHCP_WITE_CHECK_REQEST_MESSAGE_TYPE)
 		{
-			return FLPROG_WITE;
+			return FLPROG_WAIT;
 		}
 		if (result == FLPROG_DHCP_TIMEOUT_MESSAGE_TYPE)
 		{
 
 			sendReqestMessage();
-			return FLPROG_WITE;
+			return FLPROG_WAIT;
 		}
 
 		if (result == FLPROG_DHCP_ERROR_ID_MESSAGE_TYPE)
@@ -182,7 +182,7 @@ uint8_t FLProgDhcp::cheskStateMashine(uint32_t responseTimeout)
 			_status = FLPROG_READY_STATUS;
 			return FLPROG_ERROR;
 		}
-		return FLPROG_WITE;
+		return FLPROG_WAIT;
 	}
 	_errorCode = FLPROG_ETHERNET_DHCP_NOT_DEFINED_ERROR;
 	_dhcp_state = FLPROG_STATE_DHCP_START;
