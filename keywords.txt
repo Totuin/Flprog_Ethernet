@@ -104,6 +104,7 @@ hardwareStatus	KEYWORD2
 hasOffsetAddressMapping	KEYWORD2
 init	KEYWORD2
 initHarware	KEYWORD2
+isBusy	KEYWORD2
 isConnectStatusSoket	KEYWORD2
 isCosedStatusSoket	KEYWORD2
 isDhcp	KEYWORD2
@@ -140,11 +141,13 @@ remoteIP	KEYWORD2
 remoteIPSoket	KEYWORD2
 remotePort	KEYWORD2
 remotePortSoket	KEYWORD2
+resetBusy	KEYWORD2
 resetDhcp	KEYWORD2
 responseDhcpTimeout	KEYWORD2
 sendUdpSoket	KEYWORD2
 setApPassword	KEYWORD2
 setApSsid	KEYWORD2
+setBusy	KEYWORD2
 setCallback	KEYWORD2
 setCheckStatusPeriod	KEYWORD2
 setClientPassword	KEYWORD2
