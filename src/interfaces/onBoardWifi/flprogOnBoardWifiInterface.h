@@ -9,7 +9,7 @@ public:
     void setApPassword(String password);
     String apSsid() { return String(_apSsid); };
     String apPassworid() { return String(_apPassword); };
-    void setClientSsidd(String ssid);
+    void setClientSsid(String ssid);
     void setClientPassword(String password);
     String clientSsid() { return String(_clientSsid); };
     String clientPassword() { return String(_clientPassword); };

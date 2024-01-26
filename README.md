@@ -335,7 +335,7 @@ String name = WifiInterface.apPassworid();
     
 // Задание имени сети (SSID) для клиента (передается строка)
 // Может вызываться в любой момент времени, клиент переподключится
-WifiInterface.setClientSsidd("Test_Net");
+WifiInterface.setClientSsid("Test_Net");
  
 // Получение текущего значения имени сети (SSID) для клиента
 String name = WifiInterface.clientSsid();

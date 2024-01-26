@@ -20,7 +20,7 @@ void FLProgAbstracttWiFiInterface::setApPassword(String password)
     _apIsNeedReconect = true;
 }
 
-void FLProgAbstracttWiFiInterface::setClientSsidd(String ssid)
+void FLProgAbstracttWiFiInterface::setClientSsid(String ssid)
 {
     if (ssid.equals(String(_clientSsid)))
     {
