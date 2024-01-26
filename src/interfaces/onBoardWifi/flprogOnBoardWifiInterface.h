@@ -17,15 +17,19 @@ public:
     void apMac(uint8_t m0, uint8_t m1, uint8_t m2, uint8_t m3, uint8_t m4, uint8_t m5);
     uint8_t *apMac() { return _apMacaddress; };
     void apLocalIP(IPAddress ip);
+    void apLocalIP(uint32_t ip) { apLocalIP(flprog::numberToIp(ip)); };
     void apLocalIP(uint8_t ip0, uint8_t ip1, uint8_t ip2, uint8_t ip3) { apLocalIP(IPAddress(ip0, ip1, ip2, ip3)); };
     IPAddress apLocalIP() { return _apIp; };
     void apDns(IPAddress ip);
+    void apDns(uint32_t ip) { apDns(flprog::numberToIp(ip)); };
     void apDns(uint8_t ip0, uint8_t ip1, uint8_t ip2, uint8_t ip3) { apDns(IPAddress(ip0, ip1, ip2, ip3)); };
     IPAddress apDns() { return _apDnsIp; };
     void apSubnet(IPAddress ip);
+    void apSubnet(uint32_t ip) { apSubnet(flprog::numberToIp(ip)); };
     void apSubnet(uint8_t ip0, uint8_t ip1, uint8_t ip2, uint8_t ip3) { apSubnet(IPAddress(ip0, ip1, ip2, ip3)); };
     IPAddress apSubnet() { return _apSubnetIp; };
     void apGateway(IPAddress ip);
+    void apGateway(uint32_t ip) { apGateway(flprog::numberToIp(ip)); };
     void apGateway(uint8_t ip0, uint8_t ip1, uint8_t ip2, uint8_t ip3) { apGateway(IPAddress(ip0, ip1, ip2, ip3)); };
     IPAddress apGateway() { return _apGatewayIp; };
 

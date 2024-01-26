@@ -14,18 +14,22 @@ public:
 
     IPAddress localIP() { return _ip; };
     void localIP(IPAddress ip);
+    void localIP(uint32_t ip) { localIP(flprog::numberToIp(ip)); };
     void localIP(uint8_t ip0, uint8_t ip1, uint8_t ip2, uint8_t ip3) { localIP(IPAddress(ip0, ip1, ip2, ip3)); };
 
     IPAddress dns() { return _dnsIp; };
     void dns(IPAddress ip);
+    void dns(uint32_t ip) { dns(flprog::numberToIp(ip)); };
     void dns(uint8_t ip0, uint8_t ip1, uint8_t ip2, uint8_t ip3) { dns(IPAddress(ip0, ip1, ip2, ip3)); };
 
     IPAddress subnet() { return _subnetIp; };
     void subnet(IPAddress ip);
+    void subnet(uint32_t ip) { subnet(flprog::numberToIp(ip)); };
     void subnet(uint8_t ip0, uint8_t ip1, uint8_t ip2, uint8_t ip3) { subnet(IPAddress(ip0, ip1, ip2, ip3)); };
 
     IPAddress gateway() { return _gatewayIp; };
     void gateway(IPAddress ip);
+    void gateway(uint32_t ip) { gateway(flprog::numberToIp(ip)); };
     void gateway(uint8_t ip0, uint8_t ip1, uint8_t ip2, uint8_t ip3) { gateway(IPAddress(ip0, ip1, ip2, ip3)); };
 
     void mac(uint8_t m0, uint8_t m1, uint8_t m2, uint8_t m3, uint8_t m4, uint8_t m5);
