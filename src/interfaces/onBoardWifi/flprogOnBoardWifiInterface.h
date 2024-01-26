@@ -15,6 +15,7 @@ public:
     String clientPassword() { return String(_clientPassword); };
 
     void apMac(uint8_t m0, uint8_t m1, uint8_t m2, uint8_t m3, uint8_t m4, uint8_t m5);
+    void apMac(uint8_t *mac) { apMac(mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]); };
     uint8_t *apMac() { return _apMacaddress; };
     void apLocalIP(IPAddress ip);
     void apLocalIP(uint32_t ip) { apLocalIP(flprog::numberToIp(ip)); };
