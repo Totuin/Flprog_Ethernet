@@ -151,7 +151,7 @@ setBusy	KEYWORD2
 setCallback	KEYWORD2
 setCheckStatusPeriod	KEYWORD2
 setClientPassword	KEYWORD2
-setClientSsidd	KEYWORD2
+setClientSsid	KEYWORD2
 setConnectionTimeout	KEYWORD2
 setDhcp	KEYWORD2
 setDhcpTimeout	KEYWORD2
