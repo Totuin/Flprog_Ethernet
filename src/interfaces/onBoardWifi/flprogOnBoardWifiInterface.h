@@ -86,18 +86,17 @@ extern "C"
 #endif
 #endif
 
-/**
+
 #ifndef FLPROG_WIFI_ON_BOARD_TCP_DEVICE
 #ifdef ARDUINO_ARCH_RP2040
 #ifdef ARDUINO_RASPBERRY_PI_PICO_W
 #define FLPROG_WIFI_ON_BOARD_TCP_DEVICE
-#define FLPROG_RP2040_WIFI_ON_BOARD_TCP_DEVICE
-#include "variant/rp2040/flprogRP2040Wifi.h"
 #include "WiFi.h"
+#include "variant/rp2040/flprogRP2040Wifi.h"
 #endif
 #endif
 #endif
-*/
+
 #ifndef FLPROG_WIFI_ON_BOARD_TCP_DEVICE
 #define FLPROG_WIFI_ON_BOARD_TCP_DEVICE
 #define FLPROG_ANON_WIFI_ON_BOARD_TCP_DEVICE

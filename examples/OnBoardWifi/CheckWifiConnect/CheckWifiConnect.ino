@@ -43,7 +43,7 @@ void setup()
     WifiInterface.mac(0x78, 0xAC, 0xC0, 0x2C, 0x3E, 0x28); 
     WifiInterface.setApSsid("Test-Esp-FLProg");
     WifiInterface.setApPassword("12345678");
-    WifiInterface.setClientSsidd("totuin-router");
+    WifiInterface.setClientSsid("totuin-router");
     WifiInterface.setClientPassword("12345678");
 
     

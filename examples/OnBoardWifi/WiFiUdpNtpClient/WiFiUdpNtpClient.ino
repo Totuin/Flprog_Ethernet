@@ -84,7 +84,7 @@ void setup()
   WifiInterface.setApSsid("Test-Esp-FLProg");
   WifiInterface.setApPassword("12345678");
 
-  WifiInterface.setClientSsidd("totuin-router");
+  WifiInterface.setClientSsid("totuin-router");
   WifiInterface.setClientPassword("12345678");
 
   // WifiInterface.localIP(192, 168, 199, 196);
@@ -280,7 +280,7 @@ void sendNTPpacket()
 
   Udp.begin(localPort);
   uint8_t result = Udp.beginPacket(timeServer, 123);
-  if (result == FLPROG_WITE)
+  if (result == FLPROG_WAIT)
   {
     return;
   }
