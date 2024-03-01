@@ -24,6 +24,12 @@ void FLProgWiznetInterface::init(int pinCs, uint8_t bus)
 
 uint8_t FLProgWiznetInterface::pool()
 {
+    if (_eventsCount < _skippingEvents)
+    {
+        _eventsCount++;
+        return FLPROG_SUCCESS;
+    }
+    _eventsCount = 0;
     if (!_hardware.isInit())
     {
         return initHarware();

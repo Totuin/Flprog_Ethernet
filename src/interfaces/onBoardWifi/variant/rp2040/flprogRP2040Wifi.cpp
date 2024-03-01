@@ -27,6 +27,12 @@ bool FLProgOnBoardWifiInterface::clientIsReady()
 
 uint8_t FLProgOnBoardWifiInterface::pool()
 {
+    if (_eventsCount < _skippingEvents)
+    {
+        _eventsCount++;
+        return FLPROG_SUCCESS;
+    }
+    _eventsCount = 0;
     if (_apIsNeedReconect)
     {
         connect();
@@ -69,7 +75,7 @@ uint8_t FLProgOnBoardWifiInterface::checkConnectStatus()
 }
 
 uint8_t FLProgOnBoardWifiInterface::connect()
-{ 
+{
     if (_apWorkStatus)
     {
         _mode = WIFI_AP;

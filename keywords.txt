@@ -93,6 +93,7 @@ getLinkStatus	KEYWORD2
 getLocalIp	KEYWORD2
 getMACAddress	KEYWORD2
 getServerTCPSoket	KEYWORD2
+getSkippingEvents	KEYWORD2
 getSnRX_RSR	KEYWORD2
 getSnTX_FSR	KEYWORD2
 getSocketNumber	KEYWORD2
@@ -172,6 +173,7 @@ setResponseDhcpTimeout	KEYWORD2
 setRetransmissionCount	KEYWORD2
 setRetransmissionTime	KEYWORD2
 setRetransmissionTimeout	KEYWORD2
+setSkippingEvents	KEYWORD2
 setSourse	KEYWORD2
 setSpiBus	KEYWORD2
 setSubnetMask	KEYWORD2

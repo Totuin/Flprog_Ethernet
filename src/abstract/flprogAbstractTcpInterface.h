@@ -44,6 +44,9 @@ public:
     virtual bool isReady() { return _status == FLPROG_READY_STATUS; };
     virtual bool isReadyForDNS() { return isReady(); };
 
+    uint16_t getSkippingEvents() { return _skippingEvents; };
+    void setSkippingEvents(uint16_t value) { _skippingEvents = value; };
+
     // Внутрение методы библиотеки
     bool isBusy() { return _isBusy; };
     void setBusy() { _isBusy = true; };
@@ -82,6 +85,9 @@ public:
     virtual bool isInit() = 0;
 
 protected:
+    uint16_t _skippingEvents = 0;
+    uint16_t _eventsCount = 0;
+
     bool _isBusy = false;
     bool _isDhcp = true;
     uint8_t _status = FLPROG_NOT_REDY_STATUS;
