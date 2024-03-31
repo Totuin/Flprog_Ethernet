@@ -25,7 +25,7 @@ public:
 
 private:
     FLProgDNSClient _dns;
-    uint32_t _timeout = 1000;
+    uint32_t _timeout = 20000;
     uint32_t _startConnectTime;
     bool isInit = false;
 };
