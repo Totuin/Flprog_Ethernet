@@ -84,6 +84,8 @@ public:
     virtual uint8_t maxSoketNum() = 0;
     virtual bool isInit() = 0;
 
+    uint8_t custom = 0;
+
 protected:
     uint16_t _skippingEvents = 0;
     uint16_t _eventsCount = 0;
