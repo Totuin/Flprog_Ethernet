@@ -12,10 +12,11 @@ public:
   FLProgWiznetInterface(int pinCs, uint8_t bus = 255);
 
   void setPinCs(int pinCs) { _hardware.setPinCs(pinCs); };
-  int pinCs() { return _hardware.pinCs(); }
+  virtual int pinCs() { return _hardware.pinCs(); }
 
   void setSpiBus(uint8_t bus) { _hardware.setSpiBus(bus); };
-  uint8_t spiBus() { return _hardware.spiBus(); }
+  uint8_t spiBus() { return _hardware.spiBus(); };
+  uint8_t getSpiBus() { return spiBus(); };
 
   void setReconnectionPeriod(uint32_t period) { _reconnectEthernetPeriod = period; };
   uint32_t reconnectionPeriod() { return _reconnectEthernetPeriod; };
@@ -31,6 +32,8 @@ public:
 
   void setMaintainPeriod(uint32_t period) { _maintainPeriod = period; };
   uint32_t maintainPeriod() { return _maintainPeriod; };
+
+  virtual uint8_t busNumber() { return spiBus(); };
 
   virtual uint8_t pool();
 

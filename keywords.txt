@@ -13,6 +13,7 @@ FLProgAbstracttWiFiInterface	KEYWORD1
 FLProgDNSClient	KEYWORD1
 FLProgDhcp	KEYWORD1
 FLProgEthernetClient	KEYWORD1
+FLProgEthernetDiagnosticsReporter	KEYWORD1
 FLProgEthernetServer	KEYWORD1
 FLProgOnBoardWifiInterface	KEYWORD1
 FLProgUdpClient	KEYWORD1
@@ -54,6 +55,7 @@ beginMulticastSoket	KEYWORD2
 beginPacket	KEYWORD2
 beginWithDHCP	KEYWORD2
 bufferDataSoket	KEYWORD2
+busNumber	KEYWORD2
 checkHardware	KEYWORD2
 checkMac	KEYWORD2
 checkStatusPeriod	KEYWORD2
@@ -98,6 +100,7 @@ getSnRX_RSR	KEYWORD2
 getSnTX_FSR	KEYWORD2
 getSocketNumber	KEYWORD2
 getSourse	KEYWORD2
+getSpiBus	KEYWORD2
 getStatus	KEYWORD2
 getSubnetMask	KEYWORD2
 getUDPSoket	KEYWORD2
