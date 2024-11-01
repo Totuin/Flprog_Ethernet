@@ -99,7 +99,6 @@ void FLProgAbstractTcpInterface::mac(uint8_t *mac_address)
     }
 }
 
-
 bool FLProgAbstractTcpInterface::checkMac(uint8_t *mac)
 {
     for (uint8_t i = 0; i < 6; i++)
@@ -110,4 +109,25 @@ bool FLProgAbstractTcpInterface::checkMac(uint8_t *mac)
         }
     }
     return false;
+}
+
+bool FLProgAbstractTcpInterface::getIsChangeStatusWithReset()
+{
+    bool temp = _isChangeStatus;
+    _isChangeStatus = false;
+    return temp;
+}
+
+bool FLProgAbstractTcpInterface::getIsChangeErrorWithReset()
+{
+    bool temp = _isChangeError;
+    _isChangeError = false;
+    return temp;
+}
+
+bool FLProgAbstractTcpInterface::getIsChangeIsReadyWithReset()
+{
+    bool temp = _isChangeIsIsReady;
+    _isChangeIsIsReady = false;
+    return temp;
 }

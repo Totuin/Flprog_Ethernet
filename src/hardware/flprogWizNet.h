@@ -195,6 +195,7 @@ public:
   uint8_t getServerTCPSoket(uint16_t port);
   virtual uint8_t getUDPSoket(uint16_t port) { return socketBegin(FLPROG_WIZNET_SN_MR_UDP, port); };
   virtual uint8_t beginMulticastSoket(IPAddress ip, uint16_t port) { return socketBeginMulticast((FLPROG_WIZNET_SN_MR_UDP | FLPROG_WIZNET_SN_MR_MULTI), ip, port); };
+  uint8_t chipCode() { return _chip; };
 
 private:
   uint8_t getTCPSoket(uint16_t port) { return socketBegin(FLPROG_WIZNET_SN_MR_TCP, port); };

@@ -59,6 +59,7 @@ busNumber	KEYWORD2
 checkHardware	KEYWORD2
 checkMac	KEYWORD2
 checkStatusPeriod	KEYWORD2
+chipCode	KEYWORD2
 clientIsReady	KEYWORD2
 clientMode	KEYWORD2
 clientOff	KEYWORD2
@@ -91,6 +92,12 @@ getError	KEYWORD2
 getGatewayIp	KEYWORD2
 getHostByName	KEYWORD2
 getIPAddress	KEYWORD2
+getIsChangeError	KEYWORD2
+getIsChangeErrorWithReset	KEYWORD2
+getIsChangeIsReady	KEYWORD2
+getIsChangeIsReadyWithReset	KEYWORD2
+getIsChangeStatus	KEYWORD2
+getIsChangeStatusWithReset	KEYWORD2
 getLinkStatus	KEYWORD2
 getLocalIp	KEYWORD2
 getMACAddress	KEYWORD2
@@ -162,6 +169,9 @@ setDhcpTimeout	KEYWORD2
 setDnsCacheStorageTime	KEYWORD2
 setGatewayIp	KEYWORD2
 setIPAddress	KEYWORD2
+setIsChangeError	KEYWORD2
+setIsChangeIsReady	KEYWORD2
+setIsChangeStatus	KEYWORD2
 setMACAddress	KEYWORD2
 setMaintainPeriod	KEYWORD2
 setNetSettings	KEYWORD2

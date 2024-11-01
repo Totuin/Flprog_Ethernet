@@ -112,6 +112,7 @@ uint8_t FLProgWiznetClass::checkInit()
 	RT_HW_Base.spiBegin(spiBus());
 #endif
 	initCs();
+	
 	if (getChip() == FLPROG_ETHERNET_NO_HARDWARE)
 	{
 		return FLPROG_ERROR;

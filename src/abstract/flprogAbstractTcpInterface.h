@@ -85,8 +85,21 @@ public:
     virtual uint16_t remotePortSoket(uint8_t soket) = 0;
     virtual uint8_t maxSoketNum() = 0;
     virtual bool isInit() = 0;
-
+    virtual uint8_t chipCode() { return FLPROG_ETHERNET_WIFI; };
     uint8_t custom = 0;
+
+    // Флаги изменения параметров
+    bool getIsChangeStatus() { return _isChangeStatus; };
+    bool getIsChangeStatusWithReset();
+    void setIsChangeStatus(bool value) { _isChangeStatus = value; };
+
+    bool getIsChangeError() { return _isChangeError; };
+    bool getIsChangeErrorWithReset();
+    void setIsChangeError(bool value) { _isChangeError = value; };
+
+    bool getIsChangeIsReady() { return _isChangeIsIsReady; };
+    bool getIsChangeIsReadyWithReset();
+    void setIsChangeIsReady(bool value) { _isChangeIsIsReady = value; };
 
 protected:
     uint16_t _skippingEvents = 0;
@@ -103,4 +116,12 @@ protected:
     IPAddress _gatewayIp = FLPROG_INADDR_NONE;
     uint8_t _macAddress[6] = {0, 0, 0, 0, 0, 0};
     bool _isNeedReconect = true;
+
+    // Флаги изменения параметров
+    uint8_t _oldStatus = FLPROG_NOT_REDY_STATUS;
+    bool _isChangeStatus = false;
+    uint8_t _oldError = FLPROG_NOT_ERROR;
+    bool _isChangeError = false;
+    bool _oldIsReady = false;
+    bool _isChangeIsIsReady = false;
 };
