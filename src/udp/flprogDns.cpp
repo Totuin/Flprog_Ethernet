@@ -55,7 +55,7 @@ int FLProgDNSClient::getHostByName(const char *aHostname, uint8_t *aResult, uint
 	if (_status == FLPROG_READY_STATUS)
 	{
 		IPAddress temp(aResult[0], aResult[1], aResult[2], aResult[3]);
-		if (flprog::inet_aton(aHostname, temp))
+		if (flprog::inet_aton_1(aHostname, temp))
 		{
 			aResult[0] = temp[0];
 			aResult[1] = temp[1];
