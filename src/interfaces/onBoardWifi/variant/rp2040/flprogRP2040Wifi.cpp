@@ -33,21 +33,7 @@ uint8_t FLProgOnBoardWifiInterface::pool()
         return FLPROG_SUCCESS;
     }
     _eventsCount = 0;
-    if (_oldStatus != _status)
-    {
-        _isChangeStatus = true;
-        _oldStatus = _status;
-    }
-    if (_oldError != _errorCode)
-    {
-        _isChangeError = true;
-        _oldError = _errorCode;
-    }
-    if (_oldIsReady != isReady())
-    {
-        _isChangeIsIsReady = true;
-        _oldIsReady = isReady();
-    }
+    setFlags();
     if (_apIsNeedReconect)
     {
         connect();

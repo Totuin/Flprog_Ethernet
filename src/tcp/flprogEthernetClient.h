@@ -22,8 +22,10 @@ public:
     uint16_t getConnectionTimeout() { return _timeout; };
     void setDnsCacheStorageTime(uint32_t time) { _dns.setDnsCacheStorageTime(time); };
     uint32_t getDnsCacheStorageTime() { return _dns.getDnsCacheStorageTime(); };
+	virtual void setFlags();
+    
+protected:
 
-private:
     FLProgDNSClient _dns;
     uint32_t _timeout = 20000;
     uint32_t _startConnectTime;

@@ -3,7 +3,7 @@
 #include "IPAddress.h"
 #include "flprogUtilites.h"
 
-class FLProgAbstractTcpInterface
+class FLProgAbstractTcpInterface : public AbstractFLProgClass
 {
 public:
     // Основные методы для пользователей
@@ -39,8 +39,6 @@ public:
     virtual uint8_t type() { return FLPROG_ANON_INTERFACE; };
     virtual bool isImitation() { return true; }
 
-    uint8_t getStatus() { return _status; };
-    uint8_t getError() { return _errorCode; };
     virtual uint8_t busNumber() { return 255; };
     virtual int pinCs() { return -1; };
     virtual bool isReady() { return _status == FLPROG_READY_STATUS; };
@@ -88,18 +86,10 @@ public:
     virtual uint8_t chipCode() { return FLPROG_ETHERNET_WIFI; };
     uint8_t custom = 0;
 
-    // Флаги изменения параметров
-    bool getIsChangeStatus() { return _isChangeStatus; };
-    bool getIsChangeStatusWithReset();
-    void setIsChangeStatus(bool value) { _isChangeStatus = value; };
-
-    bool getIsChangeError() { return _isChangeError; };
-    bool getIsChangeErrorWithReset();
-    void setIsChangeError(bool value) { _isChangeError = value; };
-
     bool getIsChangeIsReady() { return _isChangeIsIsReady; };
     bool getIsChangeIsReadyWithReset();
     void setIsChangeIsReady(bool value) { _isChangeIsIsReady = value; };
+    virtual void setFlags();
 
 protected:
     uint16_t _skippingEvents = 0;
@@ -107,8 +97,7 @@ protected:
 
     bool _isBusy = false;
     bool _isDhcp = true;
-    uint8_t _status = FLPROG_NOT_REDY_STATUS;
-    uint8_t _errorCode = FLPROG_NOT_ERROR;
+
     bool _needUpdateData = false;
     IPAddress _ip = FLPROG_INADDR_NONE;
     IPAddress _dnsIp = FLPROG_INADDR_NONE;
@@ -117,11 +106,6 @@ protected:
     uint8_t _macAddress[6] = {0, 0, 0, 0, 0, 0};
     bool _isNeedReconect = true;
 
-    // Флаги изменения параметров
-    uint8_t _oldStatus = FLPROG_NOT_REDY_STATUS;
-    bool _isChangeStatus = false;
-    uint8_t _oldError = FLPROG_NOT_ERROR;
-    bool _isChangeError = false;
     bool _oldIsReady = false;
     bool _isChangeIsIsReady = false;
 };

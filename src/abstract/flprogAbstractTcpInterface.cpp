@@ -111,18 +111,27 @@ bool FLProgAbstractTcpInterface::checkMac(uint8_t *mac)
     return false;
 }
 
-bool FLProgAbstractTcpInterface::getIsChangeStatusWithReset()
+void FLProgAbstractTcpInterface::setFlags()
 {
-    bool temp = _isChangeStatus;
-    _isChangeStatus = false;
-    return temp;
-}
-
-bool FLProgAbstractTcpInterface::getIsChangeErrorWithReset()
-{
-    bool temp = _isChangeError;
-    _isChangeError = false;
-    return temp;
+    AbstractFLProgClass::setFlags();
+    if (isReady())
+    {
+        if (!_oldIsReady)
+        {
+            _isChangeIsIsReady = true;
+            _oldIsReady = true;
+            bitWrite(_statusForExt, 4, 1);
+        }
+    }
+    else
+    {
+        if (_oldIsReady)
+        {
+            _isChangeIsIsReady = true;
+            _oldIsReady = false;
+            bitWrite(_statusForExt, 5, 1);
+        }
+    }
 }
 
 bool FLProgAbstractTcpInterface::getIsChangeIsReadyWithReset()

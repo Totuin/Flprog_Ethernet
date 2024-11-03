@@ -3,7 +3,7 @@
 #include "IPAddress.h"
 #include "flprogUtilites.h"
 
-class FLProgAbstractEthernetHardware
+class FLProgAbstractEthernetHardware : public AbstractFLProgClass
 {
 public:
     virtual uint8_t init() = 0;
@@ -34,11 +34,4 @@ public:
     virtual IPAddress subnetMask() = 0;
     virtual IPAddress gatewayIP() = 0;
     virtual void MACAddress(uint8_t *mac_address) = 0;
-
-    uint8_t getStatus() { return _status; };
-    uint8_t getError() { return _errorCode; }
-
-protected:
-    uint8_t _status = FLPROG_NOT_REDY_STATUS;
-    uint8_t _errorCode = FLPROG_ETHERNET_HARDWARE_INIT_ERROR;
 };

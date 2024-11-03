@@ -6,7 +6,7 @@
 class FLProgEthernetServer : public FLProgAbstactEthernetTCPChanel
 {
 public:
-    FLProgEthernetServer(){};
+    FLProgEthernetServer() {};
     FLProgEthernetServer(FLProgAbstractTcpInterface *sourse, uint16_t port = 80);
     uint8_t pool();
     uint8_t begin();

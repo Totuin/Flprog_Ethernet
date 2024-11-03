@@ -22,12 +22,30 @@ public:
     // int read(char *buffer, size_t len) { return read((uint8_t *)buffer, len); };
     uint8_t getStatus() { return _status; };
     uint8_t getError() { return _errorCode; };
+    uint8_t getErrorCode() { return _errorCode; };
     FLProgAbstractTcpInterface *getSourse() { return _sourse; };
-    void flush(){};
+    void flush() {};
 
     virtual size_t write(const uint8_t *buf, size_t size) = 0;
     virtual int read() = 0;
     void readToNull(uint16_t count);
+
+    bool getIsChangeStatus() { return _isChangeStatus; };
+    bool getIsChangeStatusWithReset();
+    void setIsChangeStatus(bool value) { _isChangeStatus = value; };
+
+    bool getIsChangeError() { return _isChangeError; };
+    bool getIsChangeErrorWithReset();
+    void setIsChangeError(bool value) { _isChangeError = value; };
+
+    uint32_t statusForExt() { return _statusForExt; };
+
+    bool statusForExtGetBit(uint8_t bit) { return bitRead(_statusForExt, bit); };
+    void statusForExtResetBit(uint8_t bit) { bitWrite(_statusForExt, bit, 0); };
+
+    bool statusForExtGetBitWithReset(uint8_t bit);
+    void statusForExtSetBit(uint8_t bit) { bitWrite(_statusForExt, bit, 1); };
+    virtual void setFlags();
 
 protected:
     uint8_t checkReadySourse();
@@ -35,4 +53,11 @@ protected:
     uint8_t _errorCode = FLPROG_NOT_ERROR;
     uint8_t _status = FLPROG_NOT_REDY_STATUS;
     uint8_t _sockindex = 255;
+
+    // Флаги изменения параметров
+    uint8_t _oldStatus = FLPROG_NOT_REDY_STATUS;
+    bool _isChangeStatus = false;
+    uint8_t _oldError = FLPROG_NOT_ERROR;
+    bool _isChangeError = false;
+    uint32_t _statusForExt = 1;
 };

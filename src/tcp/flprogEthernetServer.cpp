@@ -27,6 +27,7 @@ uint8_t FLProgEthernetServer::setPort(uint16_t port)
 
 uint8_t FLProgEthernetServer::pool()
 {
+	setFlags();
 	if (_sourse == 0)
 	{
 		_status = FLPROG_NOT_REDY_STATUS;

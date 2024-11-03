@@ -31,21 +31,7 @@ uint8_t FLProgWiznetInterface::pool()
         return FLPROG_SUCCESS;
     }
     _eventsCount = 0;
-    if (_oldStatus != _status)
-    {
-        _isChangeStatus = true;
-        _oldStatus = _status;
-    }
-    if (_oldError != _errorCode)
-    {
-        _isChangeError = true;
-        _oldError = _errorCode;
-    }
-    if (_oldIsReady != isReady())
-    {
-        _isChangeIsIsReady = true;
-        _oldIsReady = isReady();
-    }
+    setFlags();
     if (pinCs() == -1)
     {
         return FLPROG_ERROR;
@@ -283,4 +269,26 @@ uint8_t FLProgWiznetInterface::begin(IPAddress ip, IPAddress dns, IPAddress gate
 uint8_t FLProgWiznetInterface::hardwareStatus()
 {
     return _hardware.getChip();
+}
+
+void FLProgWiznetInterface::setFlags()
+{
+    FLProgAbstractTcpInterface::setFlags();
+    if (isInit())
+    {
+        if (!_oldIsInit)
+        {
+            _oldIsInit = true;
+            bitWrite(_statusForExt, 2, 1);
+        }
+    }
+    else
+    {
+        if (_oldIsInit)
+        {
+            _oldIsInit = false;
+            bitWrite(_statusForExt, 3, 1);
+        }
+    }
+    _hardware.setFlags();
 }

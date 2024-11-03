@@ -52,3 +52,9 @@ uint8_t FLProgUdpClient::beginMulticast(IPAddress ip, uint16_t port)
 	_remaining = 0;
 	return 1;
 }
+
+void FLProgUdpClient::setFlags()
+{
+	FLProgAbstactEthernetChanel::setFlags();
+	_dns.setFlags();
+}

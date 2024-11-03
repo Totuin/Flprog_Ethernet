@@ -11,7 +11,7 @@
 class FLProgUdpClient : public FLProgAbstactEthernetUDPChanel
 {
 public:
-	FLProgUdpClient(){};
+	FLProgUdpClient() {};
 	FLProgUdpClient(FLProgAbstractTcpInterface *sourse);
 	virtual void stop();
 	virtual void setSourse(FLProgAbstractTcpInterface *sourse);
@@ -19,7 +19,8 @@ public:
 	int beginPacket(IPAddress ip, uint16_t port) { return beginIpPacket(ip, port); };
 	int beginPacket(const char *host, uint16_t port);
 	void setDnsCacheStorageTime(uint32_t time) { _dns.setDnsCacheStorageTime(time); };
+	virtual void setFlags();
 
-private:
+protected:
 	FLProgDNSClient _dns;
 };

@@ -25,3 +25,40 @@ void FLProgAbstactEthernetChanel::readToNull(uint16_t count)
         read();
     }
 }
+void FLProgAbstactEthernetChanel::setFlags()
+{
+    if (_oldStatus != _status)
+    {
+        _isChangeStatus = true;
+        _oldStatus = _status;
+    }
+    if (_oldError != _errorCode)
+    {
+        _isChangeError = true;
+        _oldError = _errorCode;
+    }
+    
+}
+
+bool FLProgAbstactEthernetChanel::getIsChangeStatusWithReset()
+{
+    bool temp = _isChangeStatus;
+    _isChangeStatus = false;
+    return temp;
+}
+
+bool FLProgAbstactEthernetChanel::getIsChangeErrorWithReset()
+{
+    bool temp = _isChangeError;
+    _isChangeError = false;
+    return temp;
+}
+
+
+
+bool FLProgAbstactEthernetChanel::statusForExtGetBitWithReset(uint8_t bit)
+{
+    bool temp = bitRead(_statusForExt, bit);
+    bitWrite(_statusForExt, bit, 0);
+    return temp;
+}

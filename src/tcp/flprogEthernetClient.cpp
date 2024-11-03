@@ -113,3 +113,9 @@ uint8_t FLProgEthernetClient::status()
 {
 	return _sourse->statusSoket(_sockindex);
 }
+
+void FLProgEthernetClient::setFlags()
+{
+	FLProgAbstactEthernetChanel::setFlags();
+	_dns.setFlags();
+}

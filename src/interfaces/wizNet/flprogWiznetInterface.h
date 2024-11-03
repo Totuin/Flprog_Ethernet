@@ -84,8 +84,9 @@ public:
   virtual bool isInit() { return _hardware.isInit(); };
   uint8_t initHarware();
   uint8_t connect();
+  virtual void setFlags();
 
-private:
+protected:
   uint8_t checkHarwareLinkStatus();
   uint8_t checkHardware();
 
@@ -103,4 +104,5 @@ private:
   uint32_t _lastCheckEthernetStatusTime = flprog::timeBack(_checkEthernetStatusPeriod);
   uint32_t _reconnectEthernetPeriod = 5000;
   uint32_t _lastReconnectTime = flprog::timeBack(_reconnectEthernetPeriod);
+  bool _oldIsInit = false;
 };
