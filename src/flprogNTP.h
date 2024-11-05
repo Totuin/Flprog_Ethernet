@@ -19,8 +19,8 @@ public:
 
     void localPort(uint32_t value) { _localPort = value; };
     uint32_t localPort() { return _localPort; };
-    void timeServer(const char *_timeServerChar);
-    void timeServer(IPAddress _timeServerIp);
+    void timeServer(String timeServerString);
+    void timeServer(IPAddress timeServerIp);
     FLProgUdpClient *udp() { return _udp; };
 
     uint8_t getStatus() { return _status; };
@@ -48,7 +48,7 @@ protected:
     uint32_t _sendPacadeTime = flprog::timeBack(3600000);
     uint32_t _reqestPeriod = 3600000;
     uint32_t _localPort = 8888;
-    const char *_timeServerChar;
+    char _timeServerChar[FLPROG_HOST_NAME_LENGTH];
     IPAddress _timeServerIp;
     uint8_t _timeServerMode = FLPROG_NTP_NOT_SET_TIMRSERVER_MODE;
     uint8_t _packetBuffer[FLPROG_NTP_PACKET_SIZE];

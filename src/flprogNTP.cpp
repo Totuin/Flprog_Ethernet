@@ -89,9 +89,15 @@ void FLProgNTP::sendNTPpacket()
     _sendPacadeTime = millis();
 }
 
-void FLProgNTP::timeServer(const char *timeServerChar)
+void FLProgNTP::timeServer(String timeServerString)
 {
-    _timeServerChar = timeServerChar;
+    IPAddress temp;
+    if (temp.fromString(timeServerString))
+    {
+        timeServer(temp);
+        return;
+    }
+    timeServerString.toCharArray(_timeServerChar, FLPROG_HOST_NAME_LENGTH);
     _timeServerMode = FLPROG_NTP_CHAR_TIMRSERVER_MODE;
 }
 

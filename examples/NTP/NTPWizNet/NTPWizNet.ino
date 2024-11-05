@@ -1,6 +1,6 @@
 /*
   =================================================================================================
-                  Test Ethernet
+                  Test Ethernet NTP
                   Получение по UDP точного времени.
   =================================================================================================
 */
@@ -59,7 +59,7 @@ void setup()
   {
   }
   ledPin = RT_HW_Base.vPinLed();
-  Serial.println(" Тест WizNet UDP клиента ");
+  Serial.println(" Тест WizNet NTP клиента ");
   Serial.print("CS - ");
   Serial.println(wiznetInterface.pinCs());
   Serial.print("SPI BUS - ");
