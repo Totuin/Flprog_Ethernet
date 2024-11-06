@@ -17,6 +17,9 @@ public:
     void reqestPeriod(uint32_t value) { _reqestPeriod = value * 1000; };
     uint16_t reqestPeriod() { return ((uint16_t)(_reqestPeriod / 1000)); };
 
+    void isUseAsClock(uint32_t bool) { _isUseAsClock = value; };
+    bool isUseAsClock() { return _isUseAsClock; };
+
     void localPort(uint32_t value) { _localPort = value; };
     uint32_t localPort() { return _localPort; };
     void timeServer(String timeServerString);
@@ -53,4 +56,5 @@ protected:
     uint8_t _timeServerMode = FLPROG_NTP_NOT_SET_TIMRSERVER_MODE;
     uint8_t _packetBuffer[FLPROG_NTP_PACKET_SIZE];
     FLProgNTPCallback _callBack = 0;
+    bool _isUseAsClock = true;
 };

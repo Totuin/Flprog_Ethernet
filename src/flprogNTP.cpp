@@ -9,6 +9,10 @@ FLProgNTP::FLProgNTP(FLProgAbstractTcpInterface *interface)
 void FLProgNTP::pool()
 {
     setFlags();
+    if (_isUseAsClock)
+    {
+        RT_HW_Base.unixUpdateTime(unixID);
+    }
     if (_udp != 0)
     {
         _udp->setFlags();
