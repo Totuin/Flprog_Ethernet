@@ -14,10 +14,10 @@ class FLProgNTP : public AbstractFLProgClass
 public:
     FLProgNTP(FLProgAbstractTcpInterface *interface);
     void pool();
-    void reqestPeriod(uint32_t value) { _reqestPeriod = value * 1000; };
+    void reqestPeriod(bool value) { _reqestPeriod = value * 1000; };
     uint16_t reqestPeriod() { return ((uint16_t)(_reqestPeriod / 1000)); };
 
-    void isUseAsClock(uint32_t bool) { _isUseAsClock = value; };
+    void isUseAsClock(bool value) { _isUseAsClock = value; };
     bool isUseAsClock() { return _isUseAsClock; };
 
     void localPort(uint32_t value) { _localPort = value; };
