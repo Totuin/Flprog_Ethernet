@@ -39,6 +39,8 @@ public:
     uint8_t getMonth() { return unixID.month; };
     uint16_t getYear() { return unixID.year; };
 
+    uint32_t getCounter() { return _counter; };
+     
     RT_HW_STRUCT_UNIX_ID unixID;
 
 protected:
@@ -57,4 +59,5 @@ protected:
     uint8_t _packetBuffer[FLPROG_NTP_PACKET_SIZE];
     FLProgNTPCallback _callBack = 0;
     bool _isUseAsClock = true;
+    uint32_t _counter = 0;
 };

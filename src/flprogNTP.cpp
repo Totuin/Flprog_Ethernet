@@ -135,6 +135,7 @@ void FLProgNTP::processingResponse()
     _isReplyInProcess = false;
     _status = FLPROG_READY_STATUS;
     _errorCode = FLPROG_NOT_ERROR;
+    _counter++;
     if (_callBack != 0)
     {
         _callBack();
