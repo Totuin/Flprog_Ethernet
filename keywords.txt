@@ -95,6 +95,7 @@ getAnswerString	KEYWORD2
 getChip	KEYWORD2
 getClientTCPSoket	KEYWORD2
 getConnectionTimeout	KEYWORD2
+getCounter	KEYWORD2
 getDay	KEYWORD2
 getDhcpServerIp	KEYWORD2
 getDnsCacheStorageTime	KEYWORD2
