@@ -2,11 +2,6 @@
 #include "flprogUtilites.h"
 #include "../abstract/flprogAbstractEthernetHardware.h"
 
-#ifdef FLPROG_COMPACT_LIBRARY_MODE
-#include <SPI.h>
-#define FLPROG_WIZNET_SPI_SETTINGS SPISettings(14000000, MSBFIRST, SPI_MODE0)
-#endif
-
 #if defined(RAMEND) && defined(RAMSTART) && ((RAMEND - RAMSTART) <= 2048)
 #define FLPROG_WIZNET_MAX_SOCK_NUM 4
 #else
@@ -14,6 +9,7 @@
 #endif
 
 #define SPI_ETHERNET_SPEED 14000000
+
 #if defined(ARDUINO_ARCH_ARC32)
 #undef SPI_ETHERNET_SPEED
 #define SPI_ETHERNET_SPEED 8000000
@@ -93,11 +89,11 @@ class FLProgWiznetClass : public FLProgAbstractEthernetHardware
 public:
   virtual uint8_t init();
   virtual bool isInit() { return ((_status == FLPROG_READY_STATUS) || (_status == FLPROG_WAIT_SEND_UDP_PACAGE)); };
-  int pinCs();
-  uint8_t spiBus();
+  int pinCs() { return _device.cs; };
+  uint8_t spiBus() { return _device.bus; };
 
   void setPinCs(int pinCs);
-  void setSpiBus(uint8_t bus) { _spiBus = bus; };
+  void setSpiBus(uint8_t bus);
 
   virtual uint8_t getLinkStatus();
   virtual uint8_t getChip();
@@ -204,21 +200,18 @@ private:
   uint8_t isW5100(void);
   uint8_t isW5200(void);
   uint8_t isW5500(void);
-  void initCs() { pinMode(pinCs(), OUTPUT); };
-  void setCs() { digitalWrite(pinCs(), LOW); };
-  void resetCs() { digitalWrite(pinCs(), HIGH); };
+
+  void setCs() { RT_HW_Base.spiBeginCS(_device); };
+  void resetCs() { RT_HW_Base.spiEndCS(_device); };
   void privateMaceSoket(uint8_t soc, uint8_t protocol, uint16_t port);
   void privateMaceSoketMulticast(uint8_t soc, uint8_t protocol, IPAddress ip, uint16_t port);
   void beginTransaction();
   void endTransaction();
   uint8_t spiTransfer(uint8_t);
-
+  RT_HW_STRUCT_SPI_DEV _device;
   uint8_t _chip = 0;
   uint32_t _startWhiteInitTime;
-
   uint16_t _local_port = 49152; // 49152 to 65535 TODO: randomize this when not using DHCP, but how?
   const uint16_t CH_SIZE = 0x0100;
   wizNetSocketState_t _state[FLPROG_WIZNET_MAX_SOCK_NUM];
-  uint8_t _spiBus = 255;
-  int _pinCs = -1;
 };

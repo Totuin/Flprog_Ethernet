@@ -1,5 +1,25 @@
 #include "flprogWizNet.h"
 
+void FLProgWiznetClass::setPinCs(int pinCs)
+{
+	if (pinCs == -1)
+	{
+		_device.cs = RT_HW_Base.getCsETH0();
+		return;
+	}
+	_device.cs = pinCs;
+}
+
+void FLProgWiznetClass::setSpiBus(uint8_t bus)
+{
+	if (bus == 255)
+	{
+		_device.bus = RT_HW_Base.getBusETH0();
+		return;
+	}
+	_device.bus = bus;
+}
+
 uint8_t FLProgWiznetClass::init()
 {
 	if (_status == FLPROG_READY_STATUS)
@@ -106,13 +126,8 @@ uint8_t FLProgWiznetClass::checkInit()
 		_status = FLPROG_WAIT_ETHERNET_HARDWARE_INIT_STATUS;
 		return FLPROG_WAIT;
 	}
-#ifdef FLPROG_COMPACT_LIBRARY_MODE
-	SPI.begin();
-#else
-	RT_HW_Base.spiBegin(spiBus());
-#endif
-	initCs();
-	
+	_device.speed = SPI_ETHERNET_SPEED;
+	RT_HW_Base.spiInitDevice(_device);
 	if (getChip() == FLPROG_ETHERNET_NO_HARDWARE)
 	{
 		return FLPROG_ERROR;
@@ -120,12 +135,6 @@ uint8_t FLProgWiznetClass::checkInit()
 	_status = FLPROG_READY_STATUS;
 	_errorCode = FLPROG_NOT_ERROR;
 	return FLPROG_SUCCESS;
-}
-
-void FLProgWiznetClass::setPinCs(int pinCs)
-{
-	_pinCs = pinCs;
-	initCs();
 }
 
 void FLProgWiznetClass::setNetSettings(uint8_t *mac, IPAddress ip)
@@ -1255,53 +1264,19 @@ uint8_t FLProgWiznetClass::getChip()
 	return _chip;
 }
 
-int FLProgWiznetClass::pinCs()
-{
-	if (_pinCs == -1)
-	{
-#ifdef FLPROG_COMPACT_LIBRARY_MODE
-		return 10;
-#else
-		return RT_HW_Base.device.spi.csETH;
-#endif
-	}
-	return _pinCs;
-}
-uint8_t FLProgWiznetClass::spiBus()
-{
-#ifdef FLPROG_COMPACT_LIBRARY_MODE
-	return 0;
-#else
-	if (_spiBus == 255)
-	{
-		return RT_HW_Base.device.spi.busETH;
-	}
-	return _spiBus;
-#endif
-}
-
 void FLProgWiznetClass::beginTransaction()
 {
-#ifdef FLPROG_COMPACT_LIBRARY_MODE
-	SPI.beginTransaction(FLPROG_WIZNET_SPI_SETTINGS);
-#else
-	RT_HW_Base.spiBeginTransaction(SPI_ETHERNET_SPEED, 1, 0, spiBus());
-#endif
+	RT_HW_Base.spiSetBusy(spiBus());
+	RT_HW_Base.spiBeginTransaction(_device);
 }
+
 void FLProgWiznetClass::endTransaction()
 {
-#ifdef FLPROG_COMPACT_LIBRARY_MODE
-	SPI.endTransaction();
-#else
-	RT_HW_Base.spiEndTransaction(_spiBus);
-#endif
+	RT_HW_Base.spiEndTransaction(_device);
+	RT_HW_Base.spiClearBusy(spiBus());
 }
 
 uint8_t FLProgWiznetClass::spiTransfer(uint8_t data)
 {
-#ifdef FLPROG_COMPACT_LIBRARY_MODE
-	return SPI.transfer(data);
-#else
 	return RT_HW_Base.spiTransfer(data, spiBus());
-#endif
 }
