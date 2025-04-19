@@ -15,6 +15,7 @@ FLProgDhcp	KEYWORD1
 FLProgEthernetClient	KEYWORD1
 FLProgEthernetServer	KEYWORD1
 FLProgNTP	KEYWORD1
+FLProgOTA	KEYWORD1
 FLProgOnBoardWifiInterface	KEYWORD1
 FLProgRequestHandler	KEYWORD1
 FLProgUdpClient	KEYWORD1
@@ -117,6 +118,8 @@ getLocalIp	KEYWORD2
 getMACAddress	KEYWORD2
 getMinutes	KEYWORD2
 getMonth	KEYWORD2
+getName	KEYWORD2
+getPasssword	KEYWORD2
 getSecond	KEYWORD2
 getServerTCPSoket	KEYWORD2
 getSkippingEvents	KEYWORD2
@@ -215,11 +218,13 @@ setIsChangeStatus	KEYWORD2
 setMACAddress	KEYWORD2
 setMaintainPeriod	KEYWORD2
 setMethod	KEYWORD2
+setName	KEYWORD2
 setNetSettings	KEYWORD2
 setOnlyGatewayIP	KEYWORD2
 setOnlyLocalIP	KEYWORD2
 setOnlyMACAddress	KEYWORD2
 setOnlySubnetMask	KEYWORD2
+setPassword	KEYWORD2
 setPinCs	KEYWORD2
 setPort	KEYWORD2
 setReconnectionPeriod	KEYWORD2
