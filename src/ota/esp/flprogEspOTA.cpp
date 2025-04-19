@@ -50,6 +50,7 @@ void FLProgOTA::init()
         ArduinoOTA.setPassword(_password.c_str());
     }
     ArduinoOTA.begin();
+    _isInit = true;
 }
 
 #endif

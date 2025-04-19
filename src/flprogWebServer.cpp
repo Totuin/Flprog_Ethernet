@@ -27,14 +27,14 @@ void FLProgWebServer::addHandler(String uri, FLProgWebServerCallback callBack, u
     {
         FLProgRequestHandler temp[_handlersCount];
 
-        for (int i = 0; i < _handlersCount; i++)
+        for (uint16_t i = 0; i < _handlersCount; i++)
         {
             temp[i] = _handlers[i];
         }
         delete[] _handlers;
         _handlers = new FLProgRequestHandler[_handlersCount + 1];
 
-        for (int i = 0; i < _handlersCount; i++)
+        for (uint16_t i = 0; i < _handlersCount; i++)
         {
             _handlers[i] = temp[i];
         }
@@ -354,14 +354,14 @@ void FLProgWebServer::addHeader(String headerName, String headerValue)
     {
         FLProgWebServerRequestArgument temp[_reqest.headerKeysCount];
 
-        for (int i = 0; i < _reqest.headerKeysCount; i++)
+        for (uint16_t i = 0; i < _reqest.headerKeysCount; i++)
         {
             temp[i].key = _reqest.headers[i].key;
             temp[i].value = _reqest.headers[i].value;
         }
         delete[] _reqest.headers;
         _reqest.headers = new FLProgWebServerRequestArgument[_reqest.headerKeysCount + 1];
-        for (int i = 0; i < _reqest.headerKeysCount; i++)
+        for (uint16_t i = 0; i < _reqest.headerKeysCount; i++)
         {
             _reqest.headers[i].key = temp[i].key;
             _reqest.headers[i].value = temp[i].value;
@@ -390,7 +390,7 @@ void FLProgWebServer::parseArguments(String data)
         return;
     }
     _reqest.currentArgCount = 1;
-    for (int i = 0; i < (int)data.length();)
+    for (int16_t i = 0; i < (int16_t)data.length();)
     {
         i = data.indexOf('&', i);
         if (i == -1)
@@ -399,12 +399,12 @@ void FLProgWebServer::parseArguments(String data)
         ++_reqest.currentArgCount;
     }
     _reqest.currentArgs = new FLProgWebServerRequestArgument[_reqest.currentArgCount + 1];
-    int pos = 0;
-    int iarg;
-    for (iarg = 0; iarg < _reqest.currentArgCount;)
+    int16_t pos = 0;
+    int16_t iarg;
+    for (iarg = 0; iarg < (int16_t)_reqest.currentArgCount;)
     {
-        int equal_sign_index = data.indexOf('=', pos);
-        int next_arg_index = data.indexOf('&', pos);
+        int16_t equal_sign_index = data.indexOf('=', pos);
+        int16_t next_arg_index = data.indexOf('&', pos);
         if ((equal_sign_index == -1) || ((equal_sign_index > next_arg_index) && (next_arg_index != -1)))
         {
             if (next_arg_index == -1)
@@ -427,8 +427,8 @@ String FLProgWebServer::urlDecode(const String &text)
 {
     String decoded = "";
     char temp[] = "0x00";
-    unsigned int len = text.length();
-    unsigned int i = 0;
+    uint16_t len = text.length();
+    uint16_t i = 0;
     while (i < len)
     {
         char decodedChar;
@@ -462,7 +462,7 @@ uint8_t FLProgWebServer::readStringUntil(char terminator)
     {
         return FLPROG_SUCCESS;
     }
-    int readChar;
+    int16_t readChar;
     while (_server.available())
     {
         _startReadStringTime = millis();
