@@ -95,7 +95,7 @@ void FLProgAbstractTcpInterface::mac(uint8_t *mac_address)
 {
     for (uint8_t i = 0; i < 6; i++)
     {
-        mac_address[i] = _macAddress[i];
+        _macAddress[i] = mac_address[i];
     }
 }
 

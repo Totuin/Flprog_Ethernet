@@ -15,22 +15,17 @@
 #endif
 
 #include <ArduinoOTA.h>
+#include "../../flprogOTA.h"
 
-class FLProgOTA
+class FLProgOTA : public FLProgAbstractOTA
 {
 public:
-    void setPassword(String password);
-    String getPasssword() { return _password; };
-    void setName(String name);
-    String getName() { return _name; };
+    virtual void setPassword(String password);
+    virtual void setName(String name);
 
-    void pool();
-
-private:
+protected:
+    virtual void privatePool();
     void init();
-    String _password = "";
-    String _name = "";
-    bool _isInit = false;
 };
 
 #endif

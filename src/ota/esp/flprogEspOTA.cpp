@@ -29,7 +29,7 @@ void FLProgOTA::setName(String name)
     _isInit = false;
 }
 
-void FLProgOTA::pool()
+void FLProgOTA::privatePool()
 {
     if (!_isInit)
     {

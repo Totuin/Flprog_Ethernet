@@ -1,10 +1,40 @@
 #pragma once
 #include "flprogUtilites.h"
+#if defined(RT_HW_CORE_ESP32) || defined(RT_HW_CORE_ESP8266) || defined(RT_HW_CORE_RP2040)
 
-#ifdef ARDUINO_ARCH_ESP8266
-#include "ESP8266WiFi.h"
+#if defined(RT_HW_CORE_ESP32) || defined(RT_HW_CORE_RP2040)
 
+#define CLOSED 0
+#define LISTEN 1
+#define SYN_SENT 2
+#define SYN_RCVD 3
+#define ESTABLISHED 4
+#define FIN_WAIT_1 5
+#define FIN_WAIT_2 6
+#define CLOSE_WAIT 7
+#define CLOSING 8
+#define LAST_ACK 9
+#define TIME_WAIT 10
+#endif
+
+#ifdef RT_HW_CORE_ESP32
+
+#include "WiFi.h"
+#include <esp_wifi.h>
+#include <WiFiClient.h>
+#include <WiFiAP.h>
 #include <WiFiUdp.h>
+#endif
+
+#ifdef RT_HW_CORE_ESP8266
+#include "ESP8266WiFi.h"
+#include <WiFiUdp.h>
+#endif
+
+#ifdef RT_HW_CORE_RP2040
+#include "WiFi.h"
+#include <WiFiUdp.h>
+#endif
 
 #define FLPROG_WIFI_NOT_DEFINED_SOKET 0
 #define FLPROG_WIFI_SERVER_SOKET 1
@@ -16,13 +46,13 @@
 class FLProgWiFiServer : public WiFiServer
 {
 public:
-    FLProgWiFiServer() : WiFiServer(0){};
+    FLProgWiFiServer() : WiFiServer(0) {};
 };
 
 class FLProgWifiSoket
 {
 public:
-    FLProgWifiSoket(){};
+    FLProgWifiSoket() {};
     bool isUsed() { return _isUsed; };
     void disconnect();
     void close();
@@ -49,5 +79,4 @@ private:
     FLProgWiFiServer _server;
     WiFiUDP _udp;
 };
-
 #endif

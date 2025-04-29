@@ -1,18 +1,23 @@
 #pragma once
 #include "flprogUtilites.h"
 #include "../../abstract/flprogAbstractTcpInterface.h"
+#include "flprogWifiSoket.h"
 
-class FLProgAbstracttWiFiInterface : public FLProgAbstractTcpInterface
+class FLProgOnBoardWifiInterface : public FLProgAbstractTcpInterface
 {
 public:
+    virtual uint8_t pool();
+    virtual bool isImitation() { return false; };
+    virtual bool isReady();
+
     void setApSsid(String ssid);
     void setApPassword(String password);
-    String apSsid() { return String(_apSsid); };
-    String apPassworid() { return String(_apPassword); };
+    String apSsid() { return _apSsid; };
+    String apPassworid() { return _apPassword; };
     void setClientSsid(String ssid);
     void setClientPassword(String password);
-    String clientSsid() { return String(_clientSsid); };
-    String clientPassword() { return String(_clientPassword); };
+    String clientSsid() { return _clientSsid; };
+    String clientPassword() { return _clientPassword; };
 
     void apMac(uint8_t m0, uint8_t m1, uint8_t m2, uint8_t m3, uint8_t m4, uint8_t m5);
     void apMac(uint8_t *mac) { apMac(mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]); };
@@ -38,20 +43,64 @@ public:
     void clientOff();
     void clientMode(bool val);
     bool clientMode() { return _clientWorkStatus; };
-    virtual bool clientIsReady() { return false; };
+    virtual bool clientIsReady();
     virtual bool isReadyForDNS() { return clientIsReady(); };
-    virtual bool apIsReady() { return false; };
+    virtual bool apIsReady() { return _apStatus; };
     virtual void apOn();
     void apOff();
     void apMode(bool val);
     bool apMode() { return _apWorkStatus; };
 
+    virtual uint8_t type();
+    virtual void disconnecSoket(uint8_t soket);
+    virtual uint8_t getServerTCPSoket(uint16_t port);
+    virtual bool isListenSoket(uint8_t soket);
+    virtual void closeSoket(uint8_t soket);
+    uint8_t soketConnected(uint8_t soket);
+    virtual int availableSoket(uint8_t soket);
+    virtual int readFromSoket(uint8_t soket);
+    virtual int readFromSoket(uint8_t soket, uint8_t *buf, int16_t len);
+    virtual size_t writeToSoket(uint8_t soket, const uint8_t *buffer, size_t size);
+    virtual uint8_t peekSoket(uint8_t soket);
+    virtual uint8_t getUDPSoket(uint16_t port);
+    virtual uint8_t startUdpSoket(uint8_t soket, uint8_t *addr, uint16_t port);
+    virtual uint8_t sendUdpSoket(uint8_t soket);
+    int parsePacketSocet(uint8_t soket);
+    virtual uint8_t getClientTCPSoket(uint16_t port);
+    virtual uint8_t connectSoket(uint8_t soket, IPAddress ip, uint16_t port);
+    virtual uint8_t statusSoket(uint8_t soket);
+    virtual uint8_t isConnectStatusSoket(uint8_t soket);
+    virtual uint8_t isCosedStatusSoket(uint8_t soket);
+
+    virtual uint8_t maxSoketNum() { return FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM; };
+    virtual bool isInit() { return true; };
+
+    // Необходимые заглушки
+    virtual uint16_t bufferDataSoket(uint8_t soket, uint16_t offset, const uint8_t *buf, uint16_t len);
+    virtual int recvSoket(uint8_t soket, uint8_t *buf, int16_t len);
+
+    // Заглушки которые надо допилить.....
+    virtual uint8_t beginMulticastSoket(IPAddress ip, uint16_t port);
+    virtual uint16_t localPortSoket(uint8_t soket) { return resetToVoidVar(soket); };
+    virtual IPAddress remoteIPSoket(uint8_t soket);
+    virtual uint16_t remotePortSoket(uint8_t soket) { return resetToVoidVar(soket); };
+
 protected:
+    void apConnect();
+    void apDisconnect();
+    void clientConnect();
+    void clientDisconnect();
+
+    uint8_t getFreeSoketIndex();
+    bool checkOnUseSoket(uint8_t soket);
+
+    uint8_t resetToVoidVar(uint8_t soket);
+
     uint8_t _apMacaddress[6] = {0, 0, 0, 0, 0, 0};
-    char _apSsid[40] = "";
-    char _apPassword[40] = "";
-    char _clientSsid[40] = "";
-    char _clientPassword[40] = "";
+    String _apSsid = "";
+    String _apPassword = "";
+    String _clientSsid = "";
+    String _clientPassword = "";
 
     IPAddress _apIp = FLPROG_INADDR_NONE;
     IPAddress _apDnsIp = FLPROG_INADDR_NONE;
@@ -60,45 +109,11 @@ protected:
 
     bool _apIsNeedReconect = false;
     bool _apWorkStatus = false;
+    bool _apStatus = false;
     bool _clientWorkStatus = false;
     bool _clientStatus = false;
     bool _needUpdateClientData = false;
     bool _isCanStartServer = false;
+
+    FLProgWifiSoket _sokets[FLPROG_ON_BOARD_WIFI_MAX_SOCK_NUM];
 };
-
-#ifdef ARDUINO_ARCH_ESP8266
-#define FLPROG_WIFI_ON_BOARD_TCP_DEVICE
-#include "ESP8266WiFi.h"
-#include <WiFiUdp.h>
-extern "C"
-{
-#include "user_interface.h"
-}
-#include "variant/esp/esp8266/flprogEsp8266Wifi.h"
-#endif
-
-#ifndef FLPROG_WIFI_ON_BOARD_TCP_DEVICE
-#ifdef ARDUINO_ARCH_ESP32
-#define FLPROG_WIFI_ON_BOARD_TCP_DEVICE
-#include "WiFi.h"
-#include <esp_wifi.h>
-#include "variant/esp/esp32/flprogEsp32Wifi.h"
-#endif
-#endif
-
-
-#ifndef FLPROG_WIFI_ON_BOARD_TCP_DEVICE
-#ifdef ARDUINO_ARCH_RP2040
-#ifdef ARDUINO_RASPBERRY_PI_PICO_W
-#define FLPROG_WIFI_ON_BOARD_TCP_DEVICE
-#include "WiFi.h"
-#include "variant/rp2040/flprogRP2040Wifi.h"
-#endif
-#endif
-#endif
-
-#ifndef FLPROG_WIFI_ON_BOARD_TCP_DEVICE
-#define FLPROG_WIFI_ON_BOARD_TCP_DEVICE
-#define FLPROG_ANON_WIFI_ON_BOARD_TCP_DEVICE
-#include "variant/anon/flprogAnonWifi.h"
-#endif

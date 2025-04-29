@@ -1,6 +1,5 @@
-#include "flprogESP8266WifiSoket.h"
-#ifdef ARDUINO_ARCH_ESP8266
-
+#include "flprogWifiSoket.h"
+#if defined(RT_HW_CORE_ESP32) || defined(RT_HW_CORE_ESP8266) || defined(RT_HW_CORE_RP2040)
 void FLProgWifiSoket::disconnect()
 {
     if (_soketType == FLPROG_WIFI_SERVER_SOKET)
@@ -41,8 +40,14 @@ void FLProgWifiSoket::beUDP(uint16_t port)
 
 void FLProgWifiSoket::beCliendTcp(uint16_t port)
 {
-    // close();
+#ifdef RT_HW_CORE_ESP32
+    close();
+    _client.setNoDelay(true);
+    _client.localPort(port);
+#endif
+#if defined(RT_HW_CORE_RP2040) || defined(RT_HW_CORE_ESP8266)
     _client.setLocalPortStart(port);
+#endif
     _soketType = FLPROG_WIFI_CLIENT_SOKET;
     _isUsed = true;
 }
@@ -55,7 +60,15 @@ bool FLProgWifiSoket::isListen()
     }
     if (_soketType == FLPROG_WIFI_SERVER_SOKET)
     {
+#ifdef RT_HW_CORE_ESP32
+        return (_server);
+#endif
+#if defined(RT_HW_CORE_ESP8266)
         return (_server.status() != CLOSED);
+#endif
+#if defined(RT_HW_CORE_RP2040)
+        return (_server.status() != 0);
+#endif
     }
     return true;
 }
@@ -72,7 +85,7 @@ uint8_t FLProgWifiSoket::connected()
         {
             return true;
         }
-        _client = _server.available();
+        _client = _server.accept();
         return _client;
     }
     if (_soketType == FLPROG_WIFI_CLIENT_SOKET)
@@ -120,11 +133,24 @@ uint8_t FLProgWifiSoket::status()
         return CLOSED;
     }
 
+#if defined(RT_HW_CORE_RP2040) || defined(RT_HW_CORE_ESP8266)
     if (_soketType == FLPROG_WIFI_CLIENT_SOKET)
     {
         return _client.status();
     }
     return _server.status();
+#endif
+#ifdef RT_HW_CORE_ESP32
+    if (_soketType == FLPROG_WIFI_CLIENT_SOKET)
+    {
+        return ESTABLISHED;
+    }
+    if (_server)
+    {
+        return LISTEN;
+    }
+    return CLOSED;
+#endif
 }
 
 int FLProgWifiSoket::available()
@@ -235,5 +261,4 @@ int FLProgWifiSoket::parsePacket()
     }
     return _udp.parsePacket();
 }
-
 #endif
