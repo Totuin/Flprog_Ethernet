@@ -1,4 +1,5 @@
 #include "flprogOnBoardWifiInterface.h"
+#ifdef FLPROG_ONBOARD_WIFI_MODULE
 
 bool FLProgOnBoardWifiInterface::clientIsReady()
 {
@@ -156,8 +157,8 @@ void FLProgOnBoardWifiInterface::clientConnect()
 #endif
     }
 #ifndef RT_HW_CORE_RP2040
-    WiFi.setAutoConnect(true);
-    WiFi.setAutoReconnect(true);
+    WiFi.setAutoConnect(_autoConnect);
+    WiFi.setAutoReconnect(_autoReconnect);
 #endif
 #ifdef RT_HW_CORE_RP2040
     WiFi.begin(_clientSsid.c_str(), _clientPassword.c_str());
@@ -267,6 +268,25 @@ void FLProgOnBoardWifiInterface::apGateway(IPAddress ip)
     }
     _apGatewayIp = ip;
     _apIsNeedReconect = true;
+}
+
+void FLProgOnBoardWifiInterface::setAutoConnect(bool autoConnect)
+{
+    if (_autoConnect == autoConnect)
+    {
+        return;
+    }
+    _autoConnect = autoConnect;
+    _isNeedReconect = true;
+}
+void FLProgOnBoardWifiInterface::setAutoReconnect(bool autoReconnect)
+{
+    if (_autoReconnect == autoReconnect)
+    {
+        return;
+    }
+    _autoReconnect = autoReconnect;
+    _isNeedReconect = true;
 }
 
 void FLProgOnBoardWifiInterface::clientOn()
@@ -599,3 +619,89 @@ IPAddress FLProgOnBoardWifiInterface::remoteIPSoket(uint8_t soket)
     (void)soket;
     return FLPROG_INADDR_NONE;
 }
+
+#endif
+
+#ifdef FLPROG_ANON_ONBOARD_WIFI_MODULE
+void FLProgOnBoardWifiInterface::apMac(uint8_t m0, uint8_t m1, uint8_t m2, uint8_t m3, uint8_t m4, uint8_t m5)
+{
+    (void)m0;
+    (void)m1;
+    (void)m2;
+    (void)m3;
+    (void)m4;
+    (void)m5;
+}
+int FLProgOnBoardWifiInterface::parsePacketSocet(uint8_t soket)
+{
+    (void)soket;
+    return 0;
+}
+uint8_t FLProgOnBoardWifiInterface::resetToVoidVar(uint8_t soket)
+{
+    (void)soket;
+    return 0;
+}
+
+int FLProgOnBoardWifiInterface::readFromSoket(uint8_t soket, uint8_t *buf, int16_t len)
+{
+    (void)soket;
+    (void)buf;
+    (void)len;
+    return -1;
+}
+
+size_t FLProgOnBoardWifiInterface::writeToSoket(uint8_t soket, const uint8_t *buffer, size_t size)
+{
+    (void)soket;
+    (void)buffer;
+    (void)size;
+    return 0;
+}
+
+uint8_t FLProgOnBoardWifiInterface::startUdpSoket(uint8_t soket, uint8_t *addr, uint16_t port)
+{
+    (void)soket;
+    (void)addr;
+    (void)port;
+    return 0;
+}
+
+uint16_t FLProgOnBoardWifiInterface::bufferDataSoket(uint8_t soket, uint16_t offset, const uint8_t *buf, uint16_t len)
+{
+    (void)soket;
+    (void)offset;
+    (void)buf;
+    (void)len;
+    return 0;
+}
+
+int FLProgOnBoardWifiInterface::recvSoket(uint8_t soket, uint8_t *buf, int16_t len)
+{
+    (void)soket;
+    (void)buf;
+    (void)len;
+    return -1;
+}
+
+uint8_t FLProgOnBoardWifiInterface::beginMulticastSoket(IPAddress ip, uint16_t port)
+{
+    (void)port;
+    (void)ip;
+    return 0;
+}
+
+uint8_t FLProgOnBoardWifiInterface::connectSoket(uint8_t soket, IPAddress ip, uint16_t port)
+{
+    (void)soket;
+    (void)port;
+    (void)ip;
+    return 0;
+}
+
+IPAddress FLProgOnBoardWifiInterface::remoteIPSoket(uint8_t soket)
+{
+    (void)soket;
+    return FLPROG_INADDR_NONE;
+}
+#endif

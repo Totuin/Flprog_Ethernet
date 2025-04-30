@@ -1,6 +1,12 @@
 #pragma once
 #include "flprogUtilites.h"
-#if defined(RT_HW_CORE_ESP32) || defined(RT_HW_CORE_ESP8266) || defined(RT_HW_CORE_RP2040)
+#if defined(RT_HW_CORE_ESP32) || defined(RT_HW_CORE_ESP8266) || (defined(RT_HW_CORE_RP2040) && defined(ARDUINO_RASPBERRY_PI_PICO_W))
+#define FLPROG_ONBOARD_WIFI_MODULE
+#else
+#define FLPROG_ANON_ONBOARD_WIFI_MODULE
+#endif
+
+#ifdef FLPROG_ONBOARD_WIFI_MODULE
 
 #if defined(RT_HW_CORE_ESP32) || defined(RT_HW_CORE_RP2040)
 
