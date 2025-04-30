@@ -115,7 +115,7 @@ protected:
     IPAddress _apSubnetIp = IPAddress(255, 255, 255, 0);
     IPAddress _apGatewayIp = FLPROG_INADDR_NONE;
 
-    bool _apIsNeedReconect = false;
+    bool _apIsNeedReconect = true;
     bool _apWorkStatus = false;
     bool _apStatus = false;
     bool _clientWorkStatus = false;
