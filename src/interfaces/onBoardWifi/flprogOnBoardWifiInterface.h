@@ -135,7 +135,7 @@ protected:
 class FLProgOnBoardWifiInterface : public FLProgAbstractTcpInterface
 {
 public:
-    virtual uint8_t pool() {};
+    virtual uint8_t pool() {return 0;};
     virtual bool isImitation() { return true; };
     virtual bool isReady();
 
