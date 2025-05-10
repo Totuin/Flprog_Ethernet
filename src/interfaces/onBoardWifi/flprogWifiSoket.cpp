@@ -1,5 +1,5 @@
 #include "flprogWifiSoket.h"
-#if defined(RT_HW_CORE_ESP32) || defined(RT_HW_CORE_ESP8266) || defined(RT_HW_CORE_RP2040)
+#if defined(RT_HW_CORE_ESP32) || defined(RT_HW_CORE_ESP8266) || (defined(RT_HW_CORE_RP2040) && defined(ARDUINO_RASPBERRY_PI_PICO_W))
 void FLProgWifiSoket::disconnect()
 {
     if (_soketType == FLPROG_WIFI_SERVER_SOKET)
