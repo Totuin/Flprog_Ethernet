@@ -14,7 +14,7 @@ class FLProgNTP : public AbstractFLProgClass
 public:
     FLProgNTP(FLProgAbstractTcpInterface *interface);
     void pool();
-    void reqestPeriod(bool value) { _reqestPeriod = value * 1000; };
+    void reqestPeriod(uint16_t value) { _reqestPeriod = value * 1000; };
     uint16_t reqestPeriod() { return ((uint16_t)(_reqestPeriod / 1000)); };
 
     void isUseAsClock(bool value) { _isUseAsClock = value; };
